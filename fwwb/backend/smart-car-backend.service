@@ -1,0 +1,19 @@
+[Unit]
+Description=智能小车后端服务（智慧工厂安全监测控制平台）
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=%I
+WorkingDirectory=/home/tzb/fwwb/backend
+Environment=FLASK_ENV=production
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/bin/bash -c 'source .venv/bin/activate && python main.py'
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

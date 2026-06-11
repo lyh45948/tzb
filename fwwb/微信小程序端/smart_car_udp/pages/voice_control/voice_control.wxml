@@ -1,0 +1,84 @@
+<view class="container">
+  <!-- 状态栏 -->
+  <view class="status-bar">
+    <view class="connection-info">
+      <van-icon name="{{connected ? 'success' : 'warning-o'}}" color="{{connected ? '#07c160' : '#ee0a24'}}" />
+      <text class="status-text">{{connected ? '设备在线' : '设备离线'}}</text>
+    </view>
+    <view class="env-info" wx:if="{{envData.temp}}">
+      <text class="env-text">🌡️ {{envData.temp}}°C</text>
+      <text class="env-text">💧 {{envData.humi}}%</text>
+    </view>
+  </view>
+
+  <!-- 指令面板 -->
+  <scroll-view scroll-y class="command-panel">
+    
+    <!-- 1. 基础电源 -->
+    <view class="section">
+      <view class="section-header">
+        <van-icon name="setting-o" />
+        <text class="section-title">基础控制</text>
+      </view>
+      <view class="button-row">
+        <van-button type="primary" icon="play" block bindtap="sendVoiceCmd" data-cmd="0x10" custom-class="cmd-btn">开启电源 (0x10)</van-button>
+        <van-button type="danger" icon="stop" block bindtap="sendVoiceCmd" data-cmd="0x11" custom-class="cmd-btn">关闭电源 (0x11)</van-button>
+      </view>
+    </view>
+
+    <!-- 2. 运动指令 -->
+    <view class="section">
+      <view class="section-header">
+        <van-icon name="apps-o" />
+        <text class="section-title">运动执行</text>
+      </view>
+      <view class="direction-pad">
+        <van-button icon="arrow-up" circle bindtap="sendVoiceCmd" data-cmd="0x20" custom-class="dir-btn"></van-button>
+        <view class="dir-middle">
+          <van-button icon="arrow-left" circle bindtap="sendVoiceCmd" data-cmd="0x22" custom-class="dir-btn"></van-button>
+          <van-button type="danger" icon="cross" circle bindtap="sendVoiceCmd" data-cmd="0x24" custom-class="dir-btn stop-btn"></van-button>
+          <van-button icon="arrow" circle bindtap="sendVoiceCmd" data-cmd="0x23" custom-class="dir-btn"></van-button>
+        </view>
+        <van-button icon="arrow-down" circle bindtap="sendVoiceCmd" data-cmd="0x21" custom-class="dir-btn"></van-button>
+      </view>
+    </view>
+
+    <!-- 3. 智能模式 -->
+    <view class="section">
+      <view class="section-header">
+        <van-icon name="award-o" />
+        <text class="section-title">模式切换</text>
+      </view>
+      <view class="button-grid">
+        <van-button type="info" plain block bindtap="sendVoiceCmd" data-cmd="0x30" custom-class="grid-btn">避障模式 (0x30)</van-button>
+        <van-button type="info" plain block bindtap="sendVoiceCmd" data-cmd="0x31" custom-class="grid-btn">巡线模式 (0x31)</van-button>
+      </view>
+    </view>
+
+    <!-- 4. 预设路径 -->
+    <view class="section">
+      <view class="section-header">
+        <van-icon name="guide-o" />
+        <text class="section-title">预设路径</text>
+      </view>
+      <view class="button-grid">
+        <van-button type="warning" block bindtap="sendVoiceCmd" data-cmd="0x40" custom-class="grid-btn">走正方形 (0x40)</van-button>
+        <van-button type="warning" block bindtap="sendVoiceCmd" data-cmd="0x41" custom-class="grid-btn">走三角形 (0x41)</van-button>
+      </view>
+    </view>
+
+    <!-- 5. 外设与查询 -->
+    <view class="section">
+      <view class="section-header">
+        <van-icon name="ecard-pay" />
+        <text class="section-title">外设与环境</text>
+      </view>
+      <view class="button-grid">
+        <van-button type="info" block bindtap="sendVoiceCmd" data-cmd="0x50" custom-class="grid-btn">开启风扇 (0x50)</van-button>
+        <van-button type="info" block bindtap="sendVoiceCmd" data-cmd="0x51" custom-class="grid-btn">关闭风扇 (0x51)</van-button>
+        <van-button type="primary" block bindtap="sendVoiceCmd" data-cmd="0x60" custom-class="grid-btn full-width">查询温湿度 (0x60)</van-button>
+      </view>
+    </view>
+
+  </scroll-view>
+</view>

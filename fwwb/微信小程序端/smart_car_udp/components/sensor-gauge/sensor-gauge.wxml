@@ -1,0 +1,15 @@
+<view class="sensor-gauge {{ statusClass }} size-{{ size }}">
+  <view class="gauge-container">
+    <canvas
+      type="2d"
+      id="gaugeCanvas"
+      class="gauge-canvas"
+      canvas-id="gaugeCanvas"
+    ></canvas>
+    <view class="gauge-center">
+      <view class="gauge-value">{{ displayValue }}</view>
+      <view class="gauge-unit">{{ unit }}</view>
+    </view>
+  </view>
+  <view class="gauge-label" wx:if="{{ label }}">{{ label }}</view>
+</view>

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "路径规划绘制",
+  "usingComponents": {
+    "van-button": "../../miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index"
+  },
+  "disableScroll": true
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cartographer_ld06</name>
+  <version>1.0.0</version>
+  <description>Cartographer configuration for LD06 LiDAR + Yesense IMU</description>
+  <maintainer email="user@example.com">User</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cartographer_ros</depend>
+  <depend>ldlidar</depend>
+  <depend>yesense_imu</depend>
+</package>

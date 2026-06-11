@@ -1,0 +1,76 @@
+# robot_localization EKF 配置：融合 rf2o 激光里程计 + Yesense IMU
+# 输出 /odom (odom -> base_link)
+
+frequency: 50
+sensor_timeout: 0.1
+two_d_mode: false  # 虽然是2D雷达，但IMU提供roll/pitch，保持3D输出供scan_to_3d使用
+
+publish_tf: true
+map_frame: map
+odom_frame: odom
+base_link_frame: base_link
+world_frame: odom
+
+# odom0: rf2o 激光里程计 (2D: x, y, yaw)
+odom0: /odom_rf2o
+odom0_config: [true,  true,  false,  # x, y, z
+               false, false, true,   # roll, pitch, yaw
+               true,  true,  false,  # x_vel, y_vel, z_vel
+               false, false, true,   # roll_vel, pitch_vel, yaw_vel
+               false, false, false]  # x_acc, y_acc, z_acc
+odom0_queue_size: 10
+odom0_nodelay: false
+odom0_relative: false
+# rf2o 漂移小但帧率低(10Hz)，协方差适中
+odom0_pose_rejection_threshold: 2.0
+odom0_twist_rejection_threshold: 1.0
+
+# imu0: Yesense H30 AHRS
+imu0: /imu
+imu0_config: [false, false, false,  # x, y, z (IMU不提供位置)
+              true,  true,  true,   # roll, pitch, yaw
+              false, false, false,  # x_vel, y_vel, z_vel
+              true,  true,  true,   # roll_vel, pitch_vel, yaw_vel
+              true,  true,  true]   # x_acc, y_acc, z_acc
+imu0_queue_size: 50
+imu0_nodelay: false
+imu0_relative: false
+imu0_remove_gravitational_acceleration: true
+# IMU 200Hz，高频可靠，协方差较小
+imu0_pose_rejection_threshold: 0.5
+imu0_twist_rejection_threshold: 0.3
+imu0_linear_acceleration_rejection_threshold: 2.0
+
+# 初始协方差：信任 IMU 姿态，信任 rf2o 平面位置
+initial_estimate_covariance: [0.05, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0.05, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0.05, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0.02, 0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0.02, 0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0.05, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0.02, 0,    0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0.02, 0,    0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0.04, 0,     0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0.01,  0,     0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0.01,  0,     0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0.02,  0,    0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0.01, 0,    0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0.01, 0,
+                              0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0.01]
+
+# 过程噪声：IMU积分会漂移，所以位置和yaw的过程噪声不能太小
+process_noise_covariance: [0.05, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0.05, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0.05, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0.02, 0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0.02, 0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0.05, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0.02, 0,    0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0.02, 0,    0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0.04, 0,     0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0.01,  0,     0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0.01,  0,     0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0.02,  0,    0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0.01, 0,    0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0.01, 0,
+                           0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0.01]

@@ -1,0 +1,275 @@
+<!-- 弹窗组件 -->
+<!-- NFC配网设置 -->
+<van-action-sheet 
+  show="{{ nfc_show }}" 
+  title="NFC配网设置"
+  bind:close="bind_wifi_nfc_button"
+  bind:select="bind_wifi_nfc_button">
+  <!-- 嵌套弹窗的布局 -->
+  <view class="nfc-root">
+    <view class="nfc-left-wrapper">
+      <view class="nfc-wifi-wrapper">
+        <text>WiFi名称:</text> 
+        <input bindinput="bind_wifi_ssid_Input" placeholder="请输入WiFi名称"/>
+      </view>
+      <view class="nfc-wifi-wrapper">
+        <text>WiFi密码:</text>
+        <input bindinput="bind_wifi_passwd_Input" placeholder="请输入WiFi密码"/>
+      </view>
+    </view>
+    <view class="nfc-right-wrapper">
+      <button style="width: 120px;" bindtap="bind_wifi_start_set_button" >开始配置</button>
+    </view>
+  </view>
+</van-action-sheet>
+
+<!-- 设置定时器 -->
+<van-action-sheet 
+  show="{{ setTimer_show }}" 
+  title="新增定时器"
+  bind:close="bind_set_timer_top"
+  bind:select="bind_set_timer_top">
+  <view class="set-timer-root">
+    <view class="set-timer-body-wrapper">
+      <!-- 开关选择布局 -->
+      <view class="set-timer-body">
+        <view class="set-timer-body-left">
+          <text>定时开启</text>
+        </view>
+        <view class="set-timer-body-right">
+          <switch bindchange="bind_set_open_timer_change"></switch>
+        </view>
+      </view>
+
+      <!-- 时间选择布局 -->
+      <view class="set-timer-body">
+        <view class="set-timer-body-left">
+          <text>开启时间(时:分)</text>
+        </view>
+        <view class="set-timer-body-right">
+          <input style="width: 50px;" bindinput="bind_set_open_time_Input" placeholder="19:05"/>
+        </view>
+      </view>
+
+      <van-divider />
+
+      <!-- 开关选择布局 -->
+      <view class="set-timer-body">
+        <view class="set-timer-body-left">
+          <text>定时关闭</text>
+        </view>
+        <view class="set-timer-body-right">
+          <switch bindchange="bind_set_close_timer_change"></switch>
+        </view>
+      </view>
+
+      <!-- 时间选择布局 -->
+      <view class="set-timer-body">
+        <view class="set-timer-body-left">
+          <text>关闭时间(时:分)</text>
+        </view>
+        <view class="set-timer-body-right">
+          <input style="width: 50px;" bindinput="bind_set_close_time_Input" placeholder="20:05"/>
+        </view>
+      </view>
+
+    </view>
+  </view>
+</van-action-sheet>
+
+<!-- 设置倒计时 -->
+<van-action-sheet 
+  show="{{ setCountTimer_show }}" 
+  title="倒计时"
+  bind:close="bind_set_count_timer_top"
+  bind:select="bind_set_count_timer_top">
+  <view class="set-count-timer-root">
+    <view class="set-count-timer-body-wrapper">
+
+      <!-- 开关选择布局 -->
+      <radio-group bindchange="radioChange">
+        <label class="set-count-timer-body" wx:for="{{items}}" wx:key="{{item.value}}">
+          <view>
+            <radio style="padding-left: 10px; margin-top: 5px;" value="{{item.value}}" checked="true"/>
+          </view>
+          <view style="margin-right: 300px; margin-top: 5px;">{{item.name}}</view>
+        </label>
+      </radio-group>
+
+      <!-- 开启倒计时 -->
+      <view class="set-count-timer-body">
+        <view class="set-count-timer-body-left">
+          <text>是否开启</text>
+        </view>
+        <view class="set-count-timer-body-right">
+          <switch bindchange="bind_set_count_timer_change" checked="{{ count_timer_button_status }}"></switch>
+        </view>
+      </view>
+
+      <!-- 时间选择布局 -->
+      <view class="set-count-timer-body">
+        <view class="set-count-timer-body-left">
+          <text>倒计时(s)</text>
+        </view>
+        <view class="set-count-timer-body-right">
+          <input style="width: 50px;" bindinput="bind_set_count_time_Input" placeholder="5"/>
+        </view>
+      </view>
+
+    </view>
+  </view>
+</van-action-sheet>
+
+
+<!-- 主体组件 -->
+<view class="root">
+  <view class="title-wrapper">
+    <!-- 提示条幅 -->
+    <van-notice-bar 
+      left-icon="volume-o" 
+      scrollable text="提示：没有连接附近WiFi时，请先进行NFC配网" />
+    <!-- 标题和NFC配网按钮 自定义NFC弹窗-->
+    <text>设备网络连接状态：{{ device_online_status }}</text>
+    <button type="primary" bindtap="bind_wifi_nfc_button" >NFC配网</button>
+  </view>
+
+  <view class="body-wrapper">
+    <!-- 切换 开灯或关灯图片 -->
+    <view class="body-lamp-status-wrapper">
+      <image style="height: 200px; width: 200px;" wx:if="{{ led_control_status}}" src="../image/lamp_on.png"></image>
+      <image style="height: 200px; width: 200px;" wx:else src="../image/lamp_off.png"></image>
+    </view>
+
+    <!----------------------------------- 光照值和颜色设置 ----------------------------------->
+    <view class="body-timer-wrapper">
+      <view class=".body-timer-style">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">光照</text>
+          <text>{{ light_sensor_value }}Lux</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <image style="width: 40px; height: 40px; margin-top: 11px; margin-right: 5px;" src="../image/light.png"></image>
+        </view>
+      </view>
+      <view class=".body-timer-style" bindtap="bind_set_color_top">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">颜色</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <image style="width: 40px; height: 40px; margin-top: 11px; margin-right: 5px;" src="../image/select-color.png"></image>
+        </view>
+      </view>
+    </view>
+
+    <!----------------------------------- 手动控制和定时器控制 ----------------------------------->
+    <view class="body-timer-wrapper">
+      <view class=".body-timer-style">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">{{ led_control_text }}</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <switch bindchange="bind_led_control_change" style="margin-top: 15px; margin-right: 5px;" checked="{{ led_control_status }}"></switch>
+        </view>
+      </view>
+      <!-- 设置定时器 -->
+      <view class=".body-timer-style" bindtap="bind_set_timer_top">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">定时器</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <image style="width: 40px; height: 40px; margin-top: 11px; margin-right: 5px;" src="../image/timer.png"></image>
+        </view>
+      </view>
+    </view>
+
+    <!-- 亮度控制 -->
+    <view class="body-set-light-wrapper">
+      <!-- 左侧容器 -->
+      <view class="body-set-light-left">
+        <text style="font-size: 20px;">亮度</text>
+        <text>{{ led_control_light_value }}%</text>
+      </view>
+      <!-- 右侧容器 -->
+      <view class="body-set-light-left">
+        <slider min="0" max="100" style="width: 220px;" value="{{ led_control_light_value }}" bindchange="bind_led_control_light_change" step="1"/>
+      </view>
+    </view>
+
+    <!-- 以下为场景模式 -->
+    <van-divider contentPosition="center">场景模式</van-divider>
+
+    <!-- 自动调光模式 -->
+    <view class="body-mode-wrapper">
+      <view class="body-mode-left">
+        <view class="body-mode-left-1">
+          <image src="../image/auto-light.png" style="height: 50px; width: 50px;"></image>
+        </view>
+        <view class="body-mode-left-2">
+          <text>自动调光</text>
+        </view>
+      </view>
+      <view class="body-mode-right">
+        <switch bindchange="bind_auto_light_mode_change"></switch>
+      </view>
+    </view>
+    <van-divider />
+
+    <!-- 睡眠模式 -->
+    <view class="body-mode-wrapper">
+      <view class="body-mode-left">
+        <view class="body-mode-left-1">
+          <image src="../image/sleep.png" style="height: 50px; width: 50px;"></image>
+        </view>
+        <view class="body-mode-left-2">
+          <text>睡眠模式</text>
+        </view>
+      </view>
+      <view class="body-mode-right">
+        <switch bindchange="bind_sleep_mode_change"></switch>
+      </view>
+    </view>
+    <van-divider />
+
+    <!-- 阅读模式 -->
+    <view class="body-mode-wrapper">
+      <view class="body-mode-left">
+        <view class="body-mode-left-1">
+          <image src="../image/readbook.png" style="height: 50px; width: 50px;"></image>
+        </view>
+        <view class="body-mode-left-2">
+          <text>阅读模式</text>
+        </view>
+      </view>
+      <view class="body-mode-right">
+        <switch bindchange="bind_read_book_mode_change"></switch>
+      </view>
+    </view>
+    <van-divider />
+    
+    <!-- 变幻模式 -->
+    <view class="body-mode-wrapper">
+      <view class="body-mode-left">
+        <view class="body-mode-left-1">
+          <image src="../image/led-blink.png" style="height: 50px; width: 50px;"></image>
+        </view>
+        <view class="body-mode-left-2">
+          <text>变幻模式</text>
+        </view>
+      </view>
+      <view class="body-mode-right">
+        <switch bindchange="bind_led_blink_mode_change"></switch>
+      </view>
+    </view>
+    <van-divider />
+
+  </view>
+</view>
+

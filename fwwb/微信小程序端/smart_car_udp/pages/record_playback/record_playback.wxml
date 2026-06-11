@@ -1,0 +1,104 @@
+<view class="container">
+  <!-- 页面标题栏 -->
+  <view class="page-header">
+    <van-icon name="video" size="28px" color="#7232dd" />
+    <text class="page-title">录制回放</text>
+  </view>
+
+  <!-- 连接状态栏 -->
+  <view class="connection-bar">
+    <view class="connection-info">
+      <van-icon name="{{connectionStatus.connected ? 'success' : 'warning-o'}}" color="{{connectionStatus.connected ? '#07c160' : '#ee0a24'}}" size="16px" />
+      <text class="connection-text">{{connectionStatus.message}}</text>
+    </view>
+  </view>
+
+  <view class="record-panel">
+    <view class="record-header">
+      <view class="record-time-wrapper">
+        <van-icon name="clock-o" size="20px" color="#07c160" style="margin-right: 8rpx;" />
+        <text class="record-time">{{recordTime}}</text>
+      </view>
+      <view class="record-button-group">
+        <van-button
+          type="{{isRecording ? 'danger' : 'primary'}}"
+          bindtap="onRecordButtonClick"
+          custom-style="width: 100px;"
+          icon="{{isRecording ? 'stop-circle-o' : 'circle'}}"
+        >
+          {{isRecording ? '停止录制' : '开始录制'}}
+        </van-button>
+        <van-button
+          type="warning"
+          plain
+          bindtap="onResetCanvas"
+          size="small"
+          custom-style="width: 80px; margin-left: 10px;"
+          icon="replay"
+        >
+          路径重绘
+        </van-button>
+      </view>
+    </view>
+
+    <view class="canvas-wrapper">
+      <canvas type="2d" id="recordCanvas" class="path-canvas record-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 摇杆控制区 -->
+  <view class="joystick-section">
+    <view class="joystick-label">
+      <van-icon name="hand-right" size="16px" color="#969799" />
+      <text>滑动控制</text>
+    </view>
+    <view class="control-wrapper">
+      <view class="joystick-container-mini" catchtouchstart="onTouchStart" catchtouchmove="onTouchMove" catchtouchend="onTouchEnd">
+        <view class="joystick-handle-mini" style="left: {{handleLeft}}px; top: {{handleTop}}px; transition: {{handleTransition}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录列表 -->
+  <view class="history-section">
+    <view class="history-header">
+      <van-icon name="records" size="22px" color="#7232dd" />
+      <text class="history-title">历史录制轨迹</text>
+      <view class="history-count">
+        <text>{{savedPaths.length}}</text>
+      </view>
+    </view>
+    <scroll-view scroll-y class="path-scroll-view">
+      <view class="path-list">
+        <!-- 无数据提示 -->
+        <view class="empty-status" wx:if="{{savedPaths.length === 0}}">
+          <van-icon name="info-o" size="48px" color="#c8c9cc" />
+          <text>暂无录制历史</text>
+          <text class="empty-hint">点击上方开始录制</text>
+        </view>
+
+        <view class="path-item" wx:for="{{savedPaths}}" wx:key="id">
+          <view class="path-info">
+            <view class="path-icon">
+              <van-icon name="map-marked" size="20px" color="#1989fa" />
+            </view>
+            <view class="path-details">
+              <view class="path-name">{{item.name}}</view>
+              <view class="path-meta">
+                <van-icon name="location-o" size="12px" color="#969799" />
+                <text>{{item.points.length}} 点</text>
+                <van-icon name="clock-o" size="12px" color="#969799" style="margin-left: 12rpx;" />
+                <text>{{item.durationStr}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="path-item-actions">
+            <van-button size="mini" type="primary" plain bindtap="previewPath" data-id="{{item.id}}" icon="eye-o" custom-style="margin-right: 5px;">加载</van-button>
+            <van-button size="mini" type="info" bindtap="playRecordedPath" data-id="{{item.id}}" icon="play-circle-o" custom-style="margin-right: 5px;">播放</van-button>
+            <van-button size="mini" type="danger" plain icon="delete-o" bindtap="deletePath" data-id="{{item.id}}"></van-button>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

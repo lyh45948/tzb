@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "van-switch": "@vant/weapp/switch/index",
+    "van-slider": "@vant/weapp/slider/index"
+  },
+  "navigationBarTitleText": "控制",
+  "enablePullDownRefresh": false
+}

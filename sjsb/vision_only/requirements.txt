@@ -1,0 +1,20 @@
+# 基础依赖
+# Linux 说明：不要安装项目根目录的 torch-*-win_amd64.whl；请按本机 CPU/CUDA 环境安装 torch/torchvision。
+opencv-python==4.9.0.80
+pyttsx3==2.90
+requests==2.32.3
+numpy>=1.24.0
+pillow>=10.0.0
+pyyaml>=6.0
+
+# YOLO/CRNN 识别
+ultralytics>=8.3.0
+torch>=2.0.0
+torchvision>=0.15.0
+tqdm>=4.66.0
+matplotlib>=3.7.0
+
+# Linux GUI/系统依赖提示：
+# - Tkinter GUI 需要系统包 python3-tk
+# - OpenCV 在部分系统上需要 libgl1、libglib2.0-0
+# - 无桌面环境可将 RUNTIME.HEADLESS 设为 auto/true

@@ -1,0 +1,25 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/switch_color/switch_color"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "智能照明灯",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "color-picker": "./miniprogram/color-picker/color-picker",
+    "van-button": "./miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-row": "./miniprogram/miniprogram_npm/@vant/weapp/row/index",
+    "van-action-sheet": "./miniprogram/miniprogram_npm/@vant/weapp/action-sheet/index",
+    "van-col": "./miniprogram/miniprogram_npm/@vant/weapp/col/index",
+    "van-divider": "./miniprogram/miniprogram_npm/@vant/weapp/divider/index",
+    "van-notice-bar": "./miniprogram/miniprogram_npm/@vant/weapp/notice-bar/index",
+    "van-popup": "./miniprogram/miniprogram_npm/@vant/weapp/popup/index"
+  }
+}

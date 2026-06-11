@@ -1,0 +1,1 @@
+savedcmd_/home/tzb/Desktop/ch343ser_linux-main/driver/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/tzb/Desktop/ch343ser_linux-main/driver/Module.symvers -T /home/tzb/Desktop/ch343ser_linux-main/driver/modules.order -i Module.symvers -e 

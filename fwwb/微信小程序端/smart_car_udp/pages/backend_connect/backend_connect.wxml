@@ -1,0 +1,151 @@
+<!--pages/backend_connect/backend_connect.wxml-->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <van-icon name="cluster-o" size="24" color="#1989fa"/>
+    <text class="title">后端连接</text>
+  </view>
+
+  <!-- 连接状态 -->
+  <view class="status-bar {{connected ? 'connected' : ''}}">
+    <view class="status-indicator"></view>
+    <text class="status-text">{{statusText}}</text>
+  </view>
+
+  <!-- 后端配置 -->
+  <view class="config-section">
+    <view class="section-title">
+      <van-icon name="setting-o" size="18px" color="#7232dd" />
+      <text>后端配置</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">后端IP</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如: 192.168.1.100"
+        value="{{backendIp}}"
+        bindinput="onBackendIpInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">端口</text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="8888"
+        value="{{backendPort}}"
+        bindinput="onBackendPortInput"
+      />
+    </view>
+  </view>
+
+  <!-- 小车配置 (可选) -->
+  <view class="config-section">
+    <view class="section-title">
+      <van-icon name="car-o" size="18px" color="#ff976a" />
+      <text>小车配置 (可选)</text>
+      <text class="hint">不连接小车也可使用演示模式</text>
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">小车IP</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如: 192.168.1.200"
+        value="{{carIp}}"
+        bindinput="onCarIpInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="form-label">小车端口</text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="7788"
+        value="{{carPort}}"
+        bindinput="onCarPortInput"
+      />
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="button-group">
+    <!-- 连接后端按钮 -->
+    <van-button
+      type="{{backendConnected ? 'default' : 'primary'}}"
+      size="large"
+      block
+      bind:click="onConnectBackend"
+      disabled="{{connecting}}"
+    >
+      {{connecting ? '连接中...' : (backendConnected ? '已连接后端' : '连接后端')}}
+    </van-button>
+
+    <!-- 连接小车按钮 -->
+    <van-button
+      type="{{connected ? 'default' : 'primary'}}"
+      size="large"
+      block
+      bind:click="onConnect"
+      disabled="{{connecting || !backendConnected}}"
+    >
+      {{connecting ? '连接中...' : (connected ? '已连接小车' : '连接小车')}}
+    </van-button>
+
+    <!-- 断开连接 -->
+    <van-button
+      wx:if="{{backendConnected || connected}}"
+      type="danger"
+      size="large"
+      block
+      bind:click="onDisconnect"
+      custom-style="margin-top: 20rpx;"
+    >
+      断开连接
+    </van-button>
+  </view>
+
+  <!-- 实时数据显示 -->
+  <view class="data-section" wx:if="{{backendConnected && sensorData}}">
+    <view class="section-title">
+      <van-icon name="bar-chart-o" size="18px" color="#1989fa" />
+      <text>实时数据</text>
+    </view>
+
+    <view class="data-grid">
+      <view class="data-item">
+        <van-icon name="fire-o" size="20px" color="#ff976a" />
+        <text class="data-value">{{sensorData.temperature || '--'}}</text>
+        <text class="data-label">温度(℃)</text>
+      </view>
+      <view class="data-item">
+        <van-icon name="umbrella-circle" size="20px" color="#1989fa" />
+        <text class="data-value">{{sensorData.humidity || '--'}}</text>
+        <text class="data-label">湿度(%)</text>
+      </view>
+      <view class="data-item">
+        <van-icon name="bulb-o" size="20px" color="#ffd700" />
+        <text class="data-value">{{sensorData.light || '--'}}</text>
+        <text class="data-label">光照(lux)</text>
+      </view>
+      <view class="data-item">
+        <van-icon name="smile-o" size="20px" color="#07c160" />
+        <text class="data-value">{{sensorData.co2 || '--'}}</text>
+        <text class="data-label">CO2(ppm)</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 说明 -->
+  <view class="info-section">
+    <van-icon name="info-o" size="16px" color="#969799" />
+    <text class="info-text">提示： 演示模式请在主界面开启，连接后端后返回主页打开演示模式开关即可。</text>
+  </view>
+
+  <van-toast id="van-toast" />
+</view>

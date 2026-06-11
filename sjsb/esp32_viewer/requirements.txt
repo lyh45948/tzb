@@ -1,0 +1,8 @@
+# Linux 说明：Tkinter GUI 需要系统包 python3-tk；OpenCV 可能需要 libgl1、libglib2.0-0。
+opencv-python>=4.8.0
+numpy>=1.24.0
+requests>=2.31.0
+pillow>=10.0.0
+ultralytics>=8.3.0
+torch>=2.0.0
+torchvision>=0.15.0

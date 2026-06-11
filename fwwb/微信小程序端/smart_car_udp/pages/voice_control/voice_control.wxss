@@ -1,0 +1,113 @@
+.container {
+  background-color: #f7f8fa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-bar {
+  background-color: #fff;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 10px;
+}
+
+.connection-info {
+  display: flex;
+  align-items: center;
+}
+
+.status-text {
+  font-size: 14px;
+  margin-left: 6px;
+  color: #323233;
+}
+
+.env-text {
+  font-size: 14px;
+  margin-left: 12px;
+  color: #1989fa;
+  font-weight: bold;
+}
+
+.command-panel {
+  flex: 1;
+  padding: 10px;
+}
+
+.section {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  border-left: 3px solid #1989fa;
+  padding-left: 8px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #323233;
+  margin-left: 5px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+}
+
+.cmd-btn {
+  flex: 1;
+  border-radius: 8px !important;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grid-btn {
+  border-radius: 8px !important;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+/* 方向盘样式 */
+.direction-pad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.dir-middle {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.dir-btn {
+  width: 50px !important;
+  height: 50px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.stop-btn {
+  width: 60px !important;
+  height: 60px !important;
+}

@@ -1,0 +1,13 @@
+{
+  "usingComponents": {
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index",
+    "van-slider": "../../miniprogram/miniprogram_npm/@vant/weapp/slider/index",
+    "van-circle": "../../miniprogram/miniprogram_npm/@vant/weapp/circle/index",
+    "van-notice-bar": "../../miniprogram/miniprogram_npm/@vant/weapp/notice-bar/index",
+    "van-button": "../../miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-progress": "../../miniprogram/miniprogram_npm/@vant/weapp/progress/index",
+    "van-tag": "../../miniprogram/miniprogram_npm/@vant/weapp/tag/index"
+  },
+  "navigationBarTitleText": "智能光照"
+}

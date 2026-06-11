@@ -1,0 +1,55 @@
+<launch>
+  <!-- Cartographer 2D SLAM (LD-14P LiDAR, IMU optional, Wheel Odometry optional) -->
+
+  <arg name="use_imu" default="false" doc="Enable IMU fusion (true/false)"/>
+  <arg name="use_wheel_odom" default="false" doc="Enable wheel odometry from Hi3861 (true/false)"/>
+
+  <!-- 自动选择配置：根据 use_imu + use_wheel_odom 组合 -->
+  <!-- 配置对应关系：
+       !imu & !wheel  -> ld14p          (纯雷达，Cartographer 自己提供 odom)
+       !imu &  wheel  -> ld14p_wheel    (雷达+轮速，外部轮速提供 odom)
+        imu & !wheel  -> ld14p_imu      (雷达+IMU，Cartographer 自己提供 odom)
+        imu &  wheel  -> ld14p_imu_wheel (雷达+IMU+轮速，外部轮速提供 odom)
+  -->
+  <arg name="config_basename" default="ld14p" doc="Lua config basename (auto-selected based on use_imu and use_wheel_odom)"/>
+
+  <!-- ==================== 传感器节点 ==================== -->
+
+  <!-- 激光雷达 LD-14P (始终启动) -->
+  <include file="$(find ldlidar)/launch/ld14p.launch"/>
+
+  <!-- IMU (Yesense H30 AHRS) — 条件启动，发布 /imu_raw -->
+  <include if="$(arg use_imu)" file="$(find yesense_imu)/launch/yesense_ahrs.launch"/>
+
+  <!-- IMU 滤波器 — 条件启动，/imu_raw → imu_complementary_filter → /imu -->
+  <!-- 在线估计陀螺仪零偏，滤波方向，保留原始角速度和加速度 -->
+  <include if="$(arg use_imu)" file="$(find cartographer_ld06)/launch/imu_filter.launch"/>
+
+  <!-- 轮速里程计 — 条件启动（接收 Hi3861 编码器轮速，发布 /odom + TF） -->
+  <include if="$(arg use_wheel_odom)" file="$(find wheel_odom)/launch/wheel_odom.launch"/>
+
+  <!-- ==================== TF 静态变换 ==================== -->
+
+  <!-- base_link → imu_link — 仅在启用 IMU 时发布 -->
+  <!-- Cartographer 要求 IMU frame 与 tracking_frame (base_link) 重合 (translation < 1e-5) -->
+  <!-- 平移设为 0，旋转保留（IMU 安装方向与 base_link 一致时为 0 0 0） -->
+  <node if="$(arg use_imu)" pkg="tf2_ros" type="static_transform_publisher" name="base_to_imu"
+        args="0 0 0 0 0 0 base_link imu_link"/>
+
+  <!-- ==================== Cartographer 2D SLAM ==================== -->
+
+  <node name="cartographer_node" pkg="cartographer_ros"
+        type="cartographer_node" output="screen"
+        args="-configuration_directory $(find cartographer_ld06)/configuration_files
+              -configuration_basename $(arg config_basename).lua">
+    <remap from="scan" to="scan"/>
+    <remap from="odom" to="odom"/>
+  </node>
+
+  <!-- Occupancy Grid 节点: 发布 /map (2D) 供 RViz -->
+  <!-- publish_period_sec 0.3：从默认1.0s→0.3s，加快地图可视化更新 -->
+  <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+        type="cartographer_occupancy_grid_node" output="screen"
+        args="-resolution 0.05 -publish_period_sec 0.3"/>
+
+</launch>

@@ -1,0 +1,144 @@
+<!-- 弹窗组件 -->
+<!-- NFC配网设置 -->
+<van-action-sheet 
+  show="{{ nfc_show }}" 
+  title="NFC配网设置"
+  bind:close="bind_wifi_nfc_button"
+  bind:select="bind_wifi_nfc_button">
+  <!-- 嵌套弹窗的布局 -->
+  <view class="nfc-root">
+    <view class="nfc-left-wrapper">
+      <view class="nfc-wifi-wrapper">
+        <text>WiFi名称:</text> 
+        <input bindinput="bind_wifi_ssid_Input" placeholder="请输入WiFi名称"/>
+      </view>
+      <view class="nfc-wifi-wrapper">
+        <text>WiFi密码:</text>
+        <input bindinput="bind_wifi_passwd_Input" placeholder="请输入WiFi密码"/>
+      </view>
+    </view>
+    <view class="nfc-right-wrapper">
+      <button style="width: 120px;" bindtap="bind_wifi_start_set_button" >开始配置</button>
+    </view>
+  </view>
+</van-action-sheet>
+
+<!-- 主体组件 -->
+<view class="root">
+  <view class="title-wrapper">
+    <!-- 提示条幅 -->
+    <van-notice-bar 
+      scrollable text="提示：没有连接附近WiFi时，请先进行NFC配网" />
+    <!-- 标题和NFC配网按钮 自定义NFC弹窗-->
+    <text>设备网络连接状态：{{ status.device_online }}</text>
+    <button type="primary" bindtap="bind_wifi_nfc_button" >NFC配网</button>
+  </view>
+
+  <view class="body-wrapper">
+    <!-- 切换 开灯或关灯图片 -->
+    <view class="body-status-wrapper">
+      <image style="height: 200px; width: 200px;" wx:if="{{ status.fan }}" src="../image/fan_on.png"></image>
+      <image style="height: 200px; width: 200px;" wx:else src="../image/fan_off.png"></image>
+    </view>
+
+    <!----------------------------------- 光照值和颜色设置 ----------------------------------->
+    <view class="body-timer-wrapper">
+      <view class="body-timer-style">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">湿度</text>
+          <text>{{ sensor.humi }}%</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <image style="width: 40px; height: 40px; margin-top: 8px; margin-right: 10px;" src="../image/humi.png"></image>
+        </view>
+      </view>
+      <view class="body-timer-style" >
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">温度</text>
+          <text>{{ sensor.temp }}℃</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <image style="width: 40px; height: 40px; margin-top: 8px; margin-right: 10px;" src="../image/temp.png"></image>
+        </view>
+      </view>
+    </view>
+
+    <!----------------------------------- 手动控制和定时器控制 ----------------------------------->
+    <view class="body-timer-wrapper">
+      <view class="body-timer-style">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">风扇</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <switch bindchange="bind_fan_control_change" style="margin-top:12px; margin-right: 5px;" checked="{{ status.fan }}"></switch>
+        </view>
+      </view>
+
+      <view class="body-timer-style">
+        <!-- 左侧 -->
+        <view class="body-timer-left">
+          <text style="font-size: 20px;">自动</text>
+        </view>
+        <!-- 右侧 -->
+        <view class="body-timer-right">
+          <switch bindchange="bind_auto_control_change" style="margin-top:12px; margin-right: 5px;" checked="{{ status.auto }}"></switch>
+        </view>
+      </view>
+    </view>
+
+    <!----------------------------------- 上限和下限部分 ----------------------------------->
+    <van-divider contentPosition="center">湿度传感器的阈值设置</van-divider>
+    
+    <!-- 显示本地存储的上下限值 -->
+    <view class="body-set-slider-wrapper">
+      <!-- 左侧容器 -->
+      <view class="body-set-slider-left">
+        <view>
+          上限值: {{ threshold.humi_up }}
+        </view>
+      </view>
+      <!-- 右侧容器 -->
+      <view class="body-set-slider-left">
+        <view style="margin-right: 36rpx;">
+          下限值: {{ threshold.humi_down }}
+        </view>
+      </view>
+    </view>
+
+    <view style="margin-bottom: 15px;">
+      <button bindtap="bind_write_device_flash">保存本地</button>
+    </view>
+
+    <!-- 湿度上限 -->
+    <view class="body-set-slider-wrapper">
+      <!-- 左侧容器 -->
+      <view class="body-set-slider-left">
+        <text style="font-size: 20px;">上限</text>
+      </view>
+      <!-- 右侧容器 -->
+      <view class="body-set-slider-left">
+        <slider show-value min="0" max="100" style="width: 220px;" bindchange="bind_slider_set_humi_up" step="1"/>
+      </view>
+    </view>
+    
+    <!-- 湿度下限 -->
+    <view class="body-set-slider-wrapper">
+      <!-- 左侧容器 -->
+      <view class="body-set-slider-left">
+        <text style="font-size: 20px;">下限</text>
+      </view>
+      <!-- 右侧容器 -->
+      <view class="body-set-slider-left">
+        <slider show-value min="0" max="100" style="width: 220px;" bindchange="bind_slider_set_humi_down" step="1"/>
+      </view>
+    </view>
+
+  </view>
+</view>
+

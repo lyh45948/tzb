@@ -1,0 +1,194 @@
+<!-- pages/factory_dashboard/factory_dashboard.wxml -->
+<!-- 智慧工厂安全监测控制平台 - 主监控界面 -->
+
+<view class="container">
+  <!-- 顶部状态栏 -->
+  <view class="status-bar">
+    <view class="status-left">
+      <van-icon name="flag" color="{{connected ? '#07c160' : '#999'}}" size="20px" />
+      <text class="status-text">{{connected ? '已连接' : '未连接'}}</text>
+    </view>
+    <view class="status-right">
+      <van-icon name="clock" color="#999" size="16px" />
+      <text class="time-text">{{currentTime}}</text>
+    </view>
+  </view>
+
+  <!-- 警报通知栏 -->
+  <view wx:if="{{alertLevel > 0}}" class="alert-banner alert-{{alertLevel}}">
+    <van-notice-bar
+      left-icon="{{alertLevel >= 3 ? 'warning' : 'info'}}"
+      text="{{alertMessage}}"
+      scrollable="{{false}}"
+    />
+  </view>
+
+  <!-- 主监控卡片网格 -->
+  <view class="monitor-grid">
+    <!-- 温湿度卡片 -->
+    <view class="monitor-card">
+      <view class="card-header">
+        <van-icon name="temperature" color="#1989fa" size="18px" />
+        <text class="card-title">温湿度</text>
+      </view>
+      <view class="card-content">
+        <view class="gauge-row">
+          <van-circle
+            canvas-id="tempCircle"
+            current-rate="{{tempRate}}"
+            rate="{{tempRate}}"
+            stroke-width="60"
+            size="80px"
+            color="{{tempAlert ? '#ee0a24' : '#1989fa'}}"
+            layer-color="#f0f0f0"
+            text="{{sensorData.temperature}}℃"
+          />
+          <van-circle
+            canvas-id="humiCircle"
+            current-rate="{{humiRate}}"
+            rate="{{humiRate}}"
+            stroke-width="60"
+            size="80px"
+            color="{{humiAlert ? '#ee0a24' : '#07c160'}}"
+            layer-color="#f0f0f0"
+            text="{{sensorData.humidity}}%"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 气体监测卡片 -->
+    <view class="monitor-card">
+      <view class="card-header">
+        <van-icon name="cloud" color="{{co2Alert ? '#ee0a24' : '#07c160'}}" size="18px" />
+        <text class="card-title">气体浓度</text>
+      </view>
+      <view class="card-content">
+        <view class="sensor-row">
+          <view class="sensor-item">
+            <text class="sensor-label">CO2</text>
+            <text class="sensor-value {{co2Alert ? 'alert-value' : ''}}">{{sensorData.co2}} ppm</text>
+            <van-tag type="{{co2Alert ? 'danger' : 'success'}}" size="mini">
+              {{co2Alert ? '超标' : '正常'}}
+            </van-tag>
+          </view>
+          <view class="sensor-item">
+            <text class="sensor-label">TVOC</text>
+            <text class="sensor-value">{{sensorData.tvoc}} ppb</text>
+          </view>
+        </view>
+        <view class="sensor-row">
+          <view class="sensor-item">
+            <text class="sensor-label">燃气</text>
+            <text class="sensor-value {{gasMicAlert ? 'alert-value' : ''}}">{{sensorData.gasMic}} ppm</text>
+            <van-tag type="{{gasMicAlert ? 'danger' : 'success'}}" size="mini">
+              {{gasMicAlert ? '泄漏' : '正常'}}
+            </van-tag>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 光照/人感应卡片 -->
+    <view class="monitor-card">
+      <view class="card-header">
+        <van-icon name="lightbulb-o" color="#ffc107" size="18px" />
+        <text class="card-title">光照/人体感应</text>
+      </view>
+      <view class="card-content">
+        <view class="sensor-row">
+          <view class="sensor-item">
+            <text class="sensor-label">光照强度</text>
+            <text class="sensor-value">{{sensorData.lux || 0}} lux</text>
+          </view>
+          <view class="sensor-item">
+            <text class="sensor-label">人体感应</text>
+            <text class="sensor-value {{pirDetected ? 'active-value' : ''}}">
+              {{pirDetected ? '检测到' : '未检测'}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 货物计数卡片 -->
+    <view class="monitor-card">
+      <view class="card-header">
+        <van-icon name="logistics" color="#7232dd" size="18px" />
+        <text class="card-title">货物计数</text>
+      </view>
+      <view class="card-content count-content">
+        <text class="count-value">{{goodsCount}}</text>
+        <text class="count-label">本班次计数</text>
+        <view class="count-delta" wx:if="{{goodsCountDelta > 0}}">
+          <van-icon name="arrow-up" color="#07c160" size="14px" />
+          <text>+{{goodsCountDelta}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- AGV状态卡片 -->
+    <view class="monitor-card agv-card">
+      <view class="card-header">
+        <van-icon name="todo-list-o" color="{{agvObstacle ? '#ee0a24' : '#07c160'}}" size="18px" />
+        <text class="card-title">AGV避障</text>
+        <van-tag type="{{agvObstacle ? 'danger' : 'success'}}" size="mini">
+          {{agvObstacle ? '障碍' : '正常'}}
+        </van-tag>
+      </view>
+      <view class="card-content agv-content">
+        <view class="agv-info">
+          <text class="agv-distance">{{agvDistance}} cm</text>
+          <text class="agv-label">前方距离</text>
+        </view>
+        <view class="agv-status">
+          <van-icon name="{{agvObstacle ? 'warning' : 'checked'}}" color="{{agvObstacle ? '#ee0a24' : '#07c160'}}" size="24px" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 设备状态卡片 -->
+    <view class="monitor-card equip-card">
+      <view class="card-header">
+        <van-icon name="setting-o" color="#323233" size="18px" />
+        <text class="card-title">设备控制</text>
+      </view>
+      <view class="card-content equip-content">
+        <view class="equip-row">
+          <view class="equip-item">
+            <van-icon name="fan" color="{{deviceStatus.fan ? '#07c160' : '#999'}}" size="24px" />
+            <text class="equip-name">风扇</text>
+            <van-switch checked="{{deviceStatus.fan}}" bind:change="onFanChange" size="small" />
+          </view>
+          <view class="equip-item">
+            <van-icon name="light-o" color="{{deviceStatus.led ? '#ffc107' : '#999'}}" size="24px" />
+            <text class="equip-name">照明</text>
+            <van-switch checked="{{deviceStatus.led}}" bind:change="onLedChange" size="small" />
+          </view>
+          <view class="equip-item">
+            <van-icon name="bell" color="{{deviceStatus.buzzer ? '#ee0a24' : '#999'}}" size="24px" />
+            <text class="equip-name">警铃</text>
+            <van-switch checked="{{deviceStatus.buzzer}}" bind:change="onBuzzerChange" size="small" />
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view class="nav-item active">
+      <van-icon name="dashboard" size="22px" />
+      <text>监控</text>
+    </view>
+    <view class="nav-item" bindtap="gotoEquipment">
+      <van-icon name="setting-o" size="22px" />
+      <text>控制</text>
+    </view>
+    <view class="nav-item" bindtap="gotoAlertCenter">
+      <van-icon name="warning" size="22px" />
+      <text>警报</text>
+      <view class="badge" wx:if="{{alertCount > 0}}">{{alertCount}}</view>
+    </view>
+  </view>
+</view>

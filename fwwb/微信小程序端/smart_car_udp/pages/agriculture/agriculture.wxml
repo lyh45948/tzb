@@ -1,0 +1,152 @@
+<!--pages/agriculture/agriculture.wxml-->
+<view class="container">
+  <!-- 顶部控制栏 -->
+  <view class="control-bar">
+    <view class="control-item">
+      <text class="label">演示模式</text>
+      <van-switch
+        size="20"
+        checked="{{isDemoMode}}"
+        bind:change="onDemoModeChange"
+      />
+    </view>
+    <view class="control-item">
+      <text class="label">自动控制</text>
+      <van-switch
+        size="20"
+        checked="{{autoControl}}"
+        bind:change="onAutoControlChange"
+      />
+    </view>
+  </view>
+
+  <!-- 告警信息 -->
+  <view class="alerts-section" wx:if="{{alerts.length > 0}}">
+    <view class="section-title">
+      <van-icon name="warning-o" size="20" color="#ee0a24" />
+      <text>告警信息</text>
+    </view>
+    <view class="alert-list">
+      <view 
+        class="alert-item {{getAlertStyle(alert.level)}}" 
+        wx:for="{{alerts}}" 
+        wx:key="timestamp"
+      >
+        <van-icon name="info-o" size="16" />
+        <text class="alert-message">{{alert.message}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 传感器数据卡片 -->
+  <view class="section">
+    <view class="section-title">
+      <van-icon name="chart-trending-o" size="20" color="#1989fa" />
+      <text>传感器数据</text>
+    </view>
+
+    <view class="sensor-grid">
+      <!-- 温度 -->
+      <view class="sensor-card">
+        <view class="sensor-icon">
+          <van-icon name="fire-o" size="32" color="#ff6b6b" />
+        </view>
+        <view class="sensor-value">{{sensorData.temperature}}</view>
+        <view class="sensor-unit">°C</view>
+        <view class="sensor-name">温度</view>
+      </view>
+
+      <!-- 湿度 -->
+      <view class="sensor-card">
+        <view class="sensor-icon">
+          <van-icon name="umbrella-circle" size="32" color="#4dabf7" />
+        </view>
+        <view class="sensor-value">{{sensorData.humidity}}</view>
+        <view class="sensor-unit">%</view>
+        <view class="sensor-name">湿度</view>
+      </view>
+
+      <!-- 光照 -->
+      <view class="sensor-card">
+        <view class="sensor-icon">
+          <van-icon name="bulb-o" size="32" color="#ffd43b" />
+        </view>
+        <view class="sensor-value">{{sensorData.light}}</view>
+        <view class="sensor-unit">lux</view>
+        <view class="sensor-name">光照</view>
+      </view>
+
+      <!-- CO2 -->
+      <view class="sensor-card">
+        <view class="sensor-icon">
+          <van-icon name="smile-o" size="32" color="#845ef7" />
+        </view>
+        <view class="sensor-value">{{sensorData.co2}}</view>
+        <view class="sensor-unit">ppm</view>
+        <view class="sensor-name">CO2</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设备控制卡片 -->
+  <view class="section">
+    <view class="section-title">
+      <van-icon name="setting-o" size="20" color="#7232dd" />
+      <text>设备控制</text>
+    </view>
+    
+    <van-cell-group inset>
+      <van-cell title="水泵" icon="fire-o" center>
+        <view slot="right-icon">
+          <van-switch
+            size="22"
+            checked="{{deviceStatus.pump}}"
+            bind:change="onPumpChange"
+          />
+        </view>
+      </van-cell>
+
+      <van-cell title="电磁阀" icon="bar-chart-o" center>
+        <view slot="right-icon">
+          <van-switch
+            size="22"
+            checked="{{deviceStatus.valve}}"
+            bind:change="onValveChange"
+          />
+        </view>
+      </van-cell>
+
+      <van-cell title="LED 灯" icon="bulb-o" center>
+        <view slot="right-icon">
+          <van-switch
+            size="22"
+            checked="{{deviceStatus.led}}"
+            bind:change="onLedChange"
+          />
+        </view>
+      </van-cell>
+
+      <van-cell title="风扇" icon="filter-o" center>
+        <view slot="right-icon">
+          <van-switch
+            size="22"
+            checked="{{deviceStatus.fan}}"
+            bind:change="onFanChange"
+          />
+        </view>
+      </van-cell>
+    </van-cell-group>
+  </view>
+
+  <!-- 设置按钮 -->
+  <view class="settings-btn">
+    <van-button 
+      type="primary" 
+      size="large" 
+      icon="setting-o" 
+      bind:click="goToSettings"
+    >
+      阈值设置
+    </van-button>
+  </view>
+</view>

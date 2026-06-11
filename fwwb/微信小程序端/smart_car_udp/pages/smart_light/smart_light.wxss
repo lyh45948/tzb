@@ -1,0 +1,358 @@
+/* pages/smart_light/smart_light.wxss */
+
+.container {
+  padding: 20rpx;
+  padding-bottom: 100rpx;
+  background: linear-gradient(180deg, #fff7e6 0%, #ffffff 100%);
+  min-height: 100vh;
+}
+
+/* 顶部状态栏 */
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(255, 151, 106, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.title-text {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #323233;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.status-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background: #07c160;
+  box-shadow: 0 0 10rpx #07c160;
+}
+
+.status-dot.offline {
+  background: #969799;
+}
+
+.status-text {
+  font-size: 26rpx;
+  color: #646566;
+}
+
+/* 头部信息区域 */
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+/* 季节标签 */
+.season-tag {
+  padding: 8rpx 20rpx;
+  background: linear-gradient(135deg, #ff976a 0%, #ff6b6b 100%);
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* 环境光照显示卡片 */
+.lux-display-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(255, 151, 106, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.lux-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 30rpx;
+}
+
+.lux-value-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40rpx;
+  margin-bottom: 30rpx;
+}
+
+.lux-circle {
+  position: relative;
+}
+
+.lux-info {
+  text-align: center;
+}
+
+.lux-level {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #323233;
+  margin-bottom: 10rpx;
+}
+
+.lux-unit {
+  font-size: 28rpx;
+  color: #969799;
+}
+
+/* 光照等级条 */
+.lux-bar {
+  display: flex;
+  height: 16rpx;
+  border-radius: 8rpx;
+  overflow: visible;
+  position: relative;
+  margin-bottom: 10rpx;
+}
+
+.lux-bar-segment {
+  flex: 1;
+}
+
+.lux-bar-segment.dark { background: #323233; }
+.lux-bar-segment.dim { background: #7d7e80; }
+.lux-bar-segment.low { background: #969799; }
+.lux-bar-segment.normal { background: #07c160; }
+.lux-bar-segment.bright { background: #ff976a; }
+
+.lux-indicator {
+  position: absolute;
+  top: -6rpx;
+  width: 28rpx;
+  height: 28rpx;
+  background: #ffffff;
+  border: 4rpx solid #ff976a;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  transition: left 0.3s ease;
+}
+
+.lux-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 22rpx;
+  color: #969799;
+}
+
+/* 控制卡片 */
+.control-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(255, 151, 106, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.control-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 30rpx;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 20rpx;
+  width: 100%;
+}
+
+.mode-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 20rpx;
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.mode-item.active {
+  background: #fff7e6;
+  border-color: #ff976a;
+}
+
+.mode-item text {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #646566;
+}
+
+.mode-item.active text {
+  color: #ff976a;
+  font-weight: 500;
+}
+
+/* 亮度控制卡片 */
+.brightness-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(255, 151, 106, 0.1);
+  transition: opacity 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.brightness-card.disabled {
+  opacity: 0.6;
+}
+
+.brightness-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 30rpx;
+}
+
+.brightness-value {
+  margin-left: auto;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #ff976a;
+}
+
+.brightness-slider {
+  padding: 20rpx 10rpx;
+  margin-bottom: 30rpx;
+}
+
+.slider-button {
+  width: 48rpx;
+  height: 48rpx;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.15);
+}
+
+.brightness-presets {
+  display: flex;
+  gap: 16rpx;
+  width: 100%;
+}
+
+.preset-btn {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  padding: 16rpx 0;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: #646566;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.preset-btn:active {
+  background: #ff976a;
+  color: #ffffff;
+}
+
+/* 状态卡片 */
+.status-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(255, 151, 106, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #323233;
+  margin-bottom: 20rpx;
+}
+
+.status-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  width: 100%;
+}
+
+.status-item {
+  flex: 1;
+  min-width: calc(50% - 10rpx);
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  box-sizing: border-box;
+}
+
+.status-label {
+  font-size: 24rpx;
+  color: #969799;
+  margin-bottom: 8rpx;
+}
+
+.status-value {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #323233;
+}
+
+/* 信息卡片 */
+.info-card {
+  margin-bottom: 20rpx;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  margin-top: 40rpx;
+}

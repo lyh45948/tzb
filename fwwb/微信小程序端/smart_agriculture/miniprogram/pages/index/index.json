@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "sensor-gauge": "/components/sensor-gauge/sensor-gauge",
+    "van-switch": "@vant/weapp/switch/index"
+  },
+  "navigationBarTitleText": "总览",
+  "enablePullDownRefresh": false
+}

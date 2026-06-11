@@ -1,0 +1,31 @@
+<launch>
+  <!-- 轮速里程计节点 (v3): UDP 轮速 + 自适应 IMU 互补滤波 -->
+  <node pkg="wheel_odom" type="wheel_odom_publisher.py" name="wheel_odom_publisher" output="screen">
+    <param name="udp_port" value="7799" />
+    <param name="udp_timeout" value="0.02" />
+    <param name="scale_factor" value="0.0004825" />
+    <param name="wheel_base" value="0.286" />
+    <param name="odom_topic" value="/odom" />
+    <param name="odom_frame_id" value="odom" />
+    <param name="child_frame_id" value="base_link" />
+    <param name="publish_rate" value="20.0" />
+    <param name="imu_topic" value="/imu" />
+    <param name="use_imu_angle" value="true" />
+
+    <!-- 自适应互补滤波参数 -->
+    <!-- 静止时：30%轮速 + 70%IMU（信任 IMU，避免轮速噪声积分漂移） -->
+    <param name="alpha_static" value="0.3" />
+    <!-- 运动时：70%轮速 + 30%IMU（信任轮速，响应快） -->
+    <param name="alpha_moving" value="0.7" />
+    <!-- 静止判定阈值 (m/s)，低于此值视为静止 -->
+    <param name="speed_threshold" value="0.05" />
+
+    <!-- Phase 3 新增参数 -->
+    <!-- 零漂抑制阈值：原始轮速绝对值低于此值视为静止，强制清零 -->
+    <param name="zero_drift_threshold" value="3.0" />
+    <!-- 低速阈值 (m/s)：低于此值时增大协方差 -->
+    <param name="low_speed_threshold" value="0.1" />
+    <!-- 最大允许速度跳变 (m/s)：用于异常值过滤 -->
+    <param name="max_speed_jump" value="0.5" />
+  </node>
+</launch>

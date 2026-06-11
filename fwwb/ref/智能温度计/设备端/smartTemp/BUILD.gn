@@ -1,0 +1,14 @@
+static_library("smartTemp_demo") {
+    sources = [
+        "smartTemp_demo.c",
+        "//base/iot_hardware/bsp/src/hal_bsp_sht20.c",
+        "//base/iot_hardware/bsp/src/hal_bsp_ssd1306.c",
+    ]
+
+    include_dirs = [
+        "//utils/native/lite/include",
+        "//kernel/liteos_m/kal/cmsis",
+        "//base/iot_hardware/peripheral/interfaces/kits",
+        "//base/iot_hardware/bsp/include"
+    ]
+}

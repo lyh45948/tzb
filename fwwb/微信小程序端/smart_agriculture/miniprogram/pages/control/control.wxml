@@ -1,0 +1,76 @@
+<!--pages/control/control.wxml -->
+<view class="container">
+  <!-- 自动模式开关 -->
+  <view class="auto-mode-card">
+    <view class="card-header">
+      <text class="card-title">自动控制模式</text>
+      <van-switch checked="{{autoMode}}" bind:change="onAutoModeChange" size="24" />
+    </view>
+    <text class="card-desc">开启后，根据传感器数据自动控制设备</text>
+  </view>
+
+  <!-- 灌溉控制 -->
+  <view class="control-section">
+    <view class="section-title">灌溉系统</view>
+    <view class="control-card">
+      <view class="control-item">
+        <view class="control-info">
+          <text class="control-name">水泵</text>
+          <text class="control-desc">主灌溉水泵</text>
+        </view>
+        <view class="control-status {{deviceStatus.pump ? 'on' : 'off'}}">
+          <text class="status-text">{{deviceStatus.pump ? '运行中' : '已关闭'}}</text>
+        </view>
+        <van-switch checked="{{deviceStatus.pump}}" bind:change="onPumpChange" size="24" />
+      </view>
+      <view class="control-item">
+        <view class="control-info">
+          <text class="control-name">电磁阀</text>
+          <text class="control-desc">灌溉阀门控制</text>
+        </view>
+        <view class="control-status {{deviceStatus.valve ? 'on' : 'off'}}">
+          <text class="status-text">{{deviceStatus.valve ? '运行中' : '已关闭'}}</text>
+        </view>
+        <van-switch checked="{{deviceStatus.valve}}" bind:change="onValveChange" size="24" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 照明控制 -->
+  <view class="control-section">
+    <view class="section-title">照明系统</view>
+    <view class="control-card">
+      <view class="control-item">
+        <view class="control-info">
+          <text class="control-name">LED补光灯</text>
+          <text class="control-desc">植物补光照明</text>
+        </view>
+        <view class="control-status {{deviceStatus.led ? 'on' : 'off'}}">
+          <text class="status-text">{{deviceStatus.led ? '运行中' : '已关闭'}}</text>
+        </view>
+        <van-switch checked="{{deviceStatus.led}}" bind:change="onLedChange" size="24" />
+      </view>
+      <view class="slider-container" wx:if="{{deviceStatus.led}}">
+        <text class="slider-label">亮度调节: {{ledBrightness}}%</text>
+        <van-slider value="{{ledBrightness}}" bind:drag="onLedBrightness" min="0" max="100" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 通风控制 -->
+  <view class="control-section">
+    <view class="section-title">通风系统</view>
+    <view class="control-card">
+      <view class="control-item">
+        <view class="control-info">
+          <text class="control-name">风扇</text>
+          <text class="control-desc">温室通风设备</text>
+        </view>
+        <view class="control-status {{deviceStatus.fan ? 'on' : 'off'}}">
+          <text class="status-text">{{deviceStatus.fan ? '运行中' : '已关闭'}}</text>
+        </view>
+        <van-switch checked="{{deviceStatus.fan}}" bind:change="onFanChange" size="24" />
+      </view>
+    </view>
+  </view>
+</view>

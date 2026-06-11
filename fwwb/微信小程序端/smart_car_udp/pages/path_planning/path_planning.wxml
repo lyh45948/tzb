@@ -1,0 +1,79 @@
+<view class="container">
+  <!-- 页面标题栏 -->
+  <view class="page-header">
+    <van-icon name="guide-o" size="28px" color="#1989fa" />
+    <text class="page-title">路径规划</text>
+  </view>
+
+  <!-- 演示模式状态提示 -->
+  <view class="demo-status-bar" wx:if="{{ isDemoMode }}">
+    <van-icon name="play-circle-o" size="14px" color="#1989fa" />
+    <text class="demo-status-text">当前处于演示模式 - 路径将自动切换</text>
+  </view>
+
+  <!-- 连接状态栏 -->
+  <view class="connection-bar">
+    <view class="connection-info">
+      <van-icon
+        name="{{connectionStatus.connected ? 'success' : 'warning-o'}}"
+        color="{{connectionStatus.connected ? '#07c160' : '#ee0a24'}}"
+        size="18px"
+      />
+      <text class="connection-text">{{connectionStatus.message}}</text>
+    </view>
+  </view>
+
+  <!-- 路径规划 - 仅绘制模式 -->
+  <view class="mode-content">
+    <view class="path-drawing-section">
+      <view class="section-header">
+        <van-icon name="edit" size="18px" color="#1989fa" style="margin-right: 8rpx;" />
+        <text class="section-title">路径规划绘制</text>
+      </view>
+
+      <!-- 形状选择 -->
+      <view class="shape-selection">
+        <button class="shape-btn" bindtap="generateCircle">
+          <van-icon name="circle" size="16px" color="#1989fa" />
+          <text>圆形</text>
+        </button>
+        <button class="shape-btn" bindtap="generateSquare">
+          <van-icon name="square" size="16px" color="#07c160" />
+          <text>正方形</text>
+        </button>
+        <button class="shape-btn" bindtap="generateTriangle">
+          <van-icon name="play" size="16px" color="#ff976a" />
+          <text>三角形</text>
+        </button>
+        <button class="shape-btn" bindtap="generateFigure8">
+          <van-icon name="replay" size="16px" color="#7232dd" />
+          <text>8字形</text>
+        </button>
+      </view>
+
+      <!-- 画布 -->
+      <view class="canvas-wrapper">
+        <canvas type="2d" id="drawCanvas" class="path-canvas small-canvas" bindtouchstart="handleTouchStart" bindtouchmove="handleTouchMove" bindtouchend="handleTouchEnd"></canvas>
+      </view>
+
+      <!-- 工具栏 -->
+      <view class="toolbar">
+        <van-button type="warning" plain round block bindtap="clearCanvas" icon="clear">
+          清空画布
+        </van-button>
+        <van-button type="danger" round block bindtap="stopCar" icon="stop-circle-o">
+          紧急停止
+        </van-button>
+        <van-button type="primary" round block bindtap="startPlan" disabled="{{ points.length < 2 }}" icon="play-circle-o">
+          开始执行
+        </van-button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作提示 -->
+  <view class="hint">
+    <van-icon name="info-o" size="18px" color="#1989fa" />
+    <text>在上方画布绘制路径，小车将按比例复现运动</text>
+  </view>
+</view>

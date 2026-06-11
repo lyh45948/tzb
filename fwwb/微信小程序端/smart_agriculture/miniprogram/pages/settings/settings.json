@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "van-switch": "@vant/weapp/switch/index",
+    "van-slider": "@vant/weapp/slider/index"
+  },
+  "navigationBarTitleText": "设置",
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": false
+}

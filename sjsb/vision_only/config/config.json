@@ -1,0 +1,58 @@
+{
+  "RUNTIME": {
+    "PROJECT_ROOT": "",
+    "HEADLESS": "auto",
+    "DEVICE": "auto"
+  },
+  "PATHS": {
+    "OBSTACLE_YOLO": "yolo11s.pt",
+    "DIGIT_PANEL_YOLO": "szsb/checkpoints_v3/digit_panel_yolov8s.pt",
+    "CRNN": "szsb/checkpoints_v2/best_crnn.pth",
+    "CAPTURE_DIR": "captured_images"
+  },
+  "ESP32": {
+    "IP": "192.168.137.213",
+    "CAPTURE_PATH": "/capture",
+    "FRAME_WIDTH": 320,
+    "FRAME_HEIGHT": 240,
+    "FPS": 1,
+    "JPEG_QUALITY": 12
+  },
+  "DETECTION": {
+    "OBSTACLE_CONF": 0.05,
+    "COUNTER_CONF": 0.3
+  },
+  "VISION": {
+    "ENABLED": true,
+    "API_KEY": "20d0548c74a0416197c7d81b6c6c5658.fwZEiLai0Nkt3QJY",
+    "API_URL": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    "MODEL": "glm-5.1",
+    "CAMERA_INDEX": 0,
+    "KEYWORDS": [
+      "拍照",
+      "识别场景",
+      "识别物体",
+      "导航",
+      "识别",
+      "识别画面",
+      "看看",
+      "帮我看看",
+      "帮我分析"
+    ],
+    "CAMERA_KEYWORDS": [
+      {
+        "action": "open",
+        "keywords": ["打开摄像头", "开摄像头", "开启摄像头"]
+      },
+      {
+        "action": "close",
+        "keywords": ["关闭摄像头", "关摄像头", "停止摄像头"]
+      }
+    ],
+    "DEFAULT_PROMPT": "图中描绘的是什么景象,请详细描述，因为用户可能是盲人",
+    "USE_LOCAL_MODEL": true,
+    "LOCAL_MODEL_NAME": "liuhaotian/LLaVA-1.5-7B",
+    "LOAD_IN_4BIT": true,
+    "_LOCAL_MODEL_PATH_COMMENT": "使用本地模型时，LOCAL_MODEL_NAME 可以设置为本地路径，例如: D:\\models\\LLaVA-1.5-7B"
+  }
+}

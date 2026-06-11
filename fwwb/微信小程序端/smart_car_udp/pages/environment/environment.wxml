@@ -1,0 +1,86 @@
+<view class="container">
+  <!-- 页面标题栏 -->
+  <view class="page-header">
+    <van-icon name="chart-trending-o" size="28px" color="#1989fa" />
+    <text class="page-title">环境监测</text>
+  </view>
+
+  <!-- 演示模式状态提示 -->
+  <view class="demo-status-bar" wx:if="{{ isDemoMode }}">
+    <van-icon name="play-circle-o" size="14px" color="#1989fa" />
+    <text class="demo-status-text">当前处于演示模式 - 数据为模拟值</text>
+  </view>
+
+  <!-- 传感器数据网格 (横向撑满 3 列布局) -->
+  <view class="sensor-grid-main col-3">
+    <view class="sensor-card-mini temp {{ env.temp > 30 ? 'hot' : (env.temp < 15 ? 'cold' : '') }}">
+      <view class="sensor-icon-wrapper temp-icon">
+        <van-icon name="fire-o" size="20px" color="#ff9d00" />
+      </view>
+      <view class="card-title">温度</view>
+      <view class="card-value">
+        <text class="num">{{ env.temp }}</text>
+        <text class="unit">℃</text>
+      </view>
+    </view>
+    <view class="sensor-card-mini humi">
+      <view class="sensor-icon-wrapper humi-icon">
+        <van-icon name="umbrella-circle" size="20px" color="#1989fa" />
+      </view>
+      <view class="card-title">湿度</view>
+      <view class="card-value">
+        <text class="num">{{ env.humi }}</text>
+        <text class="unit">%</text>
+      </view>
+    </view>
+    <view class="sensor-card-mini lux">
+      <view class="sensor-icon-wrapper lux-icon">
+        <van-icon name="bulb-o" size="20px" color="#ffd700" />
+      </view>
+      <view class="card-title">光照强度</view>
+      <view class="card-value">
+        <text class="num">{{ env.lux }}</text>
+        <text class="unit">Lx</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 环境多维曲线图 -->
+  <view class="chart-section">
+    <view class="chart-header">
+      <view class="chart-title-wrapper">
+        <van-icon name="bar-chart-o" size="16px" color="#646566" style="margin-right: 8rpx;" />
+        <text class="chart-title">温湿度趋势 (动态量程)</text>
+      </view>
+      <view class="chart-legend">
+        <view class="legend-item"><view class="dot temp"></view>温度 (左)</view>
+        <view class="legend-item"><view class="dot humi"></view>湿度 (右)</view>
+      </view>
+    </view>
+    <view class="canvas-container">
+      <!-- 左轴：温度 -->
+      <view class="axis-y axis-left">
+        <text>{{ chartLabels.temp.max }}</text>
+        <text>{{ chartLabels.temp.min }}</text>
+      </view>
+      <canvas type="2d" id="envChart" class="env-chart-canvas"></canvas>
+      <!-- 右轴：湿度 -->
+      <view class="axis-y axis-right">
+        <text>{{ chartLabels.humi.max }}</text>
+        <text>{{ chartLabels.humi.min }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 网络配置 (最下方) -->
+  <view class="ip-config-mini">
+    <van-field
+      value="{{ IP }}"
+      placeholder="小车IP"
+      bind:change="onIpChange"
+      left-icon="cluster-o"
+      size="small"
+      border="{{ false }}"
+    />
+  </view>
+</view>

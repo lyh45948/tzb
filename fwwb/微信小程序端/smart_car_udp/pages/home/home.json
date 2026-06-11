@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index",
+    "van-button": "../../miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-action-sheet": "../../miniprogram/miniprogram_npm/@vant/weapp/action-sheet/index"
+  },
+  "navigationBarTitleText": "智慧农业监控"
+}

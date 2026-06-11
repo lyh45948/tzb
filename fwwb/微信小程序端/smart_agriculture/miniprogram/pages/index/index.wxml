@@ -1,0 +1,89 @@
+<!--pages/index/index.wxml -->
+<view class="container">
+  <!-- 连接状态卡片 -->
+  <view class="status-card">
+    <view class="status-header">
+      <view class="status-left">
+        <view class="status-dot {{connected ? 'online' : 'offline'}}"></view>
+        <text class="status-text">{{connected ? '设备已连接' : '设备未连接'}}</text>
+      </view>
+      <view class="status-right">
+        <text class="demo-label">演示模式</text>
+        <van-switch checked="{{demoMode}}" bind:change="onDemoModeChange" size="20" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 传感器仪表盘区域 -->
+  <view class="gauges-section">
+    <view class="gauge-row">
+      <view class="gauge-item">
+        <sensor-gauge
+          value="{{sensorData.temperature}}"
+          max="50"
+          title="温度"
+          unit="°C"
+          color="#F44336"
+          size="100"
+        />
+      </view>
+      <view class="gauge-item">
+        <sensor-gauge
+          value="{{sensorData.humidity}}"
+          max="100"
+          title="湿度"
+          unit="%"
+          color="#2196F3"
+          size="100"
+        />
+      </view>
+    </view>
+    <view class="gauge-row">
+      <view class="gauge-item">
+        <sensor-gauge
+          value="{{sensorData.light}}"
+          max="5000"
+          title="光照"
+          unit="lux"
+          color="#FFC107"
+          size="100"
+        />
+      </view>
+      <view class="gauge-item">
+        <sensor-gauge
+          value="{{sensorData.soilMoisture}}"
+          max="100"
+          title="土壤湿度"
+          unit="%"
+          color="#795548"
+          size="100"
+        />
+      </view>
+    </view>
+    <view class="gauge-row">
+      <view class="gauge-item co2-item">
+        <sensor-gauge
+          value="{{sensorData.co2}}"
+          max="2000"
+          title="CO2"
+          unit="ppm"
+          color="#9C27B0"
+          size="100"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 预警横幅 -->
+  <view class="alert-section" wx:if="{{alerts.length > 0}}">
+    <view class="alert-banner" wx:for="{{alerts}}" wx:key="index">
+      <text class="alert-text">{{item.message}}</text>
+    </view>
+  </view>
+
+  <!-- 设置按钮 -->
+  <view class="settings-btn" bindtap="goToSettings">
+    <text class="settings-icon">⚙</text>
+    <text class="settings-text">设置</text>
+  </view>
+</view>

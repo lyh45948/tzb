@@ -1,0 +1,97 @@
+<!--pages/nfc/nfc.wxml-->
+<view class="container">
+  <!-- 页面标题栏 -->
+  <view class="page-header">
+    <van-icon name="wifi-o" size="28px" color="#1989fa" />
+    <text class="page-title">NFC配网</text>
+  </view>
+
+  <!-- 配网步骤 -->
+  <view class="steps-card">
+    <van-steps
+      steps="{{ steps }}"
+      active="{{ active }}"
+      direction="vertical"
+      active-color="#1989fa"
+    />
+  </view>
+
+  <!-- WiFi配置卡片 -->
+  <view class="wifi-config-card">
+    <view class="card-title">
+      <van-icon name="setting-o" size="20px" color="#ff976a" />
+      <text>WiFi配置</text>
+    </view>
+
+    <view class="wifi-form">
+      <!-- WiFi名称 -->
+      <view class="form-item">
+        <view class="form-icon">
+          <van-icon name="wifi-o" size="22px" color="#1989fa" />
+        </view>
+        <view class="form-content">
+          <text class="form-label">WiFi名称</text>
+          <input
+            class="form-input"
+            bindinput="bind_wifi_ssid_Input"
+            placeholder="请输入WiFi名称"
+            placeholder-class="input-placeholder"
+          />
+        </view>
+      </view>
+
+      <!-- WiFi密码 -->
+      <view class="form-item">
+        <view class="form-icon">
+          <van-icon name="lock" size="22px" color="#969799" />
+        </view>
+        <view class="form-content">
+          <text class="form-label">WiFi密码</text>
+          <input
+            class="form-input"
+            bindinput="bind_wifi_passwd_Input"
+            placeholder="请输入WiFi密码"
+            placeholder-class="input-placeholder"
+            password="{{true}}"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 配置按钮 -->
+    <view class="config-button-wrapper">
+      <van-button
+        type="primary"
+        size="large"
+        round
+        bind:click="bind_wifi_start_set_button"
+        custom-style="background: linear-gradient(135deg, #1989fa 0%, #47b3ff 100%); border: none;"
+      >
+        <van-icon name="setting-o" size="18px" color="#fff" style="margin-right: 8px;" />
+        开始配置
+      </van-button>
+    </view>
+  </view>
+
+  <!-- 配网说明 -->
+  <view class="info-card">
+    <view class="info-title">
+      <van-icon name="info-o" size="18px" color="#ff976a" />
+      <text>配网说明</text>
+    </view>
+    <view class="info-list">
+      <view class="info-item">
+        <van-icon name="success" size="14px" color="#07c160" />
+        <text>请确保手机已连接到要配置的WiFi</text>
+      </view>
+      <view class="info-item">
+        <van-icon name="success" size="14px" color="#07c160" />
+        <text>将手机靠近设备的NFC感应区域</text>
+      </view>
+      <view class="info-item">
+        <van-icon name="success" size="14px" color="#07c160" />
+        <text>配网过程中请保持网络稳定</text>
+      </view>
+    </view>
+  </view>
+</view>

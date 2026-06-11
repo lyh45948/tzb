@@ -1,0 +1,47 @@
+<launch>
+  <!-- imu_complementary_filter: IMU 降噪 + 在线偏置估计 -->
+  <!--
+    输入:  /imu_raw (Yesense H30 原始数据)
+    输出:  /imu     (滤波后的方向 + 原始角速度和加速度)
+
+    选择 complementary filter 而非 Madgwick 的原因:
+      - 内置陀螺仪在线偏置估计 (do_bias_estimation)
+      - 计算开销更低
+      - 适合无磁力计的差速机器人
+  -->
+
+  <node pkg="imu_complementary_filter" type="complementary_filter_node"
+        name="imu_complementary_filter" output="screen">
+
+    <!-- 订阅原始 IMU 话题 -->
+    <remap from="imu/data_raw" to="imu_raw"/>
+
+    <!-- 发布滤波后的话题 -->
+    <remap from="imu/data" to="imu"/>
+
+    <!-- 磁力计: Yesense H30 无可靠磁力计，禁用 -->
+    <param name="use_mag" type="bool" value="false"/>
+
+    <!-- 在线偏置估计: 核心功能，估计并减去陀螺仪零偏 -->
+    <param name="do_bias_estimation" type="bool" value="true"/>
+
+    <!-- 偏置估计平滑系数: 越小越稳定（0.01 = 慢速收敛，偏置估计更准确） -->
+    <!-- 基于 Allan 方差分析校准: Bias Instability=68.9 deg/hr, 推荐更小的 alpha -->
+    <param name="bias_alpha" type="double" value="0.0075"/>
+
+    <!-- 自适应增益: 静止时信任加速度计（修正重力方向），运动时信任陀螺仪 -->
+    <param name="do_adaptive_gain" type="bool" value="true"/>
+
+    <!-- 固定坐标系 -->
+    <param name="fixed_frame" type="string" value="imu_link"/>
+
+    <!-- 保留重力向量: Cartographer 需要重力信息做重力对齐 -->
+    <param name="remove_gravity_vector" type="bool" value="false"/>
+
+    <!-- 发布调试话题: imu/rpy/filtered (欧拉角，方便调试) -->
+    <param name="publish_debug_topics" type="bool" value="true"/>
+
+    <!-- 常量 dt: IMU ~200Hz，如果时间戳不可靠可启用 -->
+    <!-- <param name="constant_dt" type="double" value="0.005"/> -->
+  </node>
+</launch>

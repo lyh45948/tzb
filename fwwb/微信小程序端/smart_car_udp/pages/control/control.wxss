@@ -1,0 +1,319 @@
+/* pages/control/control.wxss */
+.container {
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f6f8;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 演示模式状态提示 */
+.demo-status-bar {
+  background: linear-gradient(135deg, #fff7e6 0%, #fff3cd 100%);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(255, 157, 0, 0.1);
+  border-left: 3px solid #ff9d00;
+  margin-bottom: 8px;
+}
+
+.demo-status-text {
+  font-size: 12px;
+  color: #ff9d00;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+/* 连接状态栏 */
+.connection-bar {
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.connection-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.connection-text {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+.connection-detail {
+  display: flex;
+  align-items: center;
+}
+
+.ip-text {
+  font-size: 11px;
+  color: #666;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+
+/* 顶部电量区 */
+.header-section {
+  width: 100%;
+  margin-bottom: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+/* 顶部紧凑栏 - 撑满横向 */
+.top-bar {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.ip-field-mini {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.start-switch-mini {
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  border-left: 1px solid #f0f0f0;
+}
+
+/* 中间功能区 - 撑满横向 */
+.mid-section {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mode-mini-grid {
+  flex: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.mode-tag {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  padding: 10px 0;
+  background: #fff;
+  border-radius: 10px;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.mode-tag.active {
+  background: #07c160;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(7, 193, 96, 0.3);
+}
+
+.dist-mini-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.dist-num {
+  font-weight: bold;
+  font-size: 16px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.dist-mini-card.danger {
+  background: #fa5151;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(250, 81, 81, 0.3);
+}
+
+/* 速度与档位 - 撑满横向 */
+.stats-mini-row {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.speed-gauge {
+  position: relative;
+  width: 60px;
+  height: 80px;          /* ✅ 增加高度，为单位留出空间 */
+  margin-right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gauge-unit {
+  position: absolute;
+  bottom: 5px;          /* ✅ 距离底部5px，确保不被遮挡 */
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+  z-index: 1;         /* ✅ 确保在圆环组件上层显示 */
+}
+
+.gear-selector {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gear-chip {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  background: #f4f6f8;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #555;
+  font-weight: 500;
+}
+
+.gear-chip.active {
+  background: #07c160;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(7, 193, 96, 0.2);
+}
+
+/* 图表压缩 - 撑满横向 */
+.chart-section.mini {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.chart-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  color: #999;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+
+.dot.left { background: #07c160; }
+.dot.right { background: #1989fa; }
+
+.speed-chart-canvas-mini {
+  width: 100%;
+  height: 80px;
+}
+
+/* 摇杆区重构 */
+.joystick-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.control-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.side-btn-mini {
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #666;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.joystick-container-mini {
+  width: 190px;
+  height: 190px;
+  background: #e9ecef;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.joystick-handle-mini {
+  width: 60px;
+  height: 60px;
+  background: #07c160;
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 0 3px 10px rgba(7, 193, 96, 0.4);
+}
+
+/* 隐藏旧按钮 */
+.legacy-controls {
+  display: none;
+}

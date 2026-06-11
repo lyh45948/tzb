@@ -1,0 +1,16 @@
+<!--index.wxml-->
+
+<!-- 默认 -->
+<!-- <color-picker bind:selectColor="selectColor"></color-picker>
+<view style="margin-top:100rpx;width:100vw;height:100rpx;background-color:{{color}};"></view> -->
+
+
+<!-- 自定义 -->
+<van-notice-bar 
+  left-icon="volume-o" 
+  scrollable text="提示：点击颜色进行设置" />
+
+<color-picker id="picker" imageStyle="margin-left:150rpx;margin-top:150rpx;width:450rpx;height:450rpx;border-radius:225rpx;" size="{{size}}" top="{{top}}" left="{{left}}" brightness="255" bind:selectColor="selectColor"></color-picker>
+
+<view>颜色预览：</view>
+<view style="margin-top: 10rpx; border-radius: 5px; width: 100vw; height: 100rpx; background-color: {{color}};"></view>

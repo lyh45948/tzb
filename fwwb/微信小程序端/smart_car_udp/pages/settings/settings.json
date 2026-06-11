@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "阈值设置",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-slider": "../../miniprogram/miniprogram_npm/@vant/weapp/slider/index",
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index"
+  },
+  "disableScroll": true
+}

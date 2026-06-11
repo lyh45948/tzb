@@ -1,0 +1,102 @@
+<view class="container">
+  <!-- 连接状态栏 -->
+  <view class="connection-bar">
+    <view class="connection-info">
+      <van-icon 
+        name="{{connectionStatus.connected ? 'success' : 'warning-o'}}" 
+        color="{{connectionStatus.connected ? '#07c160' : '#ee0a24'}}" 
+        size="18px" 
+      />
+      <text class="connection-text">{{connectionStatus.message}}</text>
+    </view>
+    <view class="connection-detail" wx:if="{{connectionStatus.connected}}">
+      <text class="ip-text">{{networkConfig.ip}}:{{networkConfig.port}}</text>
+    </view>
+  </view>
+
+  <!-- 演示模式状态提示 -->
+  <view class="demo-status-bar" wx:if="{{ isDemoMode }}">
+    <van-icon name="play-circle-o" size="14px" color="#1989fa" />
+    <text class="demo-status-text">当前处于演示模式 - 数据为模拟值</text>
+  </view>
+
+  <!-- 顶部状态：电量撑满横向 -->
+  <view class="header-section">
+    <van-progress 
+      color="#07c160" 
+      pivot-text="电量 {{ Value.power }}%" 
+      percentage="{{ Value.power }}" 
+      stroke-width="10"
+    />
+  </view>
+
+  <!-- 网络配置与电源开关 -->
+  <view class="top-bar">
+    <view class="start-switch-mini">
+      <text style="font-size: 11px; color: #666; margin-right: 5px;">电源</text>
+      <switch color="#07c160" scale="0.7" bindchange="onbutton_startCar" />
+    </view>
+  </view>
+
+  <!-- 模式切换与距离展示并行 -->
+  <view class="mid-section">
+    <view class="mode-mini-grid">
+      <view class="mode-tag {{ Value.mode == 'avoid' ? 'active' : '' }}" bindtap="toggleAvoid">避障</view>
+      <view class="mode-tag {{ Value.mode == 'line' ? 'active' : '' }}" bindtap="toggleLine">巡线</view>
+    </view>
+    
+    <view class="dist-mini-card {{ Value.distance < 150 ? 'danger' : '' }}">
+      <van-icon name="warning-o" size="14px" />
+      <text class="dist-num">{{ Value.distance }}</text>
+      <text class="dist-unit">mm</text>
+    </view>
+  </view>
+
+  <!-- 速度仪表与档位控制 -->
+  <view class="stats-mini-row">
+    <view class="speed-gauge">
+    <van-circle 
+      value="{{ (Value.speed / 1200) * 100 }}" 
+        text="{{ Value.speed }}" 
+        size="60" 
+        stroke-width="5"
+      color="#07c160"
+      />
+      <text class="gauge-unit">mm/s</text>
+    </view>
+
+    <view class="gear-selector">
+      <view class="gear-chip {{Value.gears == 0 ? 'active' : ''}}" bindtap="onSpeedBtnTap" data-gear="0">低</view>
+      <view class="gear-chip {{Value.gears == 1 ? 'active' : ''}}" bindtap="onSpeedBtnTap" data-gear="1">中</view>
+      <view class="gear-chip {{Value.gears == 2 ? 'active' : ''}}" bindtap="onSpeedBtnTap" data-gear="2">高</view>
+    </view>
+  </view>
+
+  <!-- 实时速度图表 (高度压缩) -->
+  <view class="chart-section mini">
+    <view class="chart-header">
+      <text class="chart-title">速度曲线</text>
+      <view class="chart-legend">
+        <view class="legend-item"><view class="dot left"></view>左</view>
+        <view class="legend-item"><view class="dot right"></view>右</view>
+      </view>
+    </view>
+    <canvas type="2d" id="speedChart" class="speed-chart-canvas-mini"></canvas>
+  </view>
+
+  <!-- 核心控制区 (位置上移) -->
+  <view class="joystick-section">
+    <view class="control-wrapper">
+      <view class="side-btn-mini" catchtouchstart="onbutton_trunLeft_start" catchtouchend="onbutton_trunLeft_end">左旋</view>
+      <view class="joystick-container-mini" 
+            catchtouchstart="onTouchStart" 
+            catchtouchmove="onTouchMove" 
+            catchtouchend="onTouchEnd">
+        <view class="joystick-handle-mini" 
+              style="left: {{handleLeft}}px; top: {{handleTop}}px;">
+        </view>
+      </view>
+      <view class="side-btn-mini" catchtouchstart="onbutton_trunRight_start" catchtouchend="onbutton_trunRight_end">右旋</view>
+    </view>
+  </view>
+</view>

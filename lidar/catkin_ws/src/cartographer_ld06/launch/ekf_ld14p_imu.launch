@@ -1,0 +1,8 @@
+<launch>
+  <!-- robot_localization EKF: 融合 rf2o 激光里程计 + Yesense IMU -->
+  <!-- 输出 /odom (odom -> base_link) -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
+    <rosparam command="load" file="$(find cartographer_ld06)/configuration_files/ekf_ld14p_imu.yaml"/>
+    <remap from="odometry/filtered" to="odom"/>
+  </node>
+</launch>

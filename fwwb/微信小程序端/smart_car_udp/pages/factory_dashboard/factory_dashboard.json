@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-circle": "../../miniprogram/miniprogram_npm/@vant/weapp/circle/index",
+    "van-tag": "../../miniprogram/miniprogram_npm/@vant/weapp/tag/index",
+    "van-notice-bar": "../../miniprogram/miniprogram_npm/@vant/weapp/notice-bar/index",
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index"
+  },
+  "navigationBarTitleText": "智慧工厂监测",
+  "enablePullDownRefresh": false
+}

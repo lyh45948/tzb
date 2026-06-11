@@ -1,0 +1,285 @@
+<!--pages/home/home.wxml-->
+<view class="container agriculture-theme">
+  <!-- 顶部标题栏 -->
+  <view class="header-bar">
+    <view class="header-title">
+      <van-icon name="flower-o" size="28px" color="#07c160" />
+      <text class="title-text">智慧农业监控</text>
+    </view>
+    <view class="header-status">
+      <view class="status-dot {{connected ? 'online' : 'offline'}}"></view>
+      <text class="status-text">{{connected ? '在线' : '离线'}}</text>
+    </view>
+  </view>
+
+  <!-- 控制栏 -->
+  <view class="control-bar">
+    <view class="control-item">
+      <text class="label">演示模式</text>
+      <van-switch size="20" checked="{{isDemoMode}}" bind:change="onDemoModeChange" color="#07c160" />
+    </view>
+    <view class="control-item">
+      <text class="label">自动控制</text>
+      <van-switch size="20" checked="{{autoControl}}" bind:change="onAutoControlChange" color="#1989fa" />
+    </view>
+  </view>
+
+  <!-- 告警信息 -->
+  <view class="alerts-section" wx:if="{{alerts.length > 0}}">
+    <view class="section-title alert-title">
+      <van-icon name="warning-o" size="18" color="#ee0a24" />
+      <text>告警信息</text>
+    </view>
+    <view class="alert-list">
+      <view class="alert-item {{item.level === 'high' ? 'high-alert' : 'low-alert'}}" wx:for="{{alerts}}" wx:key="timestamp">
+        <van-icon name="info-o" size="16" />
+        <text class="alert-message">{{item.message}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 传感器数据 -->
+  <view class="section">
+    <view class="section-title">
+      <van-icon name="chart-trending-o" size="20" color="#1989fa" />
+      <text>传感器数据</text>
+    </view>
+    <view class="sensor-grid">
+      <view class="sensor-card">
+        <view class="sensor-icon temp-icon">
+          <van-icon name="fire-o" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.temperature}}</view>
+        <view class="sensor-unit">°C</view>
+        <view class="sensor-name">温度</view>
+      </view>
+      <view class="sensor-card">
+        <view class="sensor-icon humi-icon">
+          <van-icon name="umbrella-circle" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.humidity}}</view>
+        <view class="sensor-unit">%</view>
+        <view class="sensor-name">湿度</view>
+      </view>
+      <view class="sensor-card">
+        <view class="sensor-icon light-icon">
+          <van-icon name="bulb-o" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.light}}</view>
+        <view class="sensor-unit">lux</view>
+        <view class="sensor-name">光照</view>
+      </view>
+      <view class="sensor-card">
+        <view class="sensor-icon co2-icon">
+          <van-icon name="info-o" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.co2}}</view>
+        <view class="sensor-unit">ppm</view>
+        <view class="sensor-name">CO2</view>
+      </view>
+      <view class="sensor-card">
+        <view class="sensor-icon tvoc-icon">
+          <van-icon name="filter-o" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.tvoc}}</view>
+        <view class="sensor-unit">ppb</view>
+        <view class="sensor-name">TVOC</view>
+      </view>
+      <view class="sensor-card">
+        <view class="sensor-icon gas-icon">
+          <van-icon name="warning-o" size="28" color="#fff" />
+        </view>
+        <view class="sensor-value">{{sensorData.gasMic}}</view>
+        <view class="sensor-unit">ppm</view>
+        <view class="sensor-name">燃气</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 智能灌溉水量卡片 -->
+  <view class="irrigation-card">
+    <view class="card-header">
+      <van-icon name="orders-o" size="18" color="#1989fa" />
+      <text class="card-title">智能灌溉</text>
+      <text class="irrigation-status {{irrigationData.needIrrigation ? 'warning' : 'normal'}}">
+        {{irrigationData.needIrrigation ? '建议灌溉' : '暂无需灌溉'}}
+      </text>
+      <text class="irrigation-mode" wx:if="{{!connected && !isDemoMode}}">(离线)</text>
+    </view>
+
+    <view class="irrigation-content">
+      <view class="water-amount">
+        <text class="amount-value">{{irrigationData.recommendedWater || 0}}</text>
+        <text class="amount-unit">ml</text>
+      </view>
+      <text class="amount-label">推荐水量</text>
+    </view>
+
+    <view class="irrigation-factors" wx:if="{{irrigationData.factors}}">
+      <view class="factor-item">
+        <text class="factor-label">温度因子</text>
+        <text class="factor-value">{{irrigationData.factors.temperature || 1.0}}x</text>
+      </view>
+      <view class="factor-item">
+        <text class="factor-label">湿度因子</text>
+        <text class="factor-value">{{irrigationData.factors.humidity || 1.0}}x</text>
+      </view>
+      <view class="factor-item">
+        <text class="factor-label">光照因子</text>
+        <text class="factor-value">{{irrigationData.factors.light || 1.0}}x</text>
+      </view>
+    </view>
+
+    <view class="irrigation-action">
+      <van-button
+        type="primary"
+        size="small"
+        bind:click="executeIrrigation"
+        disabled="{{!irrigationData.needIrrigation}}"
+      >
+        执行灌溉
+      </van-button>
+    </view>
+  </view>
+
+  <!-- 设备控制 -->
+  <view class="section">
+    <view class="section-title">
+      <van-icon name="setting-o" size="20" color="#7232dd" />
+      <text>设备控制</text>
+    </view>
+    <view class="device-grid">
+      <view class="device-card {{deviceStatus.pump ? 'device-on' : ''}}">
+        <view class="device-left">
+          <view class="device-icon pump-icon">
+            <van-icon name="umbrella-circle" size="20" color="#fff" />
+          </view>
+          <text class="device-name">水泵</text>
+        </view>
+        <van-switch size="20" checked="{{deviceStatus.pump}}" bind:change="onPumpChange" color="#07c160" />
+      </view>
+      <view class="device-card {{deviceStatus.valve ? 'device-on' : ''}}">
+        <view class="device-left">
+          <view class="device-icon valve-icon">
+            <van-icon name="bar-chart-o" size="20" color="#fff" />
+          </view>
+          <text class="device-name">电磁阀</text>
+        </view>
+        <van-switch size="20" checked="{{deviceStatus.valve}}" bind:change="onValveChange" color="#07c160" />
+      </view>
+      <view class="device-card {{deviceStatus.led ? 'device-on' : ''}}">
+        <view class="device-left">
+          <view class="device-icon led-icon">
+            <van-icon name="bulb-o" size="20" color="#fff" />
+          </view>
+          <text class="device-name">LED灯</text>
+        </view>
+        <van-switch size="20" checked="{{deviceStatus.led}}" bind:change="onLedChange" color="#07c160" />
+      </view>
+      <view class="device-card {{deviceStatus.fan ? 'device-on' : ''}}">
+        <view class="device-left">
+          <view class="device-icon fan-icon">
+            <text class="fan-blade">✵</text>
+          </view>
+          <text class="device-name">风扇</text>
+        </view>
+        <van-switch size="20" checked="{{deviceStatus.fan}}" bind:change="onFanChange" color="#07c160" />
+      </view>
+      <!-- 智能光照开关 -->
+      <view class="device-card {{smartLightEnabled ? 'device-on' : ''}}">
+        <view class="device-left">
+          <view class="device-icon smart-light-icon">
+            <van-icon name="sun-o" size="20" color="#fff" />
+          </view>
+          <text class="device-name">智能光照</text>
+        </view>
+        <van-switch size="20" checked="{{smartLightEnabled}}" bind:change="onSmartLightToggle" color="#07c160" />
+      </view>
+    </view>
+  </view>
+
+  <!-- RGB氛围灯控制 -->
+  <view class="section rgb-section">
+    <view class="section-title">
+      <van-icon name="palette-o" size="20" color="#7232dd" />
+      <text>氛围灯</text>
+      <text class="rgb-value">({{rgb.r}}, {{rgb.g}}, {{rgb.b}})</text>
+    </view>
+    <view class="rgb-presets">
+      <view class="preset-btn {{rgbMode == 'read' ? 'active' : ''}}" bindtap="setRgbPreset" data-mode="read">阅读</view>
+      <view class="preset-btn {{rgbMode == 'sleep' ? 'active' : ''}}" bindtap="setRgbPreset" data-mode="sleep">睡眠</view>
+      <view class="preset-btn {{rgbMode == 'party' ? 'active' : ''}}" bindtap="setRgbPreset" data-mode="party">聚会</view>
+      <view class="preset-btn {{rgbMode == 'off' ? 'active' : ''}}" bindtap="setRgbPreset" data-mode="off">关闭</view>
+    </view>
+    <view class="rgb-colors">
+      <view class="color-circle" style="background:#ee0a24" bindtap="setRgbColor" data-r="255" data-g="0" data-b="0"></view>
+      <view class="color-circle" style="background:#07c160" bindtap="setRgbColor" data-r="0" data-g="255" data-b="0"></view>
+      <view class="color-circle" style="background:#1989fa" bindtap="setRgbColor" data-r="0" data-g="0" data-b="255"></view>
+      <view class="color-circle" style="background:#ff976a" bindtap="setRgbColor" data-r="255" data-g="151" data-b="106"></view>
+      <view class="color-circle" style="background:#7232dd" bindtap="setRgbColor" data-r="114" data-g="50" data-b="221"></view>
+      <view class="color-circle" style="background:#ffffff; border: 1px solid #ddd" bindtap="setRgbColor" data-r="255" data-g="255" data-b="255"></view>
+    </view>
+  </view>
+
+  <!-- 阈值设置按钮 -->
+  <view class="settings-section">
+    <van-button type="primary" size="large" icon="setting-o" bind:click="goToSettings">
+      阈值设置
+    </van-button>
+  </view>
+
+  <!-- 底部占位 -->
+  <view class="bottom-placeholder"></view>
+
+  <!-- 底部更多功能按钮 (固定) -->
+  <view class="bottom-more-btn" bindtap="showMoreMenu">
+    <van-icon name="wap-nav" size="20" color="#666" />
+    <text class="more-text">更多功能</text>
+  </view>
+
+  <!-- 抽屉菜单 -->
+  <van-action-sheet
+    show="{{showActionSheet}}"
+    title="更多功能"
+    bind:close="hideMoreMenu"
+  >
+    <view class="menu-grid">
+      <view class="menu-item" bindtap="gotoNfc">
+        <van-icon name="chat-o" size="32px" color="#1989fa" />
+        <text class="menu-text">NFC配网</text>
+      </view>
+      <view class="menu-item" bindtap="gotoControl">
+        <van-icon name="play-circle-o" size="32px" color="#07c160" />
+        <text class="menu-text">小车控制</text>
+      </view>
+      <view class="menu-item" bindtap="gotoPath">
+        <van-icon name="guide-o" size="32px" color="#ff976a" />
+        <text class="menu-text">路径规划</text>
+      </view>
+      <view class="menu-item" bindtap="gotoEnv">
+        <van-icon name="chart-trending-o" size="32px" color="#1989fa" />
+        <text class="menu-text">环境监测</text>
+      </view>
+      <view class="menu-item" bindtap="gotoRecord">
+        <van-icon name="records" size="32px" color="#ee0a24" />
+        <text class="menu-text">录制回放</text>
+      </view>
+      <view class="menu-item" bindtap="gotoFence">
+        <van-icon name="shield-o" size="32px" color="#909399" />
+        <text class="menu-text">虚拟围栏</text>
+      </view>
+      <view class="menu-item" bindtap="gotoSmartIrrigation">
+        <van-icon name="flower-o" size="32px" color="#07c160" />
+        <text class="menu-text">智能灌溉</text>
+      </view>
+      <view class="menu-item" bindtap="gotoSmartLight">
+        <van-icon name="bulb-o" size="32px" color="#ff976a" />
+        <text class="menu-text">智能光照</text>
+      </view>
+      <view class="menu-item" bindtap="gotoBackendConnect">
+        <van-icon name="cluster-o" size="32px" color="#1989fa" />
+        <text class="menu-text">后端连接</text>
+      </view>
+    </view>
+  </van-action-sheet>
+</view>

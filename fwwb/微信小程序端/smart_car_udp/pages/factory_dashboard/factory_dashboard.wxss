@@ -1,0 +1,258 @@
+/* pages/factory_dashboard/factory_dashboard.wxss */
+
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20rpx;
+  padding-bottom: 120rpx;
+}
+
+/* 顶部状态栏 */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.status-left {
+  display: flex;
+  align-items: center;
+}
+
+.status-text {
+  margin-left: 12rpx;
+  font-size: 28rpx;
+  color: #323233;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+}
+
+.time-text {
+  margin-left: 12rpx;
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 警报通知栏 */
+.alert-banner {
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.alert-1 {
+  background-color: #fff8c4;
+}
+
+.alert-2 {
+  background-color: #ffe4b5;
+}
+
+.alert-3 {
+  background-color: #ffb3b3;
+}
+
+/* 监控卡片网格 */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.monitor-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.card-title {
+  margin-left: 12rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #323233;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 仪表盘行 */
+.gauge-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+/* 传感器行 */
+.sensor-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 16rpx;
+}
+
+.sensor-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.sensor-label {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.sensor-value {
+  font-size: 26rpx;
+  color: #323233;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.sensor-value.alert-value {
+  color: #ee0a24;
+  font-weight: 600;
+}
+
+.active-value {
+  color: #07c160;
+  font-weight: 500;
+}
+
+/* 货物计数 */
+.count-content {
+  padding: 20rpx 0;
+}
+
+.count-value {
+  font-size: 56rpx;
+  font-weight: 600;
+  color: #7232dd;
+  margin-bottom: 8rpx;
+}
+
+.count-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+}
+
+.count-delta {
+  display: flex;
+  align-items: center;
+  color: #07c160;
+  font-size: 24rpx;
+}
+
+/* AGV卡片 */
+.agv-card {
+  grid-column: span 2;
+}
+
+.agv-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.agv-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.agv-distance {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #323233;
+  margin-bottom: 8rpx;
+}
+
+.agv-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 设备控制卡片 */
+.equip-card {
+  grid-column: span 2;
+}
+
+.equip-content {
+  width: 100%;
+}
+
+.equip-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.equip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx;
+}
+
+.equip-name {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+/* 底部导航 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100rpx;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1rpx solid #eee;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  color: #999;
+  font-size: 22rpx;
+}
+
+.nav-item.active {
+  color: #1989fa;
+}
+
+.badge {
+  position: absolute;
+  top: -8rpx;
+  right: -16rpx;
+  background-color: #ee0a24;
+  color: #fff;
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 20rpx;
+}

@@ -1,0 +1,23 @@
+<launch>
+  <!-- IMU 节点 -->
+  <arg name="is_visual" default="false"/>
+  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" respawn="true" respawn_delay="3" output="screen">
+    <!-- 串口设备，通过 udev 规则或符号链接固定 -->
+    <param name="yesense_port" type="string" value="/dev/yesense_imu"/>
+    <!-- 波特率 -->
+    <param name="yesense_baudrate" type="int" value="460800"/>
+    <!-- 发布的 imu 话题中的 frame_id，需与 TF 树中的 imu_link 一致 -->
+    <param name="frame_id" type="string" value="imu_link"/>
+    <!-- 发布的 imu 话题名：原始数据，由 imu_complementary_filter 滤波后发布到 /imu -->
+    <param name="imu_topic" value="imu_raw"/>
+    <!-- 协方差参数：基于 Allan 方差校准 (2026-06-09, 30min 静止数据) -->
+    <!-- 分析工具: allan_variance_ros -->
+    <!-- Gyro ARW: 4.0 deg/sqrt(hr), Bias Instability: 68.9 deg/hr -->
+    <!-- Accel VRW: 0.28 m/s/sqrt(hr), Bias Instability: 0.00025 m/s^2 -->
+    <!-- stddev = AllanDeviation(tau=1s) * sqrt(sampling_rate=200Hz) -->
+    <param name="orientation_stddev" value="0.0164"/>
+    <param name="angular_velocity_stddev" value="0.0164"/>
+    <param name="linear_acceleration_stddev" value="0.0668"/>
+  </node>
+  <include file="$(find yesense_imu)/launch/tf.launch" if="$(arg is_visual)"/>
+</launch>

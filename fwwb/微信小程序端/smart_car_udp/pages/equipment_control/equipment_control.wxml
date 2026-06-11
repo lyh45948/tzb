@@ -1,0 +1,125 @@
+<!-- pages/equipment_control/equipment_control.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">工厂设备控制</text>
+    <text class="subtitle">远程控制工厂设备</text>
+  </view>
+
+  <view class="control-grid">
+    <!-- 风扇控制 -->
+    <view class="control-card">
+      <view class="card-icon">
+        <van-icon name="fan" color="{{deviceStatus.fan ? '#07c160' : '#999'}}" size="36px" />
+      </view>
+      <view class="card-info">
+        <text class="device-name">排风扇</text>
+        <text class="device-status {{deviceStatus.fan ? 'active' : ''}}">
+          {{deviceStatus.fan ? '运行中' : '已关闭'}}
+        </text>
+      </view>
+      <van-switch checked="{{deviceStatus.fan}}" bind:change="onFanChange" size="24px" />
+    </view>
+
+    <!-- LED照明控制 -->
+    <view class="control-card">
+      <view class="card-icon">
+        <van-icon name="light-o" color="{{deviceStatus.led ? '#ffc107' : '#999'}}" size="36px" />
+      </view>
+      <view class="card-info">
+        <text class="device-name">车间照明</text>
+        <text class="device-status {{deviceStatus.led ? 'active' : ''}}">
+          {{deviceStatus.led ? '已开启' : '已关闭'}}
+        </text>
+      </view>
+      <van-switch checked="{{deviceStatus.led}}" bind:change="onLedChange" size="24px" />
+    </view>
+
+    <!-- 警铃控制 -->
+    <view class="control-card">
+      <view class="card-icon">
+        <van-icon name="bell" color="{{deviceStatus.buzzer ? '#ee0a24' : '#999'}}" size="36px" />
+      </view>
+      <view class="card-info">
+        <text class="device-name">报警警铃</text>
+        <text class="device-status {{deviceStatus.buzzer ? 'active' : ''}}">
+          {{deviceStatus.buzzer ? '警报中' : '已关闭'}}
+        </text>
+      </view>
+      <van-switch checked="{{deviceStatus.buzzer}}" bind:change="onBuzzerChange" size="24px" />
+    </view>
+
+    <!-- 智能照明控制 -->
+    <view class="control-card">
+      <view class="card-icon">
+        <van-icon name="bulb-o" color="{{smartLightEnabled ? '#1989fa' : '#999'}}" size="36px" />
+      </view>
+      <view class="card-info">
+        <text class="device-name">智能照明</text>
+        <text class="device-status {{smartLightEnabled ? 'active' : ''}}">
+          {{smartLightEnabled ? '自动模式' : '手动模式'}}
+        </text>
+      </view>
+      <van-switch checked="{{smartLightEnabled}}" bind:change="onSmartLightChange" size="24px" />
+    </view>
+  </view>
+
+  <!-- 亮度滑块 -->
+  <view class="slider-section" wx:if="{{smartLightEnabled}}">
+    <view class="section-title">智能照明亮度</view>
+    <van-slider
+      value="{{brightness}}"
+      bind:change="onBrightnessChange"
+      min="0"
+      max="100"
+      step="5"
+      active-color="#1989fa"
+      inactive-color="#e0e0e0"
+    />
+    <view class="slider-value">{{brightness}}%</view>
+  </view>
+
+  <!-- 红外感应照明状态 -->
+  <view class="status-section">
+    <view class="section-title">红外感应状态</view>
+    <view class="status-grid">
+      <view class="status-item">
+        <van-icon name="user-o" color="{{pirDetected ? '#07c160' : '#999'}}" size="28px" />
+        <text class="status-label">人体感应</text>
+        <text class="status-value {{pirDetected ? 'active' : ''}}">
+          {{pirDetected ? '检测到人' : '无人'}}
+        </text>
+      </view>
+      <view class="status-item">
+        <van-icon name="fire-o" color="{{flameDetected ? '#ee0a24' : '#999'}}" size="28px" />
+        <text class="status-label">火焰检测</text>
+        <text class="status-value {{flameDetected ? 'active' : ''}}">
+          {{flameDetected ? '检测到火焰' : '正常'}}
+        </text>
+      </view>
+      <view class="status-item">
+        <van-icon name="warning-o" color="{{gasLeakDetected ? '#ee0a24' : '#999'}}" size="28px" />
+        <text class="status-label">燃气泄漏</text>
+        <text class="status-value {{gasLeakDetected ? 'active' : ''}}">
+          {{gasLeakDetected ? '检测到泄漏' : '正常'}}
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AGV控制 -->
+  <view class="agv-section">
+    <view class="section-title">AGV控制</view>
+    <view class="agv-status">
+      <text class="agv-distance">前方距离: {{agvDistance}} cm</text>
+      <view class="agv-indicator {{agvObstacle ? 'warning' : 'normal'}}">
+        <van-icon name="{{agvObstacle ? 'warning' : 'checked'}}" size="18px" />
+        <text>{{agvObstacle ? '有障碍' : '无障碍'}}</text>
+      </view>
+    </view>
+    <view class="agv-buttons">
+      <van-button type="primary" size="small" bind:click="agvMoveForward">前进</van-button>
+      <van-button type="default" size="small" bind:click="agvStop">停止</van-button>
+      <van-button type="warning" size="small" bind:click="agvMoveBack">后退</van-button>
+    </view>
+  </view>
+</view>

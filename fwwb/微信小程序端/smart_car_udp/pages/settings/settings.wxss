@@ -1,0 +1,331 @@
+/* pages/settings/settings.wxss */
+
+/* Container */
+.container {
+  padding: 0;
+  padding-bottom: 80px;
+  background: #f4f6f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left,
+.header-right {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-left:active {
+  background: #f5f5f5;
+  border-radius: 50%;
+}
+
+.header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Unsaved changes bar */
+.unsaved-bar {
+  background: linear-gradient(135deg, #fff7e6 0%, #fff3cd 100%);
+  border-radius: 0;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 151, 106, 0.3);
+}
+
+.unsaved-text {
+  font-size: 12px;
+  color: #ff976a;
+  font-weight: 500;
+}
+
+/* Settings content scroll area */
+.settings-content {
+  flex: 1;
+  padding: 12px;
+  max-height: calc(100vh - 140px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Setting Card */
+.setting-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.temp-icon {
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe8cc 100%);
+}
+
+.humi-icon{
+  background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%);
+}
+
+.soil-icon{
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0d4ff 100%);
+}
+
+.light-icon{
+  background: linear-gradient(135deg, #fffbf0 0%, #fff5e0 100%);
+}
+
+.co2-icon{
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8f7d3 100%);
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.card-unit {
+  font-size: 11px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Threshold Display */
+.threshold-display {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  text-align: center;
+  border: 1px solid rgba(7, 193, 96, 0.2);
+}
+
+.threshold-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #07c160;
+  letter-spacing: 0.5px;
+}
+
+/* Slider Group */
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.slider-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-label {
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slider-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #07c160;
+}
+
+.slider-wrapper {
+  padding: 0 4px;
+}
+
+/* Auto Control Card (融合 smart_agriculture) */
+.auto-card {
+  background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%);
+  border: 1px solid rgba(7, 193, 96, 0.15);
+}
+
+.auto-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auto-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auto-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8f7d3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auto-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auto-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.auto-desc {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Alert Card */
+.alert-card {
+  background: linear-gradient(135deg, #fff 0%, #f9fff9 100%);
+  border: 1px solid rgba(7, 193, 96, 0.15);
+}
+
+.alert-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alert-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8f7d3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alert-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.alert-desc {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Bottom Spacer */
+.bottom-spacer {
+  height: 20px;
+}
+
+/* Bottom Action Buttons */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.3s;
+}
+
+.reset-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.reset-btn:active {
+  background: #e8e8e8;
+}
+
+.save-btn {
+  background: #e0e0e0;
+  color: #999;
+}
+
+.save-btn.has-changes {
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
+}
+
+.save-btn.has-changes:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(7, 193, 96, 0.3);
+}

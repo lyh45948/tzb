@@ -1,0 +1,38 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/control/control",
+    "pages/nfc/nfc",
+    "pages/path_planning/path_planning",
+    "pages/environment/environment",
+    "pages/record_playback/record_playback",
+    "pages/virtual_fence/virtual_fence",
+    "pages/agriculture/agriculture",
+    "pages/settings/settings",
+    "pages/monitor/monitor",
+    "pages/smart_irrigation/smart_irrigation",
+    "pages/smart_light/smart_light",
+    "pages/backend_connect/backend_connect",
+    "pages/factory_dashboard/factory_dashboard",
+    "pages/equipment_control/equipment_control",
+    "pages/alert_center/alert_center"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "Weixin",
+    "navigationBarTextStyle": "black"
+  },
+  "usingComponents": {
+    "van-button": "miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-icon": "miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-notice-bar": "miniprogram/miniprogram_npm/@vant/weapp/notice-bar/index",
+    "van-progress": "miniprogram/miniprogram_npm/@vant/weapp/progress/index",
+    "van-circle": "miniprogram/miniprogram_npm/@vant/weapp/circle/index",
+    "van-slider": "miniprogram/miniprogram_npm/@vant/weapp/slider/index",
+    "van-field": "miniprogram/miniprogram_npm/@vant/weapp/field/index",
+    "van-steps": "miniprogram/miniprogram_npm/@vant/weapp/steps/index",
+    "van-switch": "miniprogram/miniprogram_npm/@vant/weapp/switch/index"
+  },
+  "sitemapLocation": "sitemap.json"
+}

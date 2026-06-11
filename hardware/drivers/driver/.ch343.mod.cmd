@@ -1,0 +1,1 @@
+savedcmd_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.mod := printf '%s\n'   ch343.o | awk '!x[$$0]++ { print("/home/tzb/Desktop/ch343ser_linux-main/driver/"$$0) }' > /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.mod

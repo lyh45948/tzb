@@ -1,0 +1,25 @@
+# Yesense H30 IMU Calibration Parameters
+# Generated from Allan Variance Analysis
+# Date: 2026-06-09
+# Sampling Rate: 200 Hz
+# Analysis Method: tau=1s direct value for ARW/VRW, tau=10-100s min for bias
+
+gyroscope:
+  arw_deg_sqrt_hr: 3.997
+  arw_rad_sqrt_s: 0.00116341
+  bias_instability_deg_hr: 68.9074
+  bias_instability_rad_s: 0.00033407
+
+accelerometer:
+  vrw_m_s_sqrt_hr: 0.2835
+  vrw_m_s_sqrt_s: 0.00472518
+  bias_instability_m_s2: 0.00024577
+
+ros_parameters:
+  orientation_stddev_rad: 0.016443
+  angular_velocity_stddev_rad_s: 0.016443
+  linear_acceleration_stddev_m_s2: 0.066822
+
+imu_complementary_filter:
+  bias_alpha_recommended: 0.0075
+  note: bias_alpha - smaller = more stable but slower convergence

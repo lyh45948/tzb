@@ -1,0 +1,114 @@
+<view class="container">
+  <!-- 页面标题栏 -->
+  <view class="page-header">
+    <van-icon name="shield-o" size="28px" color="#ff976a" />
+    <text class="page-title">虚拟围栏</text>
+    <view class="header-switch">
+      <text class="switch-label">防御</text>
+      <van-switch checked="{{fenceEnabled}}" bind:change="onFenceEnabledChange" size="20px" active-color="#07c160" />
+    </view>
+  </view>
+
+  <!-- 连接状态栏 -->
+  <view class="connection-bar">
+    <view class="connection-info">
+      <van-icon name="{{connectionStatus.connected ? 'success' : 'warning-o'}}" color="{{connectionStatus.connected ? '#07c160' : '#ee0a24'}}" size="16px" />
+      <text class="connection-text">{{connectionStatus.message}}</text>
+    </view>
+  </view>
+
+  <view class="fence-panel">
+    <!-- 围栏配置区 -->
+    <view class="config-section">
+      <view class="config-header">
+        <van-icon name="setting-o" size="18px" color="#ff976a" style="margin-right: 8rpx;" />
+        <text class="config-title">围栏类型</text>
+      </view>
+      <view class="fence-type-selector">
+        <view class="fence-type-tab {{fenceMode == 'circle' ? 'active' : ''}}" bindtap="toggleFenceMode" data-mode="circle">
+          <van-icon name="circle" size="16px" />
+          <text>圆形</text>
+        </view>
+        <view class="fence-type-tab {{fenceMode == 'rectangle' ? 'active' : ''}}" bindtap="toggleFenceMode" data-mode="rectangle">
+          <van-icon name="square" size="16px" />
+          <text>矩形</text>
+        </view>
+        <view class="fence-type-tab {{fenceMode == 'polygon' ? 'active' : ''}}" bindtap="toggleFenceMode" data-mode="polygon">
+          <van-icon name="star" size="16px" />
+          <text>描点</text>
+        </view>
+      </view>
+
+      <view class="fence-params" wx:if="{{fenceMode != 'polygon'}}">
+        <view class="param-input-group">
+          <van-icon name="expand-o" size="18px" color="#646566" style="margin-right: 12rpx;" />
+          <text class="param-label">尺寸(mm)</text>
+          <van-field
+            value="{{fenceRadius}}"
+            type="number"
+            border="{{false}}"
+            bind:input="onFenceRadiusInputChange"
+            custom-style="flex: 1; background: transparent; padding: 0;"
+          />
+          <van-slider value="{{fenceRadius}}" min="100" max="2000" step="50" bind:change="onFenceRadiusChange" active-color="#ff976a" custom-style="width: 120px; margin-left: 10px;" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 画布监控区 -->
+    <view class="canvas-section">
+      <canvas type="2d" id="fenceCanvas" class="path-canvas" bindtouchstart="onFenceTouchStart" bindtouchmove="onFenceTouchMove" bindtouchend="onFenceTouchEnd"></canvas>
+
+      <view class="canvas-actions">
+        <van-button type="warning" size="small" round class="action-btn" bindtap="clearCanvas" icon="clear">
+          清空
+        </van-button>
+        <van-button type="primary" size="small" round class="action-btn" bindtap="saveFence" disabled="{{fencePoints.length < (fenceMode == 'polygon' ? 3 : 1)}}" icon="success">
+          保存
+        </van-button>
+      </view>
+    </view>
+
+    <!-- 实时控制区 - 横向布局 -->
+    <view class="control-section">
+      <view class="control-info">
+        <van-icon name="info-o" size="16px" color="#969799" />
+        <text class="control-hint">滑动摇杆测试围栏效果</text>
+      </view>
+      <view class="joystick-outer">
+        <view class="joystick-container-mini" catchtouchstart="onTouchStart" catchtouchmove="onTouchMove" catchtouchend="onTouchEnd">
+          <view class="joystick-handle-mini" style="left: {{handleLeft}}px; top: {{handleTop}}px; transition: {{handleTransition}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 历史围栏列表 -->
+    <view class="fence-list-section">
+      <view class="fence-list-header">
+        <van-icon name="records" size="18px" color="#ff976a" style="margin-right: 8rpx;" />
+        <text class="fence-list-title">已保存围栏</text>
+        <view class="fence-count">
+          <text>{{savedFences.length}}</text>
+        </view>
+      </view>
+      <view class="fence-list">
+        <view class="empty-status" wx:if="{{savedFences.length === 0}}">
+          <van-icon name="info-o" size="40px" color="#c8c9cc" />
+          <text>暂无保存的围栏</text>
+        </view>
+        <view class="fence-item {{!item.enabled ? 'disabled' : ''}}" wx:for="{{savedFences}}" wx:key="id">
+          <view class="fence-main" bindtap="toggleFence" data-id="{{item.id}}">
+            <view class="fence-icon">
+              <van-icon name="{{item.mode === 'circle' ? 'circle' : item.mode === 'rectangle' ? 'square' : 'star'}}" size="18px" color="#ff976a" />
+            </view>
+            <view class="fence-info">
+              <text class="fence-name">{{item.name}}</text>
+              <text class="fence-sub">{{item.mode === 'circle' ? '圆形' : item.mode === 'rectangle' ? '矩形' : '描点'}}</text>
+            </view>
+          </view>
+          <van-icon name="delete-o" size="20px" color="#ee0a24" bindtap="deleteFence" data-id="{{item.id}}" />
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

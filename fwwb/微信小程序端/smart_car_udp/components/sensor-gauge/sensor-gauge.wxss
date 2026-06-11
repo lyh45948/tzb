@@ -1,0 +1,134 @@
+/* sensor-gauge.wxss - Circular progress gauge component */
+
+.sensor-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Size variants */
+.sensor-gauge.size-normal .gauge-container {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.sensor-gauge.size-normal .gauge-canvas {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.sensor-gauge.size-normal .gauge-value {
+  font-size: 28rpx;
+}
+
+.sensor-gauge.size-normal .gauge-unit {
+  font-size: 18rpx;
+}
+
+.sensor-gauge.size-warning .gauge-container {
+  width: 140rpx;
+  height: 140rpx;
+}
+
+.sensor-gauge.size-warning .gauge-canvas {
+  width: 140rpx;
+  height: 140rpx;
+}
+
+.sensor-gauge.size-warning .gauge-value {
+  font-size: 32rpx;
+}
+
+.sensor-gauge.size-warning .gauge-unit {
+  font-size: 20rpx;
+}
+
+.sensor-gauge.size-danger .gauge-container {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+.sensor-gauge.size-danger .gauge-canvas {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+.sensor-gauge.size-danger .gauge-value {
+  font-size: 36rpx;
+}
+
+.sensor-gauge.size-danger .gauge-unit {
+  font-size: 22rpx;
+}
+
+/* Gauge container */
+.gauge-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Center content */
+.gauge-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.gauge-value {
+  font-weight: bold;
+  color: #333;
+  line-height: 1.2;
+  transition: color 0.3s ease;
+}
+
+.gauge-unit {
+  color: #999;
+  line-height: 1;
+  margin-top: 4rpx;
+}
+
+/* Status-based styling */
+.sensor-gauge.status-normal .gauge-value {
+  color: #07c160;
+}
+
+.sensor-gauge.status-warning .gauge-value {
+  color: #ff9d00;
+}
+
+.sensor-gauge.status-danger .gauge-value {
+  color: #ee0a24;
+}
+
+/* Label */
+.gauge-label {
+  font-size: 22rpx;
+  color: #666;
+  margin-top: 8rpx;
+  text-align: center;
+}
+
+/* Pulse animation for danger status */
+.sensor-gauge.status-danger .gauge-container {
+  animation: pulse-danger 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}

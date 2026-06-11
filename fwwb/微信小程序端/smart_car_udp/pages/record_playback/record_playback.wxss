@@ -1,0 +1,265 @@
+.container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f3e8ff 0%, #ffffff 100%);
+  padding-bottom: 40rpx;
+}
+
+/* 页面标题栏 */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 30rpx;
+  background: #ffffff;
+  margin: 20rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(114, 50, 221, 0.1);
+}
+
+.page-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #323233;
+}
+
+.connection-bar {
+  background: #fff;
+  padding: 16rpx 32rpx;
+  border-radius: 16rpx;
+  margin: 0 20rpx 20rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.connection-info {
+  display: flex;
+  align-items: center;
+}
+
+.connection-text {
+  font-size: 26rpx;
+  color: #323233;
+  font-weight: 500;
+  margin-left: 12rpx;
+}
+
+.record-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20rpx;
+}
+
+.record-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.record-time-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.record-button-group {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.record-time {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #07c160;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.canvas-wrapper {
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(114, 50, 221, 0.15);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.path-canvas {
+  width: 100%;
+  height: 220px;
+  background: #fff;
+  border: 4px solid #7232dd;
+  border-radius: 16rpx;
+}
+
+/* 摇杆区 */
+.joystick-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30rpx 0;
+}
+
+.joystick-label {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #969799;
+  margin-bottom: 20rpx;
+}
+
+.joystick-container-mini {
+  width: 150px;
+  height: 150px;
+  background: #f2f3f5;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 0 20rpx rgba(0,0,0,0.1);
+}
+
+.joystick-handle-mini {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #07c160, #05a351);
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 0 6rpx 20rpx rgba(7, 193, 96, 0.4);
+  border: 4rpx solid #fff;
+}
+
+/* 历史记录区 */
+.history-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin: 20rpx 20rpx 0;
+}
+
+.history-header {
+  padding: 24rpx 30rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.history-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #323233;
+  margin-left: 12rpx;
+}
+
+.history-count {
+  margin-left: auto;
+  background: #f2f3f5;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #7232dd;
+  font-weight: 500;
+}
+
+.path-scroll-view {
+  flex: 1;
+  max-height: 400rpx;
+}
+
+.path-list {
+  padding: 20rpx;
+}
+
+.path-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid #ebedf0;
+  transition: all 0.2s;
+}
+
+.path-item:active {
+  background: #f0f1f2;
+  transform: scale(0.98);
+}
+
+.path-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.path-icon {
+  width: 64rpx;
+  height: 64rpx;
+  background: #e8f4ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.path-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.path-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #323233;
+}
+
+.path-meta {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #969799;
+  margin-top: 6rpx;
+}
+
+.path-meta text {
+  margin-left: 6rpx;
+}
+
+.path-item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.empty-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 0;
+  color: #c8c9cc;
+  font-size: 28rpx;
+}
+
+.empty-status text {
+  margin-top: 16rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #969799;
+}

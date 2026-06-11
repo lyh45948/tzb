@@ -1,0 +1,88 @@
+<!-- pages/settings/settings.wxml -->
+<view class="container">
+  <!-- 返回按钮 -->
+  <view class="nav-bar">
+    <view class="nav-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+      <text class="back-text">返回</text>
+    </view>
+    <text class="nav-title">设置</text>
+    <view class="nav-right"></view>
+  </view>
+
+  <!-- 通用设置 -->
+  <view class="section">
+    <view class="section-title">通用设置</view>
+    <view class="setting-item">
+      <text class="setting-label">演示模式</text>
+      <van-switch checked="{{demoMode}}" bind:change="onDemoModeChange" size="24" />
+    </view>
+    <view class="setting-item">
+      <text class="setting-label">自动控制</text>
+      <van-switch checked="{{autoControl}}" bind:change="onAutoControlChange" size="24" />
+    </view>
+  </view>
+
+  <!-- 温度阈值 -->
+  <view class="section">
+    <view class="section-title">温度阈值 (°C)</view>
+    <view class="threshold-item">
+      <text class="threshold-label">最低温度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.temperature.min}}°C</text>
+        <van-slider value="{{thresholds.temperature.min}}" bind:drag="onTempMinChange" min="0" max="50" />
+      </view>
+    </view>
+    <view class="threshold-item">
+      <text class="threshold-label">最高温度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.temperature.max}}°C</text>
+        <van-slider value="{{thresholds.temperature.max}}" bind:drag="onTempMaxChange" min="0" max="50" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 湿度阈值 -->
+  <view class="section">
+    <view class="section-title">湿度阈值 (%)</view>
+    <view class="threshold-item">
+      <text class="threshold-label">最低湿度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.humidity.min}}%</text>
+        <van-slider value="{{thresholds.humidity.min}}" bind:drag="onHumidityMinChange" min="0" max="100" />
+      </view>
+    </view>
+    <view class="threshold-item">
+      <text class="threshold-label">最高湿度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.humidity.max}}%</text>
+        <van-slider value="{{thresholds.humidity.max}}" bind:drag="onHumidityMaxChange" min="0" max="100" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 土壤湿度阈值 -->
+  <view class="section">
+    <view class="section-title">土壤湿度阈值 (%)</view>
+    <view class="threshold-item">
+      <text class="threshold-label">最低土壤湿度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.soilMoisture.min}}%</text>
+        <van-slider value="{{thresholds.soilMoisture.min}}" bind:drag="onSoilMinChange" min="0" max="100" />
+      </view>
+    </view>
+    <view class="threshold-item">
+      <text class="threshold-label">最高土壤湿度</text>
+      <view class="threshold-value">
+        <text class="value-text">{{thresholds.soilMoisture.max}}%</text>
+        <van-slider value="{{thresholds.soilMoisture.max}}" bind:drag="onSoilMaxChange" min="0" max="100" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 按钮区域 -->
+  <view class="button-area">
+    <button class="save-btn" bindtap="saveConfig">保存配置</button>
+    <button class="reset-btn" bindtap="resetConfig">重置默认</button>
+  </view>
+</view>

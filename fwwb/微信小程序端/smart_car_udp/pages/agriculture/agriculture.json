@@ -1,0 +1,12 @@
+{
+  "usingComponents": {
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index",
+    "van-cell": "../../miniprogram/miniprogram_npm/@vant/weapp/cell/index",
+    "van-cell-group": "../../miniprogram/miniprogram_npm/@vant/weapp/cell-group/index",
+    "van-tag": "../../miniprogram/miniprogram_npm/@vant/weapp/tag/index",
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-button": "../../miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-progress": "../../miniprogram/miniprogram_npm/@vant/weapp/progress/index"
+  },
+  "navigationBarTitleText": "农业监测"
+}

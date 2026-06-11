@@ -1,0 +1,14 @@
+{
+  "navigationBarTitleText": "智能座舱 - 环境监测",
+  "usingComponents": {
+    "van-progress": "../../miniprogram/miniprogram_npm/@vant/weapp/progress/index",
+    "van-icon": "../../miniprogram/miniprogram_npm/@vant/weapp/icon/index",
+    "van-slider": "../../miniprogram/miniprogram_npm/@vant/weapp/slider/index",
+    "van-switch": "../../miniprogram/miniprogram_npm/@vant/weapp/switch/index",
+    "van-button": "../../miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-field": "../../miniprogram/miniprogram_npm/@vant/weapp/field/index",
+    "van-cell-group": "../../miniprogram/miniprogram_npm/@vant/weapp/cell-group/index"
+  },
+  "disableScroll": true
+}
+

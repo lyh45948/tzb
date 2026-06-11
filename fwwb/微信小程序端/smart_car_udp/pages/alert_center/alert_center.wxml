@@ -1,0 +1,92 @@
+<!-- pages/alert_center/alert_center.wxml -->
+<view class="container">
+  <!-- 警报统计 -->
+  <view class="alert-stats">
+    <view class="stat-item warning">
+      <text class="stat-value">{{stats.warning}}</text>
+      <text class="stat-label">警告</text>
+    </view>
+    <view class="stat-item danger">
+      <text class="stat-value">{{stats.danger}}</text>
+      <text class="stat-label">危险</text>
+    </view>
+    <view class="stat-item critical">
+      <text class="stat-value">{{stats.critical}}</text>
+      <text class="stat-label">紧急</text>
+    </view>
+    <view class="stat-item total">
+      <text class="stat-value">{{stats.total}}</text>
+      <text class="stat-label">总计</text>
+    </view>
+  </view>
+
+  <!-- 实时警报列表 -->
+  <view class="alert-list">
+    <view class="list-header">
+      <text class="list-title">实时警报</text>
+      <text class="list-count">{{alerts.length}} 条</text>
+    </view>
+
+    <view wx:if="{{alerts.length === 0}}" class="empty-state">
+      <van-icon name="passed" size="48px" color="#07c160" />
+      <text class="empty-text">暂无警报</text>
+      <text class="empty-subtext">所有监测指标正常</text>
+    </view>
+
+    <view wx:else>
+      <view
+        wx:for="{{alerts}}"
+        wx:key="id"
+        class="alert-item alert-{{item.severity}}"
+      >
+        <view class="alert-icon">
+          <van-icon
+            name="{{getAlertIcon(item.severity)}}"
+            color="{{getAlertColor(item.severity)}}"
+            size="24px"
+          />
+        </view>
+        <view class="alert-content">
+          <view class="alert-header">
+            <text class="alert-type">{{getAlertTypeName(item.alert_type)}}</text>
+            <van-tag type="{{getTagType(item.severity)}}" size="mini">
+              {{getSeverityName(item.severity)}}
+            </van-tag>
+          </view>
+          <text class="alert-message">{{item.message}}</text>
+          <text class="alert-time">{{item.created_at}}</text>
+        </view>
+        <view class="alert-action">
+          <van-button
+            wx:if="{{!item.acknowledged}}"
+            size="mini"
+            type="primary"
+            bind:click="acknowledgeAlert"
+            data-id="{{item.id}}"
+          >
+            确认
+          </van-button>
+          <van-icon
+            wx:else
+            name="passed"
+            color="#07c160"
+            size="20px"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史警报折叠面板 -->
+  <van-collapse value="{{collapsedPanels}}" bind:change="onCollapseChange">
+    <van-collapse-item title="历史警报" name="history">
+      <view class="history-list">
+        <view wx:for="{{historyAlerts}}" wx:key="id" class="history-item">
+          <text class="history-type">{{getAlertTypeName(item.alert_type)}}</text>
+          <text class="history-value">{{item.actual_value}}</text>
+          <text class="history-time">{{item.created_at}}</text>
+        </view>
+      </view>
+    </van-collapse-item>
+  </van-collapse>
+</view>

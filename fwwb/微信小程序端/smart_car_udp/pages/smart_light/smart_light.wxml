@@ -1,0 +1,142 @@
+<!--pages/smart_light/smart_light.wxml-->
+<view class="container">
+  <!-- 顶部状态栏 -->
+  <view class="header-bar">
+    <view class="header-title">
+      <van-icon name="bulb-o" size="28px" color="#ff976a" />
+      <text class="title-text">智能光照控制</text>
+    </view>
+    <view class="header-info">
+      <view class="season-tag">{{currentSeason}}</view>
+      <view class="header-status">
+        <view class="status-dot {{connected ? 'online' : 'offline'}}"></view>
+        <text class="status-text">{{connected ? '在线' : '离线'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 环境光照显示 -->
+  <view class="lux-display-card">
+    <view class="lux-title">
+      <van-icon name="bulb-o" size="20" color="#1989fa" />
+      <text>环境光照强度</text>
+    </view>
+    <view class="lux-value-container">
+      <view class="lux-circle">
+        <van-circle
+          value="{{ luxPercent }}"
+          size="{{ 140 }}"
+          stroke-width="{{ 12 }}"
+          color="{{ luxColor }}"
+          text="{{ envLux }}"
+        />
+      </view>
+      <view class="lux-info">
+        <view class="lux-level">{{ luxLevelText }}</view>
+        <view class="lux-unit">lux</view>
+      </view>
+    </view>
+    <!-- 光照等级条 -->
+    <view class="lux-bar">
+      <view class="lux-bar-segment dark"></view>
+      <view class="lux-bar-segment dim"></view>
+      <view class="lux-bar-segment low"></view>
+      <view class="lux-bar-segment normal"></view>
+      <view class="lux-bar-segment bright"></view>
+      <view class="lux-indicator" style="left: {{ luxPercent }}%;"></view>
+    </view>
+    <view class="lux-bar-labels">
+      <text>暗</text>
+      <text>较暗</text>
+      <text>偏暗</text>
+      <text>正常</text>
+      <text>明亮</text>
+    </view>
+  </view>
+
+  <!-- 模式控制 -->
+  <view class="control-card">
+    <view class="control-header">
+      <van-icon name="setting-o" size="20" color="#7232dd" />
+      <text>光照模式</text>
+    </view>
+    <view class="mode-switch">
+      <view class="mode-item {{ !autoMode ? 'active' : '' }}" bindtap="setManualMode">
+        <van-icon name="edit" size="24" color="{{ !autoMode ? '#1989fa' : '#999' }}" />
+        <text>手动模式</text>
+      </view>
+      <view class="mode-item {{ autoMode ? 'active' : '' }}" bindtap="setAutoMode">
+        <van-icon name="flash" size="24" color="{{ autoMode ? '#1989fa' : '#999' }}" />
+        <text>自动模式</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 亮度控制 -->
+  <view class="brightness-card {{ autoMode ? 'disabled' : '' }}">
+    <view class="brightness-header">
+      <van-icon name="bulb-o" size="20" color="#ff976a" />
+      <text>LED补光亮度</text>
+      <text class="brightness-value">{{ targetBrightness }}%</text>
+    </view>
+    <view class="brightness-slider">
+      <van-slider
+        value="{{ targetBrightness }}"
+        use-button-slot
+        min="0"
+        max="100"
+        step="1"
+        disabled="{{ autoMode }}"
+        bind:change="onBrightnessChange"
+        bind:drag="onBrightnessDrag"
+        active-color="#ff976a"
+      >
+        <view slot="button" class="slider-button">
+          <van-icon name="bulb-o" size="16" color="#ff976a" />
+        </view>
+      </van-slider>
+    </view>
+    <view class="brightness-presets">
+      <view class="preset-btn" bindtap="setPresetBrightness" data-value="0">关闭</view>
+      <view class="preset-btn" bindtap="setPresetBrightness" data-value="25">25%</view>
+      <view class="preset-btn" bindtap="setPresetBrightness" data-value="50">50%</view>
+      <view class="preset-btn" bindtap="setPresetBrightness" data-value="75">75%</view>
+      <view class="preset-btn" bindtap="setPresetBrightness" data-value="100">100%</view>
+    </view>
+  </view>
+
+  <!-- 当前状态 -->
+  <view class="status-card">
+    <view class="status-header">
+      <van-icon name="info-o" size="20" color="#1989fa" />
+      <text>当前状态</text>
+    </view>
+    <view class="status-grid">
+      <view class="status-item">
+        <text class="status-label">工作模式</text>
+        <text class="status-value">{{ autoMode ? '自动' : '手动' }}</text>
+      </view>
+      <view class="status-item">
+        <text class="status-label">当前亮度</text>
+        <text class="status-value">{{ currentBrightness }}%</text>
+      </view>
+      <view class="status-item">
+        <text class="status-label">目标亮度</text>
+        <text class="status-value">{{ targetBrightness }}%</text>
+      </view>
+      <view class="status-item">
+        <text class="status-label">时间段</text>
+        <text class="status-value">{{ timePeriodName }}</text>
+      </view>
+    </view>
+  </view>
+
+
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <van-button type="default" size="large" icon="replay" bind:click="resetSettings">
+      重置设置
+    </van-button>
+  </view>
+</view>

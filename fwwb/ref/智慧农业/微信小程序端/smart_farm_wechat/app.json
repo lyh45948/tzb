@@ -1,0 +1,24 @@
+{
+  "pages": [
+    "pages/home/home"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "智慧农场",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "van-button": "./miniprogram/miniprogram_npm/@vant/weapp/button/index",
+    "van-row": "./miniprogram/miniprogram_npm/@vant/weapp/row/index",
+    "van-action-sheet": "./miniprogram/miniprogram_npm/@vant/weapp/action-sheet/index",
+    "van-col": "./miniprogram/miniprogram_npm/@vant/weapp/col/index",
+    "van-divider": "./miniprogram/miniprogram_npm/@vant/weapp/divider/index",
+    "van-notice-bar": "./miniprogram/miniprogram_npm/@vant/weapp/notice-bar/index",
+    "van-popup": "./miniprogram/miniprogram_npm/@vant/weapp/popup/index",
+    "van-field": "./miniprogram/miniprogram_npm/@vant/weapp/field/index"
+  }
+}

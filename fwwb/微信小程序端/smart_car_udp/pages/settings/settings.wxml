@@ -1,0 +1,271 @@
+<!--pages/settings/settings.wxml-->
+<view class="container">
+  <!-- Header -->
+  <view class="header">
+    <view class="header-left" bindtap="onBack">
+      <van-icon name="arrow-left" size="20px" color="#07c160" />
+    </view>
+    <text class="header-title">阈值设置</text>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- Unsaved changes indicator -->
+  <view class="unsaved-bar" wx:if="{{ hasChanges }}">
+    <van-icon name="info-o" size="14px" color="#ff976a" />
+    <text class="unsaved-text">您有未保存的更改</text>
+  </view>
+
+  <!-- Settings content -->
+  <scroll-view scroll-y class="settings-content">
+    <!-- Temperature Threshold -->
+    <view class="setting-card">
+      <view class="card-header">
+        <view class="card-icon temp-icon">
+          <van-icon name="fire-o" size="18px" color="#ff9d00" />
+        </view>
+        <text class="card-title">温度阈值</text>
+        <text class="card-unit">单位: 摄氏度 (C)</text>
+      </view>
+      <view class="threshold-display">
+        <text class="threshold-value">{{ thresholds.temperature.currentMin }}C - {{ thresholds.temperature.currentMax }}C</text>
+      </view>
+      <view class="slider-group">
+        <view class="slider-item">
+          <text class="slider-label">最低温度</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.temperature.currentMin }}"
+              min="{{ thresholds.temperature.min }}"
+              max="{{ thresholds.temperature.currentMax - 2 }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onTempMinChange"
+              bind:change="onTempMinChange"
+            />
+          </view>
+        </view>
+        <view class="slider-item">
+          <text class="slider-label">最高温度</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.temperature.currentMax }}"
+              min="{{ thresholds.temperature.currentMin + 2 }}"
+              max="{{ thresholds.temperature.max }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onTempMaxChange"
+              bind:change="onTempMaxChange"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Humidity Threshold -->
+    <view class="setting-card">
+      <view class="card-header">
+        <view class="card-icon humi-icon">
+          <van-icon name="info-o" size="18px" color="#1989fa" />
+        </view>
+        <text class="card-title">湿度阈值</text>
+        <text class="card-unit">单位: 百分比 (%)</text>
+      </view>
+      <view class="threshold-display">
+        <text class="threshold-value">{{ thresholds.humidity.currentMin }}% - {{ thresholds.humidity.currentMax }}%</text>
+      </view>
+      <view class="slider-group">
+        <view class="slider-item">
+          <text class="slider-label">最低湿度</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.humidity.currentMin }}"
+              min="{{ thresholds.humidity.min }}"
+              max="{{ thresholds.humidity.currentMax - 5 }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onHumiMinChange"
+              bind:change="onHumiMinChange"
+            />
+          </view>
+        </view>
+        <view class="slider-item">
+          <text class="slider-label">最高湿度</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.humidity.currentMax }}"
+              min="{{ thresholds.humidity.currentMin + 5 }}"
+              max="{{ thresholds.humidity.max }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onHumiMaxChange"
+              bind:change="onHumiMaxChange"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Light Threshold -->
+    <view class="setting-card">
+      <view class="card-header">
+        <view class="card-icon light-icon">
+          <van-icon name="bulb-o" size="18px" color="#ffd700" />
+        </view>
+        <text class="card-title">光照阈值</text>
+        <text class="card-unit">单位：勒克斯 (Lx)</text>
+      </view>
+      <view class="threshold-display">
+        <text class="threshold-value">{{ thresholds.light.currentMin }}Lx - {{ thresholds.light.currentMax }}Lx</text>
+      </view>
+      <view class="slider-group">
+        <view class="slider-item">
+          <text class="slider-label">最低光照</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.light.currentMin }}"
+              min="{{ thresholds.light.min }}"
+              max="{{ thresholds.light.currentMax - 100 }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onLightMinChange"
+              bind:change="onLightMinChange"
+            />
+          </view>
+        </view>
+        <view class="slider-item">
+          <text class="slider-label">最高光照</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.light.currentMax }}"
+              min="{{ thresholds.light.currentMin + 100 }}"
+              max="{{ thresholds.light.max }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onLightMaxChange"
+              bind:change="onLightMaxChange"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- CO2 Threshold (新增：融合 smart_agriculture) -->
+    <view class="setting-card">
+      <view class="card-header">
+        <view class="card-icon co2-icon">
+          <van-icon name="smile-o" size="18px" color="#07c160" />
+        </view>
+        <text class="card-title">CO2 浓度阈值</text>
+        <text class="card-unit">单位：PPM</text>
+      </view>
+      <view class="threshold-display">
+        <text class="threshold-value">{{ thresholds.co2.currentMin }}PPM - {{ thresholds.co2.currentMax }}PPM</text>
+      </view>
+      <view class="slider-group">
+        <view class="slider-item">
+          <text class="slider-label">最低 CO2</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.co2.currentMin }}"
+              min="{{ thresholds.co2.min }}"
+              max="{{ thresholds.co2.currentMax - 50 }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onCo2MinChange"
+              bind:change="onCo2MinChange"
+            />
+          </view>
+        </view>
+        <view class="slider-item">
+          <text class="slider-label">最高 CO2</text>
+          <view class="slider-wrapper">
+            <van-slider
+              value="{{ thresholds.co2.currentMax }}"
+              min="{{ thresholds.co2.currentMin + 50 }}"
+              max="{{ thresholds.co2.max }}"
+              bar-height="4px"
+              active-color="#07c160"
+              inactive-color="#e8f5e9"
+              button-size="18px"
+              bind:drag="onCo2MaxChange"
+              bind:change="onCo2MaxChange"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 自动控制模式开关（融合 smart_agriculture） -->
+    <view class="setting-card auto-card">
+      <view class="auto-content">
+        <view class="auto-info">
+          <view class="auto-icon">
+            <van-icon name="play-circle-o" size="20px" color="#07c160" />
+          </view>
+          <view class="auto-text">
+            <text class="auto-title">自动控制模式</text>
+            <text class="auto-desc">根据传感器数据自动控制设备开关</text>
+          </view>
+        </view>
+        <van-switch
+          checked="{{ autoControl }}"
+          bind:change="onAutoControlChange"
+          size="24px"
+          active-color="#07c160"
+          inactive-color="#e0e0e0"
+        />
+      </view>
+    </view>
+
+    <!-- Alert Notification Toggle -->
+    <view class="setting-card alert-card">
+      <view class="alert-content">
+        <view class="alert-info">
+          <view class="alert-icon">
+            <van-icon name="bell" size="20px" color="#07c160" />
+          </view>
+          <view class="alert-text">
+            <text class="alert-title">告警通知</text>
+            <text class="alert-desc">当环境数据超出阈值范围时发送通知</text>
+          </view>
+        </view>
+        <van-switch
+          checked="{{ alertEnabled }}"
+          bind:change="onAlertToggle"
+          size="24px"
+          active-color="#07c160"
+          inactive-color="#e0e0e0"
+        />
+      </view>
+    </view>
+
+    <!-- Spacer for bottom buttons -->
+    <view class="bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- Bottom Action Buttons -->
+  <view class="bottom-actions">
+    <button class="action-btn reset-btn" bindtap="onReset">
+      <van-icon name="replay" size="16px" color="#666" />
+      <text>恢复默认</text>
+    </button>
+    <button class="action-btn save-btn {{ hasChanges ? 'has-changes' : '' }}" bindtap="onSave">
+      <van-icon name="success" size="16px" color="#fff" />
+      <text>保存设置</text>
+    </button>
+  </view>
+</view>

@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "sensor-gauge": "/components/sensor-gauge/sensor-gauge",
+    "van-circle": "@vant/weapp/circle/index"
+  },
+  "navigationBarTitleText": "监测",
+  "enablePullDownRefresh": true
+}

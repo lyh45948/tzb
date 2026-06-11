@@ -1,0 +1,232 @@
+<!-- pages/monitor/monitor.wxml -->
+<!-- Smart Agriculture Monitor - Tab 2 -->
+<view class="container">
+  <!-- Demo mode status bar -->
+  <view class="demo-status-bar" wx:if="{{ isDemoMode }}">
+    <van-icon name="play-circle-o" size="14px" color="#07c160" />
+    <text class="demo-status-text">Demo Mode - Simulated Data</text>
+  </view>
+
+  <!-- Header with time range selector -->
+  <view class="header-section">
+    <view class="header-title">
+      <van-icon name="chart-trending-o" size="18px" color="#07c160" />
+      <text class="title-text">Smart Agriculture Monitor</text>
+    </view>
+    <view class="time-range-selector">
+      <view
+        class="range-btn {{ timeRange == '1h' ? 'active' : '' }}"
+        bindtap="onTimeRangeChange"
+        data-range="1h"
+      >1h</view>
+      <view
+        class="range-btn {{ timeRange == '6h' ? 'active' : '' }}"
+        bindtap="onTimeRangeChange"
+        data-range="6h"
+      >6h</view>
+      <view
+        class="range-btn {{ timeRange == '24h' ? 'active' : '' }}"
+        bindtap="onTimeRangeChange"
+        data-range="24h"
+      >24h</view>
+    </view>
+  </view>
+
+  <!-- Gauge display section -->
+  <view class="gauge-section">
+    <view class="gauge-grid">
+      <!-- Temperature Gauge -->
+      <view class="gauge-card">
+        <van-circle
+          value="{{ sensorData.temperature }}"
+          max="50"
+          stroke-width="6"
+          size="70"
+          layer-color="#e8f5e9"
+          color="#07c160"
+        />
+        <view class="gauge-info">
+          <text class="gauge-label">Temperature</text>
+          <text class="gauge-value">{{ sensorData.temperature }}C</text>
+        </view>
+      </view>
+
+      <!-- Humidity Gauge -->
+      <view class="gauge-card">
+        <van-circle
+          value="{{ sensorData.humidity }}"
+          max="100"
+          stroke-width="6"
+          size="70"
+          layer-color="#e3f2fd"
+          color="#1989fa"
+        />
+        <view class="gauge-info">
+          <text class="gauge-label">Humidity</text>
+          <text class="gauge-value">{{ sensorData.humidity }}%</text>
+        </view>
+      </view>
+
+      <!-- Light Intensity Gauge -->
+      <view class="gauge-card">
+        <van-circle
+          value="{{ sensorData.lightIntensity }}"
+          max="1500"
+          stroke-width="6"
+          size="70"
+          layer-color="#fff8e1"
+          color="#ff9d00"
+        />
+        <view class="gauge-info">
+          <text class="gauge-label">Light</text>
+          <text class="gauge-value">{{ sensorData.lightIntensity }} Lux</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Chart section -->
+  <view class="chart-section">
+    <view class="chart-header">
+      <text class="chart-title">Temperature & Humidity Trends</text>
+      <view class="chart-legend">
+        <view class="legend-item">
+          <view class="dot temp"></view>
+          <text>Temp</text>
+        </view>
+        <view class="legend-item">
+          <view class="dot humi"></view>
+          <text>Humidity</text>
+        </view>
+      </view>
+    </view>
+    <view class="canvas-container">
+      <!-- Left axis: Temperature -->
+      <view class="axis-y axis-left">
+        <text>{{ chartLabels.temp.max }}C</text>
+        <text>{{ chartLabels.temp.min }}C</text>
+      </view>
+      <canvas type="2d" id="trendChart" class="trend-chart-canvas"></canvas>
+      <!-- Right axis: Humidity -->
+      <view class="axis-y axis-right">
+        <text>{{ chartLabels.humi.max }}%</text>
+        <text>{{ chartLabels.humi.min }}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Device controls -->
+  <view class="control-section">
+    <view class="section-header">
+      <van-icon name="setting-o" size="16px" color="#07c160" />
+      <text class="section-title">Device Controls</text>
+    </view>
+    <view class="control-grid">
+      <!-- Irrigation -->
+      <view class="control-item">
+        <view class="control-icon irrigation">
+          <van-icon name="orders-o" size="20px" color="#1989fa" />
+        </view>
+        <view class="control-info">
+          <text class="control-label">Irrigation</text>
+          <van-switch
+            checked="{{ controls.irrigation }}"
+            bind:change="onIrrigationChange"
+            color="#07c160"
+            size="18px"
+          />
+        </view>
+      </view>
+
+      <!-- Ventilation -->
+      <view class="control-item">
+        <view class="control-icon ventilation">
+          <van-icon name="todo-list-o" size="20px" color="#ff9d00" />
+        </view>
+        <view class="control-info">
+          <text class="control-label">Ventilation</text>
+          <van-switch
+            checked="{{ controls.ventilation }}"
+            bind:change="onVentilationChange"
+            color="#07c160"
+            size="18px"
+          />
+        </view>
+      </view>
+
+      <!-- Grow Light -->
+      <view class="control-item">
+        <view class="control-icon light">
+          <van-icon name="bulb-o" size="20px" color="#ff9d00" />
+        </view>
+        <view class="control-info">
+          <text class="control-label">Grow Light</text>
+          <van-switch
+            checked="{{ controls.growLight }}"
+            bind:change="onGrowLightChange"
+            color="#07c160"
+            size="18px"
+          />
+        </view>
+      </view>
+
+      <!-- Alert Toggle -->
+      <view class="control-item">
+        <view class="control-icon alert">
+          <van-icon name="bell" size="20px" color="#ee0a24" />
+        </view>
+        <view class="control-info">
+          <text class="control-label">Alerts</text>
+          <van-switch
+            checked="{{ controls.alertEnabled }}"
+            bind:change="onAlertToggle"
+            color="#07c160"
+            size="18px"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Alert history section -->
+  <view class="alert-section">
+    <view class="section-header">
+      <view class="header-left">
+        <van-icon name="info-o" size="16px" color="#ff976a" />
+        <text class="section-title">Alert History</text>
+        <text class="alert-count" wx:if="{{ alerts.length > 0 }}">({{ alerts.length }})</text>
+      </view>
+      <view class="clear-btn" bindtap="onClearAlerts" wx:if="{{ alerts.length > 0 }}">
+        <van-icon name="delete-o" size="14px" color="#909399" />
+        <text>Clear</text>
+      </view>
+    </view>
+
+    <view class="alert-list" wx:if="{{ alerts.length > 0 }}">
+      <view class="alert-item {{ item.type }}" wx:for="{{ alerts }}" wx:key="index">
+        <van-icon name="{{ item.icon }}" size="14px" color="{{ item.type == 'error' ? '#ee0a24' : (item.type == 'warning' ? '#ff976a' : '#1989fa') }}" />
+        <view class="alert-content">
+          <text class="alert-message">{{ item.message }}</text>
+          <text class="alert-time">{{ item.time }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-alerts" wx:else>
+      <van-icon name="passed" size="32px" color="#07c160" />
+      <text>No alerts</text>
+    </view>
+  </view>
+
+  <!-- Network config -->
+  <view class="network-config">
+    <van-field
+      value="{{ IP }}"
+      placeholder="Device IP"
+      bind:change="onIpChange"
+      left-icon="cluster-o"
+      size="small"
+      border="{{ false }}"
+    />
+  </view>
+</view>

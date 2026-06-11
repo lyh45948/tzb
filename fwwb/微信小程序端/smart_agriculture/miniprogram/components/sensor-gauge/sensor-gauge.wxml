@@ -1,0 +1,17 @@
+<!-- components/sensor-gauge/sensor-gauge.wxml -->
+<view class="gauge-container">
+  <view class="gauge-circle">
+    <van-circle
+      value="{{ percentage }}"
+      size="{{ size }}"
+      stroke-width="{{ strokeWidth }}"
+      color="{{ color }}"
+      layer-color="#E8E8E8"
+    />
+    <view class="gauge-center">
+      <view class="gauge-value">{{value}}</view>
+      <view class="gauge-unit">{{unit}}</view>
+    </view>
+  </view>
+  <view class="gauge-title">{{title}}</view>
+</view>

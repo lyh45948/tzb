@@ -1,0 +1,92 @@
+<!--pages/monitor/monitor.wxml -->
+<view class="container">
+  <!-- 时间范围选择 -->
+  <view class="time-range-bar">
+    <view
+      class="range-item {{timeRange === '1h' ? 'active' : ''}}"
+      data-range="1h"
+      bindtap="onTimeRangeChange"
+    >1小时</view>
+    <view
+      class="range-item {{timeRange === '6h' ? 'active' : ''}}"
+      data-range="6h"
+      bindtap="onTimeRangeChange"
+    >6小时</view>
+    <view
+      class="range-item {{timeRange === '24h' ? 'active' : ''}}"
+      data-range="24h"
+      bindtap="onTimeRangeChange"
+    >24小时</view>
+  </view>
+
+  <!-- 数据卡片 -->
+  <view class="data-cards">
+    <view class="data-card">
+      <view class="card-header">
+        <text class="card-title">温度</text>
+        <text class="card-value sensor-temp">{{sensorData.temperature}}°C</text>
+      </view>
+      <view class="card-chart">
+        <view class="chart-placeholder">
+          <text class="chart-text">趋势图</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="data-card">
+      <view class="card-header">
+        <text class="card-title">湿度</text>
+        <text class="card-value sensor-humidity">{{sensorData.humidity}}%</text>
+      </view>
+      <view class="card-chart">
+        <view class="chart-placeholder">
+          <text class="chart-text">趋势图</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="data-card">
+      <view class="card-header">
+        <text class="card-title">光照</text>
+        <text class="card-value sensor-light">{{sensorData.light}} lux</text>
+      </view>
+      <view class="card-chart">
+        <view class="chart-placeholder">
+          <text class="chart-text">趋势图</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="data-card">
+      <view class="card-header">
+        <text class="card-title">土壤湿度</text>
+        <text class="card-value sensor-soil">{{sensorData.soilMoisture}}%</text>
+      </view>
+      <view class="card-chart">
+        <view class="chart-placeholder">
+          <text class="chart-text">趋势图</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 预警历史 -->
+  <view class="alert-history" wx:if="{{alerts.length > 0}}">
+    <view class="section-title">预警记录</view>
+    <view class="alert-list">
+      <view class="alert-item" wx:for="{{alerts}}" wx:key="index">
+        <view class="alert-icon">
+          <text class="icon-text">!</text>
+        </view>
+        <view class="alert-content">
+          <text class="alert-message">{{item.message}}</text>
+          <text class="alert-time">{{item.timestamp}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="no-alert" wx:else>
+    <text class="no-alert-text">暂无预警</text>
+  </view>
+</view>
