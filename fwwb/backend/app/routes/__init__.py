@@ -10,3 +10,5 @@ from app.routes import device_routes
 from app.routes import agent_routes
 from app.routes import imu_routes
 from app.routes import vision_routes
+from app.routes import agv_routes
+from app.routes import dashboard_routes

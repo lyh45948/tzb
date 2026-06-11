@@ -10,7 +10,7 @@ from app.utils.protocol import normalize_car_data
 _registry = {}
 
 
-def register_services(udp_car_service=None, udp_miniapp_service=None, websocket_service=None, simulation_service=None, data_service=None, imu_service=None):
+def register_services(udp_car_service=None, udp_miniapp_service=None, websocket_service=None, simulation_service=None, data_service=None, imu_service=None, agv_task_service=None, dashboard_service=None):
     """注册服务实例，供 API 路由调用"""
     _registry['udp_car_service'] = udp_car_service
     _registry['udp_miniapp_service'] = udp_miniapp_service
@@ -18,6 +18,8 @@ def register_services(udp_car_service=None, udp_miniapp_service=None, websocket_
     _registry['simulation_service'] = simulation_service
     _registry['data_service'] = data_service
     _registry['imu_service'] = imu_service
+    _registry['agv_task_service'] = agv_task_service
+    _registry['dashboard_service'] = dashboard_service
 
 
 def get_service(name):

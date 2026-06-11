@@ -133,6 +133,35 @@ CREATE TABLE IF NOT EXISTS car_sensor_data (
     INDEX idx_timestamp (timestamp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小车实际传感器数据表';
 
+-- AGV任务表（调度与路径规划占位）
+CREATE TABLE IF NOT EXISTS agv_tasks (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    task_no VARCHAR(64) UNIQUE NOT NULL COMMENT '任务编号',
+    device_id VARCHAR(50) NOT NULL COMMENT '目标小车ID',
+    task_type VARCHAR(50) DEFAULT 'materialTransfer' COMMENT '任务类型',
+    template_id VARCHAR(50) COMMENT '演示任务模板ID',
+    title VARCHAR(100) COMMENT '任务标题',
+    description VARCHAR(255) COMMENT '任务说明',
+    source VARCHAR(30) DEFAULT 'api' COMMENT '任务来源',
+    start_point VARCHAR(50) NOT NULL COMMENT '起点',
+    end_point VARCHAR(50) NOT NULL COMMENT '终点',
+    status VARCHAR(20) NOT NULL DEFAULT 'created' COMMENT '任务状态',
+    priority INT DEFAULT 0 COMMENT '优先级',
+    path_waypoints JSON COMMENT '展示用路径点',
+    path_commands JSON COMMENT '固件路径命令',
+    command_payload JSON COMMENT '完整下发命令',
+    planner_version VARCHAR(50) DEFAULT 'placeholder-v1' COMMENT '规划器版本',
+    dispatched_at DATETIME COMMENT '下发时间',
+    completed_at DATETIME COMMENT '完成时间',
+    error_message VARCHAR(255) COMMENT '错误信息',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_task_no (task_no),
+    INDEX idx_agv_device_status (device_id, status),
+    INDEX idx_agv_template (template_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AGV任务表';
+
 -- 插入默认设备
 INSERT INTO devices (device_id, name, ip_address, port, status)
 VALUES ('car_001', '智能小车1号', '192.168.1.100', 7788, 'offline')

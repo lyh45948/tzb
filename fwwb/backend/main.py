@@ -32,6 +32,8 @@ class SmartCarBackend:
         self.udp_miniapp_service = None  # UDP服务 - 小程序连接
         self.websocket_service = None  # WebSocket服务 - Web应用连接
         self.data_service = None
+        self.agv_task_service = None  # AGV任务调度服务
+        self.dashboard_service = None  # 数字孪生大屏服务
         self.imu_service = None  # IMU 服务
         self.running = False
 
@@ -64,6 +66,22 @@ class SmartCarBackend:
             config=self.config
         )
 
+        # 初始化AGV任务调度与数字孪生服务
+        logger.info("初始化AGV任务调度服务...")
+        from app.services.agv_task_service import AGVTaskService
+        from app.services.dashboard_service import DashboardService
+        self.agv_task_service = AGVTaskService(
+            app=self.app,
+            data_service=self.data_service,
+            udp_car_service=self.udp_car_service
+        )
+        self.dashboard_service = DashboardService(
+            app=self.app,
+            data_service=self.data_service,
+            udp_car_service=self.udp_car_service,
+            agv_task_service=self.agv_task_service
+        )
+
         # 初始化 IMU 服务
         logger.info("初始化IMU服务...")
         self.imu_service = IMUService(app=self.app, config=self.config)
@@ -89,7 +107,9 @@ class SmartCarBackend:
             websocket_service=self.websocket_service,
             simulation_service=sim_service,
             data_service=self.data_service,
-            imu_service=self.imu_service
+            imu_service=self.imu_service,
+            agv_task_service=self.agv_task_service,
+            dashboard_service=self.dashboard_service
         )
         logger.info("服务实例已注册到registry")
 
