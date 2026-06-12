@@ -1,0 +1,41 @@
+# 视觉模型文件 (大文件, 不入版本控制)
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.whl
+
+# 训练数据集与产物 (从 sjsb 整合的训练代码不带数据)
+training/**/datasets/*/images/
+training/**/datasets/*/labels/
+training/**/datasets/*/*.cache
+training/**/runs/
+training/**/checkpoints*/
+training/**/captured_images/
+training/**/debug_vis/
+training/**/test_crnn_debug/
+training/**/label_debug/
+training/**/*.pt
+training/**/*.pth
+training/**/*.log
+
+# 工具采集图像
+tools/**/captured_images/
+tools/**/*.pt
+tools/**/*.pth
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# venv
+.venv/
+venv/
+
+# 日志
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/

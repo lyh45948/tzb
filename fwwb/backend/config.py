@@ -62,6 +62,51 @@ class Config:
     IMU_SERIAL_BAUDRATE = int(os.getenv('IMU_SERIAL_BAUDRATE', 460800))
     IMU_SERIAL_TIMEOUT = float(os.getenv('IMU_SERIAL_TIMEOUT', 0.1))
 
+    # ============ 视觉识别配置 ============
+    # 整合自原 sjsb 项目，提供障碍物检测与计数器识别能力。
+    # 所有视觉相关功能默认关闭；需在 .env 中显式开启。
+    VISION_ENABLED = os.getenv('VISION_ENABLED', 'false').lower() in ('true', '1', 'yes')
+
+    # 摄像头类型: none(仅接收外部 POST) / usb(本地 USB 摄像头) / esp32(ESP32-CAM HTTP)
+    VISION_CAMERA_TYPE = os.getenv('VISION_CAMERA_TYPE', 'none')
+
+    # 摄像头通用配置
+    VISION_CAMERA_INDEX = int(os.getenv('VISION_CAMERA_INDEX', 0))
+    VISION_FRAME_WIDTH = int(os.getenv('VISION_FRAME_WIDTH', 320))
+    VISION_FRAME_HEIGHT = int(os.getenv('VISION_FRAME_HEIGHT', 240))
+    VISION_FPS = int(os.getenv('VISION_FPS', 1))
+
+    # ESP32-CAM 配置
+    VISION_ESP32_IP = os.getenv('VISION_ESP32_IP', '192.168.137.213')
+    VISION_ESP32_CAPTURE_PATH = os.getenv('VISION_ESP32_CAPTURE_PATH', '/capture')
+    VISION_ESP32_TIMEOUT = float(os.getenv('VISION_ESP32_TIMEOUT', 3.0))
+
+    # 模型存放目录与文件名(相对路径基于 VISION_MODELS_DIR，绝对路径直用)
+    VISION_MODELS_DIR = os.getenv(
+        'VISION_MODELS_DIR',
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+    )
+    VISION_OBSTACLE_MODEL = os.getenv('VISION_OBSTACLE_MODEL', 'yolo11s.pt')
+    VISION_DIGIT_PANEL_MODEL = os.getenv('VISION_DIGIT_PANEL_MODEL', 'digit_panel_yolov8s.pt')
+    VISION_CRNN_MODEL = os.getenv('VISION_CRNN_MODEL', 'best_crnn.pth')
+
+    # 检测阈值
+    VISION_OBSTACLE_CONF = float(os.getenv('VISION_OBSTACLE_CONF', 0.05))
+    VISION_COUNTER_CONF = float(os.getenv('VISION_COUNTER_CONF', 0.3))
+
+    # 推理设备: auto / cpu / cuda
+    VISION_DEVICE = os.getenv('VISION_DEVICE', 'auto')
+
+    # 后台检测循环间隔(秒)，0 表示禁用对应循环
+    VISION_OBSTACLE_INTERVAL = float(os.getenv('VISION_OBSTACLE_INTERVAL', 1.0))
+    VISION_COUNTER_INTERVAL = float(os.getenv('VISION_COUNTER_INTERVAL', 1.0))
+
+    # 持久化间隔(秒)，0 表示不写库
+    VISION_PERSIST_INTERVAL = float(os.getenv('VISION_PERSIST_INTERVAL', 5.0))
+
+    # 是否在持久化时保存标注图像 base64（占空间，默认关闭）
+    VISION_PERSIST_IMAGE = os.getenv('VISION_PERSIST_IMAGE', 'false').lower() in ('true', '1', 'yes')
+
 
 class DevelopmentConfig(Config):
     """开发环境配置"""

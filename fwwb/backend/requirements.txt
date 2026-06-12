@@ -6,3 +6,14 @@ cryptography==41.0.7
 python-dotenv==1.0.0
 pyserial==3.5
 websockets>=12.0
+
+# ============ 视觉识别依赖 (整合自 sjsb) ============
+# 用于障碍物检测(YOLO) + 计数器识别(YOLO+CRNN+CTC)
+# CPU 推理可用；GPU 加速需选择匹配 CUDA 版本的 torch wheel
+opencv-python>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+ultralytics>=8.3.0
+requests>=2.31.0

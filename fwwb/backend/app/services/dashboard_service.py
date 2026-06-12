@@ -25,6 +25,9 @@ class DashboardService:
         env = car_data.get('env', {}) if isinstance(car_data, dict) else {}
         distance_cm, distance_mm = self._distance_values(car_data.get('distance') if isinstance(car_data, dict) else None)
         smart_light = self._smart_light(env)
+        # 视觉数据可能补充障碍物最近距离与计数器读数
+        vision_obstacles, vision_counter = self._get_vision_caches()
+        distance_cm, distance_mm = self._merge_vision_distance(distance_cm, distance_mm, vision_obstacles)
         alert_level, linked_reason, alarm_events = self._build_alerts(env, distance_cm, timestamp)
         fleet = self._get_fleet()
         command_logs = self._get_command_logs()
@@ -52,9 +55,9 @@ class DashboardService:
             'minDistanceCm': distance_cm,
             'minDistanceMm': distance_mm,
 
-            'goodsCount': 0,
+            'goodsCount': self._counter_to_count(vision_counter),
             'goodsPulse': 0,
-            'counterDigits': '000000',
+            'counterDigits': self._counter_digits(vision_counter),
 
             'fan': self._int(env.get('fan'), 0),
             'led': self._int(env.get('led'), 0),
@@ -128,6 +131,57 @@ class DashboardService:
         except Exception as e:
             logger.warning(f'获取当前传感器数据失败: {e}')
             return get_default_sensor_data()
+
+    def _get_vision_caches(self):
+        """从 VisionService 拉取最新缓存（无服务时返回 (None, None)）"""
+        try:
+            from app.services.registry import get_service
+            vs = get_service('vision_service')
+            if vs is None:
+                return None, None
+            return vs.get_latest_obstacles(), vs.get_latest_counter()
+        except Exception as e:
+            logger.debug(f'获取视觉缓存失败: {e}')
+            return None, None
+
+    def _merge_vision_distance(self, distance_cm, distance_mm, vision_obstacles):
+        """如果视觉障碍物最近距离更小（更危险），用它替换超声距离"""
+        if not vision_obstacles:
+            return distance_cm, distance_mm
+        apf = vision_obstacles.get('apf') if isinstance(vision_obstacles, dict) else None
+        nearest = apf.get('nearest_distance') if isinstance(apf, dict) else None
+        if nearest is None:
+            return distance_cm, distance_mm
+        try:
+            visual_cm = int(round(float(nearest) * 100))
+        except (ValueError, TypeError):
+            return distance_cm, distance_mm
+        if distance_cm is None or visual_cm < distance_cm:
+            return visual_cm, visual_cm * 10
+        return distance_cm, distance_mm
+
+    @staticmethod
+    def _counter_digits(vision_counter):
+        if not isinstance(vision_counter, dict):
+            return '000000'
+        digits = vision_counter.get('digits')
+        if not digits:
+            return '000000'
+        # 仅保留数字字符并左侧补 0 至 6 位
+        only_digits = ''.join(ch for ch in str(digits) if ch.isdigit())
+        if not only_digits:
+            return '000000'
+        return only_digits.rjust(6, '0')[-6:]
+
+    @staticmethod
+    def _counter_to_count(vision_counter):
+        digits = DashboardService._counter_digits(vision_counter) if vision_counter else None
+        if not digits:
+            return 0
+        try:
+            return int(digits)
+        except ValueError:
+            return 0
 
     def _get_fleet(self):
         if not self.agv_task_service:

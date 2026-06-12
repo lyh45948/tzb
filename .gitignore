@@ -103,3 +103,55 @@ wandb/
 *.exe
 *.iso
 *.whl
+
+# 本地数据与二进制资料（仅本地留存，不上传）
+# 图片 / 设计素材
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.webp
+*.svg
+*.ico
+*.psd
+*.ai
+
+# 音视频 / 录屏 / 采集素材
+*.mp3
+*.wav
+*.flac
+*.aac
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Office / PDF 文档成品
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.wps
+*.et
+*.dps
+
+# 数据集 / 数据库 / 采集记录
+*.csv
+*.tsv
+*.jsonl
+*.ndjson
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.dump
+*.pcap
+*.pcapng
+*.npy
+*.npz
+*.mat
