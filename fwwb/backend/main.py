@@ -32,7 +32,10 @@ class SmartCarBackend:
         self.udp_miniapp_service = None  # UDP服务 - 小程序连接
         self.websocket_service = None  # WebSocket服务 - Web应用连接
         self.data_service = None
+        self.agv_task_service = None  # AGV任务调度服务
+        self.dashboard_service = None  # 数字孪生大屏服务
         self.imu_service = None  # IMU 服务
+        self.vision_service = None  # 视觉识别服务
         self.running = False
 
     def start(self):
@@ -64,6 +67,22 @@ class SmartCarBackend:
             config=self.config
         )
 
+        # 初始化AGV任务调度与数字孪生服务
+        logger.info("初始化AGV任务调度服务...")
+        from app.services.agv_task_service import AGVTaskService
+        from app.services.dashboard_service import DashboardService
+        self.agv_task_service = AGVTaskService(
+            app=self.app,
+            data_service=self.data_service,
+            udp_car_service=self.udp_car_service
+        )
+        self.dashboard_service = DashboardService(
+            app=self.app,
+            data_service=self.data_service,
+            udp_car_service=self.udp_car_service,
+            agv_task_service=self.agv_task_service
+        )
+
         # 初始化 IMU 服务
         logger.info("初始化IMU服务...")
         self.imu_service = IMUService(app=self.app, config=self.config)
@@ -79,6 +98,28 @@ class SmartCarBackend:
                 config=self.config
             )
 
+        # 初始化视觉识别服务（默认禁用，需 VISION_ENABLED=true 启用）
+        if getattr(self.config, 'VISION_ENABLED', False):
+            logger.info("初始化视觉识别服务...")
+            try:
+                from app.vision.vision_service import VisionService
+                self.vision_service = VisionService(
+                    app=self.app,
+                    config=self.config,
+                    websocket_service=self.websocket_service,
+                    data_service=self.data_service,
+                )
+                if self.vision_service.init():
+                    self.vision_service.start()
+                    logger.info("视觉识别服务已启动")
+                else:
+                    logger.warning("视觉识别服务初始化失败，视觉功能不可用")
+            except Exception as e:
+                logger.error(f"视觉识别服务启动异常: {e}")
+                self.vision_service = None
+        else:
+            logger.info("视觉识别服务未启用 (VISION_ENABLED=false)")
+
         # 注册服务实例到registry（供REST API调用）
         from app.services.registry import register_services
         from app.services.simulation_service import SimulationService
@@ -89,7 +130,10 @@ class SmartCarBackend:
             websocket_service=self.websocket_service,
             simulation_service=sim_service,
             data_service=self.data_service,
-            imu_service=self.imu_service
+            imu_service=self.imu_service,
+            agv_task_service=self.agv_task_service,
+            dashboard_service=self.dashboard_service,
+            vision_service=self.vision_service,
         )
         logger.info("服务实例已注册到registry")
 
@@ -170,6 +214,13 @@ class SmartCarBackend:
         if self.imu_service:
             self.imu_service.stop()
             logger.info("IMU服务已关闭")
+
+        if self.vision_service:
+            try:
+                self.vision_service.stop()
+                logger.info("视觉识别服务已关闭")
+            except Exception as e:
+                logger.warning(f"关闭视觉服务异常: {e}")
 
         logger.info("服务已全部关闭")
         logger.info("=" * 50)
