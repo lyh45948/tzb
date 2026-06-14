@@ -185,6 +185,10 @@ class WebSocketService:
             await self._handle_demo_mode(message, websocket)
         elif msg_type == 'car_list':
             await self._handle_car_list_request(websocket)
+        elif msg_type == 'linkage_config_get':
+            await self._handle_linkage_config_get(websocket)
+        elif msg_type == 'linkage_config_set':
+            await self._handle_linkage_config_set(message, websocket)
         elif msg_type == 'heartbeat':
             pass
         else:
@@ -340,6 +344,79 @@ class WebSocketService:
             'type': 'car_list',
             'cars': cars,
         })
+
+    def _get_linkage_controller(self):
+        try:
+            from app.services.registry import get_service
+            return get_service('linkage_controller')
+        except Exception:
+            return None
+
+    async def _handle_linkage_config_get(self, websocket):
+        """webapp 获取当前联动 + 告警阈值"""
+        controller = self._get_linkage_controller()
+        if controller is None:
+            await self._send_message(websocket, {
+                'type': 'linkage_config',
+                'success': False,
+                'message': 'LinkageController 未初始化',
+                'config': {},
+            })
+            return
+        try:
+            config_dict = controller.get_config()
+            await self._send_message(websocket, {
+                'type': 'linkage_config',
+                'success': True,
+                'config': config_dict,
+            })
+        except Exception as e:
+            logger.error(f'获取联动配置失败: {e}')
+            await self._send_message(websocket, {
+                'type': 'linkage_config',
+                'success': False,
+                'message': str(e),
+                'config': {},
+            })
+
+    async def _handle_linkage_config_set(self, message, websocket):
+        """webapp 写入联动 + 告警阈值；写入后回当前完整配置"""
+        controller = self._get_linkage_controller()
+        if controller is None:
+            await self._send_message(websocket, {
+                'type': 'linkage_config_set_result',
+                'success': False,
+                'message': 'LinkageController 未初始化',
+            })
+            return
+        updates = message.get('config') or {}
+        try:
+            applied, ignored = controller.update_config(updates)
+            current = controller.get_config()
+            await self._send_message(websocket, {
+                'type': 'linkage_config_set_result',
+                'success': True,
+                'applied': applied,
+                'ignored': ignored,
+                'config': current,
+            })
+            # 同时广播 linkage_config，所有打开 Settings 页的客户端同步
+            for client_ws in list(self.clients.keys()):
+                try:
+                    await self._send_message(client_ws, {
+                        'type': 'linkage_config',
+                        'success': True,
+                        'config': current,
+                    })
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.error(f'更新联动配置失败: {e}')
+            await self._send_message(websocket, {
+                'type': 'linkage_config_set_result',
+                'success': False,
+                'message': str(e),
+            })
 
     async def _handle_query(self, message, websocket):
         """处理查询请求"""

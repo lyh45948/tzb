@@ -37,6 +37,12 @@ class Config:
     # HTTP REST API配置
     HTTP_PORT = int(os.getenv('HTTP_PORT', 5000))
 
+    # ============ 数字孪生大屏 SSE 推送 ============
+    # 后端周期性把 dashboard 快照通过 SSE 推送到前端大屏
+    DASHBOARD_STREAM_ENABLED = os.getenv('DASHBOARD_STREAM_ENABLED', 'true').lower() in ('true', '1', 'yes')
+    DASHBOARD_STREAM_INTERVAL = float(os.getenv('DASHBOARD_STREAM_INTERVAL', 1.0))  # 秒
+    DASHBOARD_STREAM_HEARTBEAT = int(os.getenv('DASHBOARD_STREAM_HEARTBEAT', 15))  # 秒
+
     # UDP配置 (连接Hi3861小车)
     UDP_PORT = int(os.getenv('UDP_PORT', 7788))
     UDP_TIMEOUT = float(os.getenv('UDP_TIMEOUT', 5.0))  # 秒
@@ -81,6 +87,16 @@ class Config:
     VISION_ESP32_CAPTURE_PATH = os.getenv('VISION_ESP32_CAPTURE_PATH', '/capture')
     VISION_ESP32_TIMEOUT = float(os.getenv('VISION_ESP32_TIMEOUT', 3.0))
 
+    # OpenMV 串口配置（VISION_CAMERA_TYPE=openmv 时使用）
+    # 板侧需运行 tools/openmv/openmv_camera.py 固件
+    VISION_OPENMV_PORT = os.getenv('VISION_OPENMV_PORT')              # 缺省 None=自动扫描 USB/CDC/ACM
+    VISION_OPENMV_BAUDRATE = int(os.getenv('VISION_OPENMV_BAUDRATE', 115200))
+    VISION_OPENMV_TIMEOUT = float(os.getenv('VISION_OPENMV_TIMEOUT', 3.0))
+
+    # 启动后端时是否自动弹出 OpenMV 调试 GUI（子进程方式）
+    # GUI 通过 HTTP POST /v1/vision/counter 把识别结果上报给后端
+    VISION_OPENMV_GUI = os.getenv('VISION_OPENMV_GUI', 'false').lower() in ('true', '1', 'yes')
+
     # 模型存放目录与文件名(相对路径基于 VISION_MODELS_DIR，绝对路径直用)
     VISION_MODELS_DIR = os.getenv(
         'VISION_MODELS_DIR',
@@ -106,6 +122,43 @@ class Config:
 
     # 是否在持久化时保存标注图像 base64（占空间，默认关闭）
     VISION_PERSIST_IMAGE = os.getenv('VISION_PERSIST_IMAGE', 'false').lower() in ('true', '1', 'yes')
+
+    # ============ 联动控制配置（LinkageController） ============
+    # 后端集中决策三条传感器联动：
+    #   - PIR(AP3216C ps/ir) → LED 自动照明
+    #   - 温湿度 → 风扇自动启停（带回滞）
+    #   - 危气 alertLevel → AW2013 RGB 颜色（黄/红/红闪烁/灭）
+    LINKAGE_ENABLED = os.getenv('LINKAGE_ENABLED', 'true').lower() in ('true', '1', 'yes')
+    LINKAGE_TICK_SECONDS = float(os.getenv('LINKAGE_TICK_SECONDS', 1.0))
+
+    # 风扇阈值（双门限回滞，避免临界抖动）
+    FAN_TEMP_ON = float(os.getenv('FAN_TEMP_ON', 32.0))
+    FAN_TEMP_OFF = float(os.getenv('FAN_TEMP_OFF', 30.0))
+    FAN_HUMI_ON = float(os.getenv('FAN_HUMI_ON', 80.0))
+    FAN_HUMI_OFF = float(os.getenv('FAN_HUMI_OFF', 75.0))
+
+    # PIR 人体判定阈值（AP3216C ps/ir 通道，单位非 lux，需现场标定）
+    IR_PS_THRESHOLD = int(os.getenv('IR_PS_THRESHOLD', 200))
+    IR_IR_THRESHOLD = int(os.getenv('IR_IR_THRESHOLD', 100))
+    # 去抖：连续 N 次有人才点亮，连续 M 次无人才熄灭（单位 = tick）
+    IR_DEBOUNCE_ON = int(os.getenv('IR_DEBOUNCE_ON', 2))
+    IR_DEBOUNCE_OFF = int(os.getenv('IR_DEBOUNCE_OFF', 5))
+
+    # RGB 闪烁频率（Hz），critical 等级时使用
+    RGB_BLINK_HZ = float(os.getenv('RGB_BLINK_HZ', 1.0))
+
+    # 手动控制后该路自动联动静默秒数
+    MANUAL_OVERRIDE_TTL = int(os.getenv('MANUAL_OVERRIDE_TTL', 30))
+
+    # 危气分级阈值（webapp 设置页可在线修改，初始值取自此处）
+    CO2_WARNING = int(os.getenv('CO2_WARNING', 800))
+    CO2_DANGER = int(os.getenv('CO2_DANGER', 1000))
+    TVOC_WARNING = int(os.getenv('TVOC_WARNING', 600))
+    TVOC_DANGER = int(os.getenv('TVOC_DANGER', 900))
+    GASMIC_WARNING = int(os.getenv('GASMIC_WARNING', 300))
+    GASMIC_DANGER = int(os.getenv('GASMIC_DANGER', 500))
+    DISTANCE_WARNING = int(os.getenv('DISTANCE_WARNING', 30))
+    DISTANCE_DANGER = int(os.getenv('DISTANCE_DANGER', 15))
 
 
 class DevelopmentConfig(Config):

@@ -19,8 +19,11 @@ from datetime import datetime
 from ultralytics import YOLO
 
 # 添加项目路径
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root / "szsb"))
+# 整合到 backend 后, 实际项目根是 backend/, openmv 工具位于 backend/tools/openmv/
+# CRNN 训练代码在 backend/training/szsb/, 模型权重在 backend/models/
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
+project_root = BACKEND_ROOT
+sys.path.insert(0, str(BACKEND_ROOT / "training" / "szsb"))
 
 class OpenMVReceiver:
     """OpenMV图像接收器"""
@@ -233,7 +236,7 @@ class CargoDetector:
             self.model_path = model_path
 
         if self.model_path is None:
-            self.model_path = str(project_root / "yolo11s.pt")
+            self.model_path = str(project_root / "models" / "yolo11s.pt")
 
         try:
             print(f"加载YOLO模型: {self.model_path}")
@@ -308,7 +311,7 @@ class CounterRecognizer:
 
         # 加载YOLO模型（检测计数器面板）
         if yolo_path is None:
-            yolo_path = str(project_root / "yolo11s.pt")
+            yolo_path = str(project_root / "models" / "digit_panel_yolov8s.pt")
 
         try:
             print(f"加载计数器检测模型: {yolo_path}")
@@ -319,7 +322,7 @@ class CounterRecognizer:
 
         # 加载CRNN模型（识别数字）
         if crnn_path is None:
-            crnn_path = str(project_root / "szsb" / "checkpoints_v3" / "best_crnn.pth")
+            crnn_path = str(project_root / "models" / "best_crnn.pth")
 
         try:
             print(f"加载CRNN模型: {crnn_path}")

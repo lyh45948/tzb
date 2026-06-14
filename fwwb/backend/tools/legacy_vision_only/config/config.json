@@ -5,10 +5,10 @@
     "DEVICE": "auto"
   },
   "PATHS": {
-    "OBSTACLE_YOLO": "yolo11s.pt",
-    "DIGIT_PANEL_YOLO": "szsb/checkpoints_v3/digit_panel_yolov8s.pt",
-    "CRNN": "szsb/checkpoints_v2/best_crnn.pth",
-    "CAPTURE_DIR": "captured_images"
+    "OBSTACLE_YOLO": "models/yolo11s.pt",
+    "DIGIT_PANEL_YOLO": "models/digit_panel_yolov8s.pt",
+    "CRNN": "models/best_crnn.pth",
+    "CAPTURE_DIR": "tools/legacy_vision_only/captured_images"
   },
   "ESP32": {
     "IP": "192.168.137.213",

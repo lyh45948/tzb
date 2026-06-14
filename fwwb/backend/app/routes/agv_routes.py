@@ -1,6 +1,8 @@
 """
 AGV任务调度与路径规划占位接口
 """
+import re
+
 from flask import jsonify, request
 
 from app.routes import api_bp
@@ -10,11 +12,25 @@ from app.utils.logger import get_logger
 logger = get_logger('agv_routes')
 
 
+# 简单 IPv4 正则：4 段 0-255 数字。不支持 IPv6/域名。
+_IPV4_RE = re.compile(
+    r'^(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}'
+    r'(?:25[0-5]|2[0-4]\d|[01]?\d?\d)$'
+)
+
+
 def _service():
     service = get_service('agv_task_service')
     if not service:
         raise RuntimeError('AGV任务服务未初始化')
     return service
+
+
+def _udp_car_service():
+    svc = get_service('udp_car_service')
+    if not svc:
+        raise RuntimeError('UDP小车服务未初始化')
+    return svc
 
 
 def _json_body():
@@ -73,6 +89,83 @@ def get_agv_car(device_id):
         return _error(str(e), 503)
     except Exception as e:
         logger.error(f'获取AGV状态失败: {device_id} {e}')
+        return _error(str(e), 500)
+
+
+@api_bp.route('/agv/cars/connect', methods=['POST'])
+def connect_agv_car():
+    """连接一辆小车（通过 UDP）。请求体: { carIp, carPort?, deviceId? }"""
+    try:
+        body = _json_body()
+        car_ip = (body.get('carIp') or '').strip()
+        if not car_ip:
+            return _error('缺少 carIp 参数', 400)
+        if not _IPV4_RE.match(car_ip):
+            return _error(f'carIp 格式不合法: {car_ip}', 400)
+
+        # 端口校验
+        try:
+            car_port = int(body.get('carPort') or 7788)
+        except (TypeError, ValueError):
+            return _error('carPort 必须是整数', 400)
+        if not (1 <= car_port <= 65535):
+            return _error('carPort 必须在 1-65535', 400)
+
+        # device_id 缺省时按 WebSocket 同样的规则生成，避免后续 status/disconnect 找不到
+        device_id = (body.get('deviceId') or '').strip() or f"car_{car_ip.replace('.', '_')}"
+
+        udp = _udp_car_service()
+        success, msg = udp.connect_to_car(car_ip, car_port, device_id)
+        if not success:
+            return _error(msg or '连接失败', 400, {'deviceId': device_id, 'carIp': car_ip, 'carPort': car_port})
+
+        status = udp.get_car_status(device_id)
+        return _ok(
+            {
+                'deviceId': device_id,
+                'carIp': car_ip,
+                'carPort': car_port,
+                'status': status,
+            },
+            msg or f'已连接到小车 {car_ip}:{car_port}',
+        )
+    except RuntimeError as e:
+        return _error(str(e), 503)
+    except Exception as e:
+        logger.error(f'连接小车失败: {e}')
+        return _error(str(e), 500)
+
+
+@api_bp.route('/agv/cars/<device_id>', methods=['DELETE'])
+def disconnect_agv_car(device_id):
+    """断开指定小车"""
+    try:
+        udp = _udp_car_service()
+        success, msg = udp.disconnect_car(device_id)
+        if not success:
+            # 找不到/已断开都算 404 比较直观
+            return _error(msg or '断开失败', 404, {'deviceId': device_id})
+        return _ok({'deviceId': device_id}, msg or f'已断开小车 {device_id}')
+    except RuntimeError as e:
+        return _error(str(e), 503)
+    except Exception as e:
+        logger.error(f'断开小车失败: {device_id} {e}')
+        return _error(str(e), 500)
+
+
+@api_bp.route('/agv/cars', methods=['DELETE'])
+def disconnect_all_agv_cars():
+    """断开所有小车"""
+    try:
+        udp = _udp_car_service()
+        success, msg = udp.disconnect_car(None)  # device_id=None → 全部断开
+        if not success:
+            return _error(msg or '断开失败', 400)
+        return _ok({}, msg or '已断开所有小车')
+    except RuntimeError as e:
+        return _error(str(e), 503)
+    except Exception as e:
+        logger.error(f'断开所有小车失败: {e}')
         return _error(str(e), 500)
 
 

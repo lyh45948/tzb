@@ -21,6 +21,7 @@ import numpy as np
 from app.utils.logger import get_logger
 from app.vision.camera.base import BaseCamera
 from app.vision.camera.esp32_camera import ESP32Camera
+from app.vision.camera.openmv_camera import OpenMVCamera
 from app.vision.camera.usb_camera import USBCamera
 from app.vision.engine.image_analyzer import ImageAnalyzer
 
@@ -33,6 +34,7 @@ class VisionService:
     CAMERA_NONE = 'none'
     CAMERA_USB = 'usb'
     CAMERA_ESP32 = 'esp32'
+    CAMERA_OPENMV = 'openmv'
 
     def __init__(self, app, config, websocket_service=None, data_service=None):
         self.app = app
@@ -65,6 +67,10 @@ class VisionService:
         self.esp32_path = getattr(config, 'VISION_ESP32_CAPTURE_PATH', '/capture')
         self.esp32_timeout = float(getattr(config, 'VISION_ESP32_TIMEOUT', 3.0))
         self.camera_index = int(getattr(config, 'VISION_CAMERA_INDEX', 0))
+        # OpenMV 串口配置（VISION_CAMERA_TYPE=openmv 时生效）
+        self.openmv_port = getattr(config, 'VISION_OPENMV_PORT', None) or None
+        self.openmv_baudrate = int(getattr(config, 'VISION_OPENMV_BAUDRATE', 115200))
+        self.openmv_capture_timeout = float(getattr(config, 'VISION_OPENMV_TIMEOUT', 3.0))
         self.obstacle_interval = float(getattr(config, 'VISION_OBSTACLE_INTERVAL', 1.0))
         self.counter_interval = float(getattr(config, 'VISION_COUNTER_INTERVAL', 1.0))
         self.persist_interval = float(getattr(config, 'VISION_PERSIST_INTERVAL', 5.0))
@@ -118,6 +124,13 @@ class VisionService:
                 capture_path=self.esp32_path,
                 fps=self.fps,
                 timeout=self.esp32_timeout,
+            )
+        if self.camera_type == self.CAMERA_OPENMV:
+            return OpenMVCamera(
+                port=self.openmv_port,
+                baudrate=self.openmv_baudrate,
+                capture_timeout=self.openmv_capture_timeout,
+                fps=self.fps,
             )
         logger.warning(f"未知的 VISION_CAMERA_TYPE={self.camera_type}，按 none 处理")
         return None

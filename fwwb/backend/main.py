@@ -4,8 +4,11 @@
 import os
 import sys
 import signal
+import subprocess
 import threading
 import time as os_time
+from pathlib import Path
+
 from config import config
 
 # 确保app模块可以被导入
@@ -34,8 +37,11 @@ class SmartCarBackend:
         self.data_service = None
         self.agv_task_service = None  # AGV任务调度服务
         self.dashboard_service = None  # 数字孪生大屏服务
+        self.dashboard_stream_service = None  # 数字孪生大屏 SSE 推送
         self.imu_service = None  # IMU 服务
         self.vision_service = None  # 视觉识别服务
+        self.linkage_controller = None  # 联动控制器（PIR/温湿度/危气）
+        self.openmv_gui_process = None  # OpenMV 调试 GUI 子进程
         self.running = False
 
     def start(self):
@@ -120,6 +126,32 @@ class SmartCarBackend:
         else:
             logger.info("视觉识别服务未启用 (VISION_ENABLED=false)")
 
+        # 初始化联动控制器（PIR→LED / 温湿度→风扇 / 危气→RGB）
+        if getattr(self.config, 'LINKAGE_ENABLED', True):
+            logger.info("初始化联动控制器...")
+            from app.services.linkage_service import LinkageController
+            self.linkage_controller = LinkageController(
+                app=self.app,
+                udp_car_service=self.udp_car_service,
+                config=self.config,
+            )
+            self.linkage_controller.start()
+        else:
+            logger.info("联动控制器未启用 (LINKAGE_ENABLED=false)")
+
+        # 初始化数字孪生 SSE 推送服务（依赖 dashboard_service / linkage_controller / vision_service 已就绪）
+        if getattr(self.config, 'DASHBOARD_STREAM_ENABLED', True):
+            logger.info("初始化数字孪生 SSE 推送服务...")
+            from app.services.dashboard_stream_service import DashboardStreamService
+            self.dashboard_stream_service = DashboardStreamService(
+                dashboard_service=self.dashboard_service,
+                interval=getattr(self.config, 'DASHBOARD_STREAM_INTERVAL', 1.0),
+                heartbeat=getattr(self.config, 'DASHBOARD_STREAM_HEARTBEAT', 15),
+            )
+            self.dashboard_stream_service.start()
+        else:
+            logger.info("数字孪生 SSE 推送未启用 (DASHBOARD_STREAM_ENABLED=false)")
+
         # 注册服务实例到registry（供REST API调用）
         from app.services.registry import register_services
         from app.services.simulation_service import SimulationService
@@ -133,7 +165,9 @@ class SmartCarBackend:
             imu_service=self.imu_service,
             agv_task_service=self.agv_task_service,
             dashboard_service=self.dashboard_service,
+            dashboard_stream_service=self.dashboard_stream_service,
             vision_service=self.vision_service,
+            linkage_controller=self.linkage_controller,
         )
         logger.info("服务实例已注册到registry")
 
@@ -156,6 +190,10 @@ class SmartCarBackend:
             else:
                 logger.error("WebSocket服务启动失败")
 
+        # 可选：启动 OpenMV 调试 GUI 子进程（VISION_OPENMV_GUI=true）
+        if getattr(self.config, 'VISION_OPENMV_GUI', False):
+            self._launch_openmv_gui()
+
         # 注册信号处理
         signal.signal(signal.SIGINT, self.shutdown)
         signal.signal(signal.SIGTERM, self.shutdown)
@@ -175,12 +213,65 @@ class SmartCarBackend:
         """启动Flask REST API服务"""
         from config import config
         flask_config = config[os.getenv('FLASK_ENV', 'default')]
+        # threaded=True：SSE 长连接需要多线程，否则会阻塞其他请求
         self.app.run(
             host=flask_config.TCP_HOST,
             port=flask_config.HTTP_PORT,
             debug=False,
-            use_reloader=False
+            use_reloader=False,
+            threaded=True
         )
+
+    def _launch_openmv_gui(self):
+        """以子进程方式拉起 OpenMV 调试 GUI
+
+        GUI 通过 BACKEND_BASE_URL 环境变量获知后端地址，
+        识别到的计数器数字会 POST /v1/vision/counter 上报，
+        进入 VisionService._counter_cache 后由 SSE 推到大屏。
+        """
+        gui_path = Path(__file__).resolve().parent / 'tools' / 'openmv' / 'main_gui.py'
+        if not gui_path.is_file():
+            logger.warning(f"OpenMV GUI 入口不存在: {gui_path}，跳过启动")
+            return
+
+        backend_url = f"http://127.0.0.1:{getattr(self.config, 'HTTP_PORT', 5000)}"
+        env = os.environ.copy()
+        env['BACKEND_BASE_URL'] = backend_url
+
+        # GUI 的 stderr 写到独立日志文件，启动失败/崩溃时方便排查
+        # （比如缺 tkinter 时会输出 ModuleNotFoundError）
+        gui_log_path = Path('/tmp') / 'openmv_gui.log'
+        try:
+            gui_stderr = open(gui_log_path, 'a', buffering=1)
+            gui_stderr.write(f"\n=== {os_time.strftime('%Y-%m-%d %H:%M:%S')} backend spawn ===\n")
+        except Exception:
+            gui_stderr = subprocess.DEVNULL
+
+        try:
+            self.openmv_gui_process = subprocess.Popen(
+                [sys.executable, str(gui_path)],
+                env=env,
+                cwd=str(gui_path.parent),
+                stdout=subprocess.DEVNULL,
+                stderr=gui_stderr,
+            )
+            logger.info(
+                f"OpenMV GUI 子进程已启动 PID={self.openmv_gui_process.pid} "
+                f"→ 上报目标 {backend_url}（GUI 错误日志: {gui_log_path}）"
+            )
+            # 启动 1.5s 后探活，过早退出说明出了问题
+            def _check_gui_alive():
+                os_time.sleep(1.5)
+                if self.openmv_gui_process and self.openmv_gui_process.poll() is not None:
+                    rc = self.openmv_gui_process.returncode
+                    logger.error(
+                        f"OpenMV GUI 子进程在启动后立即退出（returncode={rc}），"
+                        f"详见 {gui_log_path}（常见原因：缺 python3-tk 模块，运行 `sudo apt install python3-tk`）"
+                    )
+            threading.Thread(target=_check_gui_alive, daemon=True).start()
+        except Exception as e:
+            logger.error(f"启动 OpenMV GUI 失败: {e}")
+            self.openmv_gui_process = None
 
     def shutdown(self, signum=None, frame=None):
         """关闭所有服务"""
@@ -221,6 +312,32 @@ class SmartCarBackend:
                 logger.info("视觉识别服务已关闭")
             except Exception as e:
                 logger.warning(f"关闭视觉服务异常: {e}")
+
+        if self.linkage_controller:
+            try:
+                self.linkage_controller.stop()
+                logger.info("联动控制器已关闭")
+            except Exception as e:
+                logger.warning(f"关闭联动控制器异常: {e}")
+
+        if self.dashboard_stream_service:
+            try:
+                self.dashboard_stream_service.stop()
+                logger.info("数字孪生 SSE 服务已关闭")
+            except Exception as e:
+                logger.warning(f"关闭 SSE 服务异常: {e}")
+
+        if self.openmv_gui_process:
+            try:
+                self.openmv_gui_process.terminate()
+                # 给 tkinter 一点时间清理；超时强杀
+                try:
+                    self.openmv_gui_process.wait(timeout=2.0)
+                except subprocess.TimeoutExpired:
+                    self.openmv_gui_process.kill()
+                logger.info("OpenMV GUI 子进程已关闭")
+            except Exception as e:
+                logger.warning(f"关闭 OpenMV GUI 异常: {e}")
 
         logger.info("服务已全部关闭")
         logger.info("=" * 50)

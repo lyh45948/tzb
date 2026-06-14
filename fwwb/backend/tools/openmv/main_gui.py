@@ -3,8 +3,12 @@ OpenMV货物识别和计数器识别系统 - GUI版本
 功能分离：实时预览、货物检测、计数器识别各自独立运行
 """
 
+import json
+import os
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
+from urllib import request as urlrequest
+from urllib.error import URLError
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -16,9 +20,11 @@ from pathlib import Path
 from datetime import datetime
 
 # 添加项目路径
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "szsb"))
+# 整合到 backend 后, 实际项目根是 backend/
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
+project_root = BACKEND_ROOT
+sys.path.insert(0, str(Path(__file__).parent))                   # tools/openmv 自身, 用于导入 openmv_receiver
+sys.path.insert(0, str(BACKEND_ROOT / "training" / "szsb"))      # CRNN 训练代码所在目录
 
 from openmv_receiver import OpenMVReceiver, CargoDetector, CounterRecognizer
 
@@ -67,6 +73,12 @@ class OpenMVVisionGUI:
         # 保存目录
         self.save_dir = project_root / "captured_images" / "openmv"
         self.save_dir.mkdir(parents=True, exist_ok=True)
+
+        # 后端上报地址（主后端 spawn GUI 时通过环境变量传入）
+        # 默认 http://127.0.0.1:5000；空字符串等同未设置 → 不上报
+        self.backend_base_url = (os.getenv('BACKEND_BASE_URL', 'http://127.0.0.1:5000') or '').rstrip('/')
+        self._post_lock = threading.Lock()
+        self._last_post_log_at = 0.0  # 错误节流
 
         # 构建UI
         self._build_ui()
@@ -227,6 +239,10 @@ class OpenMVVisionGUI:
     def _delayed_init(self):
         """延迟初始化"""
         self._log("系统启动中...")
+        if self.backend_base_url:
+            self._log(f"识别结果将上报至: {self.backend_base_url}/v1/vision/counter")
+        else:
+            self._log("未配置 BACKEND_BASE_URL，识别结果不会上报后端")
         self._log("正在加载模型...")
         threading.Thread(target=self._load_models, daemon=True).start()
 
@@ -255,14 +271,51 @@ class OpenMVVisionGUI:
 
     def _connect_camera(self):
         """连接摄像头"""
+        # 先看看 pyserial 能否扫到 OpenMV，便于诊断
+        try:
+            import serial.tools.list_ports
+            ports = list(serial.tools.list_ports.comports())
+            if ports:
+                self._log(f"扫描到 {len(ports)} 个串口：")
+                for p in ports:
+                    self._log(f"  {p.device} — {p.description}")
+            else:
+                self._log("扫描串口：未发现任何串口设备")
+                self._log("  → 请检查 OpenMV 是否已通过 USB 接到电脑")
+        except Exception as e:
+            self._log(f"扫描串口异常: {e}")
+
         self._log("正在连接OpenMV...")
         self.btn_connect.config(state=tk.DISABLED)
 
         def connect_task():
-            if self.receiver.connect():
-                self.result_queue.put(("connected", True))
-            else:
-                self.result_queue.put(("connected", False))
+            # 把底层 print 错误也捕获到 GUI，方便排查权限/被占用等问题
+            import io
+            import contextlib
+            err_buf = io.StringIO()
+            success = False
+            try:
+                with contextlib.redirect_stdout(err_buf), contextlib.redirect_stderr(err_buf):
+                    success = self.receiver.connect()
+            except Exception as e:
+                err_buf.write(f"\n连接异常: {e}")
+            captured = err_buf.getvalue().strip()
+            if captured:
+                # OpenMVReceiver 只用 print 报错，把它们带到 GUI 日志区
+                for line in captured.splitlines():
+                    self.result_queue.put(("log", line))
+            if not success:
+                # 给出权限相关的诊断提示
+                low = captured.lower()
+                if 'permission' in low or 'denied' in low:
+                    self.result_queue.put(("log",
+                        "→ 权限不足。Linux 下需把当前用户加入 dialout 组："
+                        "  sudo usermod -aG dialout $USER  （之后重新登录）"
+                        "  或临时执行: sudo chmod 666 /dev/ttyACM0"))
+                elif 'busy' in low or 'resource' in low:
+                    self.result_queue.put(("log",
+                        "→ 串口被占用，可能其它程序（IDE / 之前的 backend 实例）正连着 OpenMV，先关掉再试"))
+            self.result_queue.put(("connected", success))
 
         threading.Thread(target=connect_task, daemon=True).start()
 
@@ -458,6 +511,13 @@ class OpenMVVisionGUI:
                 results, annotated = self.counter_recognizer.recognize_counter(frame)
                 self.counter_recognize_count += len(results)
 
+                # 把识别结果上报给主后端 → SSE 推送到大屏前端
+                # 取首个识别结果的 digits 字段作为当前面板读数
+                if results:
+                    digits = str(results[0].get('digits') or '').strip()
+                    if digits:
+                        self._post_counter_to_backend(digits)
+
                 # 更新预览和结果
                 self.result_queue.put(("preview", annotated))
                 self.result_queue.put(("counter_result", results))
@@ -496,6 +556,39 @@ class OpenMVVisionGUI:
         self._log(f"图像已保存: {save_path}")
 
         self._update_preview(frame)
+
+    def _post_counter_to_backend(self, digits):
+        """把识别到的计数器数字 POST 给主后端
+
+        后端接口：POST /v1/vision/counter
+        body: { device_id, digits, timestamp }
+        失败只记日志（节流），不阻塞识别循环。
+        """
+        if not self.backend_base_url:
+            return  # 没配置上报地址（独立运行模式）
+
+        url = f"{self.backend_base_url}/v1/vision/counter"
+        payload = json.dumps({
+            'device_id': 'openmv_gui',
+            'digits': str(digits),
+            'timestamp': int(time.time() * 1000),
+        }).encode('utf-8')
+
+        req = urlrequest.Request(
+            url,
+            data=payload,
+            method='POST',
+            headers={'Content-Type': 'application/json'},
+        )
+        try:
+            with urlrequest.urlopen(req, timeout=1.5) as resp:
+                resp.read(256)  # 读完即可，丢弃
+        except (URLError, OSError, TimeoutError) as e:
+            # 节流：失败时每 30s 才打一行，避免刷屏
+            now = time.time()
+            if now - self._last_post_log_at > 30:
+                self._last_post_log_at = now
+                self._log(f"上报后端失败: {e} （后续 30s 内不再提示）")
 
     # ==================== UI更新 ====================
 
@@ -545,6 +638,10 @@ class OpenMVVisionGUI:
         try:
             while True:
                 msg_type, data = self.result_queue.get_nowait()
+
+                if msg_type == "log":
+                    self._log(data)
+                    continue
 
                 if msg_type == "models_loaded":
                     self.models_loaded = True
