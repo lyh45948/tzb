@@ -35,6 +35,7 @@ export const STORAGE_KEYS = {
   CONNECTION_CONFIG: 'connection_config',
   DEMO_MODE: 'demo_mode_enabled',
   THRESHOLDS: 'smart_car_thresholds',
+  LINKAGE_CONFIG: 'smart_car_linkage_config',
   AUTO_CONTROL: 'auto_control_enabled',
   SAVED_PATHS: 'saved_paths',
   SAVED_FENCES: 'saved_fences',

@@ -39,17 +39,17 @@ export function getBatteryLevel(voltage) {
 export function getFactoryAlertLevel(data) {
   if (!data) return 'normal'
   const distance = data.minDistanceCm ?? data.minDistance ?? 999
-  if (data.flameStatus || data.gasStatus || data.co2 >= 1100 || data.tvoc >= 950 || data.gasMic >= 550) return 'critical'
-  if (data.temperature >= 35 || data.humidity >= 80 || data.co2 >= 1000 || data.tvoc >= 900 || distance <= 15) return 'danger'
-  if (data.temperature >= 30 || data.humidity >= 75 || data.co2 >= 800 || data.tvoc >= 600 || distance <= 30) return 'warning'
+  if (data.flameStatus || data.gasStatus || data.co2 >= 60 || data.tvoc >= 950 || data.gasMic >= 550) return 'critical'
+  if (data.temperature >= 35 || data.humidity >= 80 || data.co2 >= 50 || data.tvoc >= 900 || distance <= 15) return 'danger'
+  if (data.temperature >= 30 || data.humidity >= 75 || data.co2 >= 35 || data.tvoc >= 600 || distance <= 30) return 'warning'
   return 'normal'
 }
 
 function getLinkedActionReason(data) {
   if (data.flameStatus) return '火焰信号触发蜂鸣器与警示灯'
   if (data.gasStatus) return '可燃气体异常触发排风与蜂鸣器'
-  if (data.co2 >= 1000) return 'CO2危险阈值触发强制通风'
-  if (data.co2 >= 800) return 'CO2偏高触发通风预警'
+  if (data.co2 >= 50) return 'CO危险阈值触发强制通风'
+  if (data.co2 >= 35) return 'CO偏高触发通风预警'
   if ((data.minDistanceCm ?? 999) <= 15) return 'AGV安全距离危险，建议停车避障'
   if ((data.minDistanceCm ?? 999) <= 30) return 'AGV接近障碍物，进入避障观察'
   if (data.humanDetected) return '红外检测到人员，保持安全照明'
@@ -61,11 +61,13 @@ function getLinkedActionReason(data) {
  */
 export function generateSimData(time) {
   const t = time * 0.001
-  const co2Spike = Math.max(0, Math.sin(t * 0.12 - 1.6)) * 260
+  const co2Spike = Math.max(0, Math.sin(t * 0.12 - 1.6)) * 18
   const tvocSpike = Math.max(0, Math.sin(t * 0.16 + 0.7)) * 220
   const gasMic = 120 + tvocSpike * 0.9 + Math.random() * 45
   const minDistanceCm = Math.max(8, 60 + Math.sin(t * 0.18) * 42 + Math.random() * 8)
-  const co2 = 560 + Math.sin(t * 0.08) * 180 + co2Spike + Math.random() * 30
+  // CO 浓度（ppm）：基线 8 ppm，正常波动 ±5 ppm，偶发异常加 0~18 ppm；
+  // 35 ppm 警告 / 50 ppm 危险（参考 GBZ 2.1 工作场所限值）
+  const co2 = Math.max(0, 8 + Math.sin(t * 0.08) * 5 + co2Spike + Math.random() * 2)
   const tvoc = 180 + Math.sin(t * 0.11) * 90 + tvocSpike + Math.random() * 35
   const flameStatus = Math.sin(t * 0.035) > 0.995 ? 1 : 0
   const gasStatus = gasMic > 430 || tvoc > 780 ? 1 : 0
@@ -95,25 +97,25 @@ export function generateSimData(time) {
     goodsCount,
     goodsPulse,
     counterDigits: String(goodsCount).padStart(6, '0'),
-    fan: gasStatus || co2 > 900 ? 1 : 0,
+    fan: gasStatus || co2 > 40 ? 1 : 0,
     led: humanDetected ? 1 : 0,
     buzzer: flameStatus || gasStatus ? 1 : 0,
     linkage: {
       enabled: true,
-      fan: gasStatus || co2 > 900 ? 1 : 0,
+      fan: gasStatus || co2 > 40 ? 1 : 0,
       led: humanDetected ? 1 : 0,
       rgb: flameStatus
         ? { r: 255, g: 0, b: 0 }
         : (gasStatus
           ? { r: 255, g: 0, b: 0 }
-          : (co2 > 800 || tvoc > 600 || gasMic > 300
+          : (co2 > 35 || tvoc > 600 || gasMic > 300
             ? { r: 255, g: 255, b: 0 }
             : { r: 0, g: 0, b: 0 })),
       alertLevel: flameStatus
         ? 'critical'
-        : (gasStatus || co2 > 1000 || tvoc > 900 || gasMic > 500
+        : (gasStatus || co2 > 50 || tvoc > 900 || gasMic > 500
           ? 'danger'
-          : (co2 > 800 || tvoc > 600 || gasMic > 300 ? 'warning' : 'normal')),
+          : (co2 > 35 || tvoc > 600 || gasMic > 300 ? 'warning' : 'normal')),
       reasons: {
         fan: `temp=${(24 + Math.sin(t * 0.09) * 5).toFixed(1)},humi=${(56 + Math.sin(t * 0.07) * 16).toFixed(1)}`,
         led: humanDetected ? 'PIR detected' : 'PIR clear',

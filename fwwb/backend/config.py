@@ -160,6 +160,34 @@ class Config:
     DISTANCE_WARNING = int(os.getenv('DISTANCE_WARNING', 30))
     DISTANCE_DANGER = int(os.getenv('DISTANCE_DANGER', 15))
 
+    # ============ 车辆环境智能体 (AgentService) ============
+    # 以独立线程跑，从 registry.get_latest_sensor_data() 取数据，
+    # critical 级异常通过 udp_car_service.send_command 直接下发硬件动作。
+    AGENT_ENABLED = os.getenv('AGENT_ENABLED', 'true').lower() in ('true', '1', 'yes')
+    AGENT_TICK_SECONDS = float(os.getenv('AGENT_TICK_SECONDS', 5.0))
+    AGENT_PREDICTION_INTERVAL = float(os.getenv('AGENT_PREDICTION_INTERVAL', 60.0))
+    AGENT_DEVICE_ID = os.getenv('AGENT_DEVICE_ID', 'car1')
+
+    # critical 命令冷却：同一 critical 状态下不重复下发命令的最小间隔(秒)
+    AGENT_CRITICAL_COOLDOWN = float(os.getenv('AGENT_CRITICAL_COOLDOWN', 30))
+
+    # 报告时间（24h 制，本地时间）
+    AGENT_DAILY_REPORT_HOUR = int(os.getenv('AGENT_DAILY_REPORT_HOUR', 20))
+    AGENT_WEEKLY_REPORT_DAY = int(os.getenv('AGENT_WEEKLY_REPORT_DAY', 6))   # 周一=0，周日=6
+    AGENT_WEEKLY_REPORT_HOUR = int(os.getenv('AGENT_WEEKLY_REPORT_HOUR', 20))
+
+    # 智能体内部判定阈值（与 LinkageController 阈值独立，面向 AGV 车舱环境）
+    AGENT_CO_WARNING = float(os.getenv('AGENT_CO_WARNING', 10))      # CO ppm
+    AGENT_CO_CRITICAL = float(os.getenv('AGENT_CO_CRITICAL', 30))    # CO ppm，触发停车
+    AGENT_TEMP_MIN = float(os.getenv('AGENT_TEMP_MIN', 15))          # 摄氏度
+    AGENT_TEMP_MAX = float(os.getenv('AGENT_TEMP_MAX', 35))
+    AGENT_TVOC_WARNING = float(os.getenv('AGENT_TVOC_WARNING', 300)) # ppb
+
+    # Ollama 大模型（可选，未安装时自动走模板兜底）
+    AGENT_OLLAMA_ENABLED = os.getenv('AGENT_OLLAMA_ENABLED', 'false').lower() in ('true', '1', 'yes')
+    AGENT_OLLAMA_URL = os.getenv('AGENT_OLLAMA_URL', 'http://localhost:11434')
+    AGENT_OLLAMA_MODEL = os.getenv('AGENT_OLLAMA_MODEL', 'deepseek-r1:7b')
+
 
 class DevelopmentConfig(Config):
     """开发环境配置"""

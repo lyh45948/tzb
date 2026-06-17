@@ -12,16 +12,20 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import { useDeviceStore } from '../../stores/deviceStore'
 import { useChartResize } from '../../composables/useChartResize'
+import config from '../../config'
 
 const chartEl = ref(null)
 let chart = null
 const store = useDeviceStore()
 
 const { start: startResize } = useChartResize(chartEl, () => chart)
+const chartAnimationDuration = config.chartUpdateInterval || 1000
 
 function updateChart() {
   if (!chart || !store.historyLabels.length) return
   chart.setOption({
+    animationDurationUpdate: chartAnimationDuration,
+    animationEasingUpdate: 'linear',
     xAxis: { data: store.historyLabels },
     series: [
       { data: store.historyTemp },
@@ -33,6 +37,10 @@ function updateChart() {
 onMounted(() => {
   chart = echarts.init(chartEl.value, null, { renderer: 'canvas' })
   chart.setOption({
+    animationDuration: chartAnimationDuration,
+    animationDurationUpdate: chartAnimationDuration,
+    animationEasing: 'linear',
+    animationEasingUpdate: 'linear',
     tooltip: { trigger: 'axis' },
     legend: { data: ['温度(℃)', '湿度(%)'], textStyle: { color: '#64748b', fontSize: 13 }, top: 0 },
     grid: { left: '3%', right: '4%', top: 35, bottom: '5%', containLabel: true },
@@ -49,6 +57,6 @@ onMounted(() => {
   startResize()
 })
 
-watch(() => store.historyLabels.length, updateChart)
+watch(() => store.historyLabels, updateChart, { deep: true })
 onUnmounted(() => { if (chart) chart.dispose() })
 </script>

@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="agent-chat"><AgentChatPanel /></div>
+    <div class="agent-chat"><AgentLivePanel /></div>
     <div class="agent-risk"><AgentRiskPanel /></div>
     <div class="agent-rules"><AgentTriggersPanel /></div>
     <div class="agent-report"><AgentReportPanel /></div>
@@ -37,7 +37,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import AgentChatPanel from '../panels/AgentChatPanel.vue'
+import AgentLivePanel from '../panels/AgentLivePanel.vue'
 import AgentRiskPanel from '../panels/AgentRiskPanel.vue'
 import AgentTriggersPanel from '../panels/AgentTriggersPanel.vue'
 import AgentReportPanel from '../panels/AgentReportPanel.vue'

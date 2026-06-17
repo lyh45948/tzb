@@ -27,7 +27,7 @@
  * @property {string} name
  * @property {string} description
  * @property {string} metric
- * @property {string} condition          eg. ">= 800ppm"
+ * @property {string} condition          eg. ">= 35 ppm"
  * @property {'warning'|'danger'|'critical'} level
  * @property {boolean} enabled
  * @property {number} hits               近 24h 触发次数
@@ -95,9 +95,9 @@ export function buildInitialInsights() {
       level: 'success',
       kind: 'observation',
       title: '车间环境恢复正常区间',
-      content: '过去 30 分钟内 CO₂ 与 TVOC 均回落至安全阈值以下,排风系统已自动停机。',
+      content: '过去 30 分钟内 CO 与 TVOC 均回落至安全阈值以下,排风系统已自动停机。',
       evidence: [
-        { label: 'CO₂ 平均', value: '612 ppm' },
+        { label: 'CO 平均', value: '12 ppm' },
         { label: 'TVOC 平均', value: '210 ppb' }
       ],
       suggestion: '保持当前通风策略,无需人工干预。',
@@ -166,14 +166,14 @@ export function rollInsight(prev) {
       suggestion: '将照明亮度提升至 70%。'
     },
     {
-      level: 'danger', kind: 'prediction', title: 'CO₂ 30 分钟内可能突破警戒', source: '风险预测',
-      content: '近 10 分钟 CO₂ 上升斜率 25 ppm/min,按当前趋势 28 分钟后将达 800 ppm。',
-      evidence: [{ label: '斜率', value: '25 ppm/min' }, { label: 'ETA', value: '+28m' }],
+      level: 'danger', kind: 'prediction', title: 'CO 30 分钟内可能突破警戒', source: '风险预测',
+      content: '近 10 分钟 CO 上升斜率 1.5 ppm/min,按当前趋势 18 分钟后将达 35 ppm。',
+      evidence: [{ label: '斜率', value: '1.5 ppm/min' }, { label: 'ETA', value: '+18m' }],
       suggestion: '建议提前开启强制通风。'
     },
     {
       level: 'success', kind: 'action', title: '排风联动已启动', source: '设备控制',
-      content: '依据 CO₂ 上升预测,智能体已自动下发风扇启动指令。',
+      content: '依据 CO 上升预测,智能体已自动下发风扇启动指令。',
       evidence: [{ label: '风扇', value: '开启' }, { label: '蜂鸣器', value: '关闭' }]
     },
     {
@@ -201,10 +201,10 @@ export function buildTriggerRules() {
   return [
     {
       id: 'rule_co2',
-      name: 'CO₂ 浓度过高',
-      description: '车间 CO₂ 浓度超过预警阈值时立刻广播告警并联动通风',
-      metric: 'CO₂',
-      condition: '>= 800 ppm',
+      name: 'CO 浓度过高',
+      description: '车间 CO 浓度超过预警阈值时立刻广播告警并联动通风',
+      metric: 'CO',
+      condition: '>= 35 ppm',
       level: 'warning',
       enabled: true,
       hits: 6,
@@ -212,10 +212,10 @@ export function buildTriggerRules() {
     },
     {
       id: 'rule_co2_danger',
-      name: 'CO₂ 危险阈值',
-      description: '突破 1000 ppm 直接触发危险等级告警',
-      metric: 'CO₂',
-      condition: '>= 1000 ppm',
+      name: 'CO 危险阈值',
+      description: '突破 50 ppm 直接触发危险等级告警',
+      metric: 'CO',
+      condition: '>= 50 ppm',
       level: 'danger',
       enabled: true,
       hits: 1,
@@ -406,7 +406,7 @@ export function buildLatestReport(type) {
       { title: 'AGV 任务完成率 98%', detail: '38 项任务,1 项被取消,无延误。' }
     ],
     concerns: [
-      { title: 'CO₂ 14:32 触达 825 ppm', detail: '触发预警,排风启动后 6 分钟回落,无需人工干预,但提示通风裕度收窄。', severity: 'warning' }
+      { title: 'CO 14:32 触达 38 ppm', detail: '触发预警,排风启动后 6 分钟回落,无需人工干预,但提示通风裕度收窄。', severity: 'warning' }
     ],
     recommendations: [
       '14:00 ~ 15:00 时段提前 5 分钟启动通风',

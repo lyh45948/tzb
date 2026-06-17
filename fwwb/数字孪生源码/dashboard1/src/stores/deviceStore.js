@@ -20,6 +20,12 @@ const TASK_LINEAR_SPEED = 1.8
 // AGV 之间允许的最小中心距(场景单位 ≈ 米);小于此值视为相撞,需要其中一方让步
 const MIN_AGV_DIST = 1.4
 
+// CO 浓度展示：一位小数（量级 0~50 ppm，整数会丢失精度）
+function formatCO(v) {
+  const n = Number(v)
+  return Number.isFinite(n) ? n.toFixed(1) : '--'
+}
+
 export const useDeviceStore = defineStore('device', () => {
   // System is always in demo mode
   const demoMode = ref(true)
@@ -33,7 +39,7 @@ export const useDeviceStore = defineStore('device', () => {
   const ir = ref(0)
   const humanDetected = ref(0)
   const pirStatus = ref('clear')
-  const co2 = ref(520)
+  const co2 = ref(8)
   const tvoc = ref(180)
   const gasMic = ref(120)
   const gasStatus = ref(0)
@@ -73,6 +79,19 @@ export const useDeviceStore = defineStore('device', () => {
   // Safety alarm events and simulated control logs
   const alarmEvents = ref([])
   const commandLogs = ref([])
+
+  // 车辆环境智能体（来自后端 dashboard.snapshot.aiAgent）
+  const aiAgent = ref({
+    enabled: false,
+    status: 'idle',
+    aiBackend: 'template',
+    latestAlert: null,
+    latestAnalysis: null,
+    alerts: [],
+    predictions: [],
+    reports: { daily: null, weekly: null },
+    updatedAt: 0
+  })
 
   // ─── AGV 调度任务队列 ───
   // 任务结构: { id, type, fromId, toId, robotId, status, priority, progress,
@@ -173,8 +192,8 @@ export const useDeviceStore = defineStore('device', () => {
   function updateAlarmEvents(simData, fleetData) {
     if (simData.flameStatus) pushAlarm('critical', 'flame', '检测到火焰信号，已触发蜂鸣器', '危气监测区', 'flameStatus', 1, '1=触发')
     if (simData.gasStatus) pushAlarm('critical', 'gas', '可燃气体浓度异常，已启动排风', '危气监测区', 'gasStatus', 1, '1=泄漏')
-    if (simData.co2 >= 1000) pushAlarm('danger', 'co2', `CO2浓度 ${Math.round(simData.co2)}ppm 超过危险阈值`, '车间环境', 'CO2', Math.round(simData.co2), '1000ppm')
-    else if (simData.co2 >= 800) pushAlarm('warning', 'co2', `CO2浓度 ${Math.round(simData.co2)}ppm 偏高`, '车间环境', 'CO2', Math.round(simData.co2), '800ppm')
+    if (simData.co2 >= 50) pushAlarm('danger', 'co2', `CO浓度 ${formatCO(simData.co2)}ppm 超过危险阈值`, '车间环境', 'CO', formatCO(simData.co2), '50ppm')
+    else if (simData.co2 >= 35) pushAlarm('warning', 'co2', `CO浓度 ${formatCO(simData.co2)}ppm 偏高`, '车间环境', 'CO', formatCO(simData.co2), '35ppm')
     if (simData.temperature >= 35) pushAlarm('danger', 'temperature', `温度 ${simData.temperature.toFixed(1)}℃ 超过危险阈值`, '车间环境', '温度', simData.temperature.toFixed(1), '35℃')
     else if (simData.temperature >= 30) pushAlarm('warning', 'temperature', `温度 ${simData.temperature.toFixed(1)}℃ 偏高`, '车间环境', '温度', simData.temperature.toFixed(1), '30℃')
 
@@ -623,8 +642,8 @@ export const useDeviceStore = defineStore('device', () => {
       historyLabels.value.push(label)
       historyTemp.value.push(+simData.temperature.toFixed(1))
       historyHumi.value.push(+simData.humidity.toFixed(1))
-      historyLux.value.push(+simData.lux.toFixed(0))
-      historyCO2.value.push(+simData.co2.toFixed(0))
+      historyLux.value.push(+simData.lux.toFixed(1))
+      historyCO2.value.push(+simData.co2.toFixed(1))
       historyTVOC.value.push(+simData.tvoc.toFixed(0))
       historyGasMic.value.push(+simData.gasMic.toFixed(0))
       historyGoodsCount.value.push(+simData.goodsCount)
@@ -719,6 +738,7 @@ export const useDeviceStore = defineStore('device', () => {
     historyGoodsCount,
     alarmEvents,
     commandLogs,
+    aiAgent,
     tasks,
     returningRobots,
     lastUpdateTime,

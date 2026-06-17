@@ -4,7 +4,7 @@
     <div class="panel-body">
       <div class="safety-summary">
         <div class="safety-row">
-          <span class="label">CO₂浓度</span>
+          <span class="label">CO浓度</span>
           <span class="value" :style="{ color: co2Color }">{{ Math.round(store.co2) }} ppm</span>
         </div>
         <div class="safety-row">
@@ -52,14 +52,14 @@ import { useDeviceStore } from '../../stores/deviceStore'
 import { ALERT_LEVEL_MAP } from '../../utils/constants'
 
 const store = useDeviceStore()
-// 仅展示与危气安全相关的告警(火焰/可燃气体/CO2),
+// 仅展示与危气安全相关的告警(火焰/可燃气体/CO),
 // 障碍物/温度等非危气类型不在本面板展示
 const GAS_ALARM_TYPES = new Set(['flame', 'gas', 'co2'])
 const events = computed(() => store.alarmEvents.filter(e => GAS_ALARM_TYPES.has(e.type)))
 
 const co2Color = computed(() => {
-  if (store.co2 >= 1000) return '#ef4444'
-  if (store.co2 >= 800) return '#f59e0b'
+  if (store.co2 >= 50) return '#ef4444'
+  if (store.co2 >= 35) return '#f59e0b'
   return '#22c55e'
 })
 

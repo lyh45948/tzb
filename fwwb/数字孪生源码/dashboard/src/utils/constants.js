@@ -15,7 +15,7 @@ export const ROBOT_TASK_MAP = {
   gasMonitor: { label: '危气监测', color: '#ef4444' },
   goodsCount: { label: '货物计数', color: '#22c55e' },
   smartLighting: { label: '智能照明', color: '#f59e0b' },
-  obstacleAvoidance: { label: 'AGV避障', color: '#06b6d4' },
+  obstacleAvoidance: { label: 'AGV调度', color: '#06b6d4' },
   materialTransfer: { label: '物料转运', color: '#ff6f00' },
   idle: { label: '空闲待命', color: '#94a3b8' }
 }

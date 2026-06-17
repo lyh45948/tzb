@@ -91,3 +91,68 @@ export function disconnectCar(deviceId, opts) {
   }
   return request('/v1/agv/cars', { ...opts, method: 'DELETE' })
 }
+
+// ─── 联动控制（风扇 / 阈值） ───
+export function fetchLinkageConfig(opts) {
+  return request('/v1/linkage/config', opts)
+}
+
+export function updateLinkageConfig(updates, opts) {
+  return request('/v1/linkage/config', { ...opts, method: 'PUT', body: updates })
+}
+
+export function fetchFanStatus(opts) {
+  return request('/v1/linkage/fan', opts)
+}
+
+/**
+ * 手动设置风扇。
+ * @param {Object} payload - { fan: 0|1 } 或 { gear: 0..3 }，可附 ttl: 秒
+ */
+export function setFanManual(payload, opts) {
+  return request('/v1/linkage/fan', { ...opts, method: 'POST', body: payload })
+}
+
+// ─── 视觉：OpenMV GUI 实时画面 + 计数器开关 ───
+/** 后端转发的 OpenMV 实时画面 URL（前端 <img> 直接 src 引用） */
+export function getVisionFrameUrl() {
+  return joinUrl(config.apiBaseUrl, '/v1/vision/frame.jpg')
+}
+
+/** 查询计数器识别开关状态 */
+export function fetchCounterControl(opts) {
+  return request('/v1/vision/counter/control', opts)
+}
+
+/** 控制计数器识别开/关（GUI 侧 1Hz 轮询此值自动启停） */
+export function setCounterControl(enabled, opts) {
+  return request('/v1/vision/counter/control', {
+    ...opts,
+    method: 'POST',
+    body: { enabled: !!enabled },
+  })
+}
+
+// ─── 车辆环境智能体 ───
+export function fetchAgentStatus(opts) {
+  return request('/v1/agent/status', opts)
+}
+
+export function fetchAgentAlerts(limit = 20, opts) {
+  return request(`/v1/agent/alerts?limit=${encodeURIComponent(limit)}`, opts)
+}
+
+export function fetchAgentReports(type = 'daily', limit = 7, opts) {
+  return request(
+    `/v1/agent/reports?type=${encodeURIComponent(type)}&limit=${encodeURIComponent(limit)}`,
+    opts,
+  )
+}
+
+/** 手动触发：'analysis' | 'daily' | 'weekly' */
+export function triggerAgent(type = 'analysis', opts) {
+  return request(`/v1/agent/trigger?type=${encodeURIComponent(type)}`, {
+    ...opts,
+    method: 'POST',
+  })
+}

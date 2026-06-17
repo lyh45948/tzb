@@ -26,23 +26,14 @@ import { ALERT_LEVEL_MAP } from '../../utils/constants'
 
 const store = useDeviceStore()
 
-const avgBattery = computed(() => {
-  if (!store.fleet.length) return '--'
-  const avg = store.fleet.reduce((sum, r) => sum + (r.battery ?? 0), 0) / store.fleet.length
-  return formatNumber(avg, 0)
-})
-
 const alertInfo = computed(() => ALERT_LEVEL_MAP[store.alertLevel] || ALERT_LEVEL_MAP.normal)
 
 const items = computed(() => [
   { label: '温度', value: formatNumber(store.temperature), unit: '℃', color: '#ef4444', icon: '🌡' },
   { label: '湿度', value: formatNumber(store.humidity), unit: '%', color: '#2563eb', icon: '💧' },
-  { label: '照度', value: formatNumber(store.lux, 0), unit: 'lux', color: '#f97316', icon: '💡' },
-  { label: 'CO₂', value: formatNumber(store.co2, 0), unit: 'ppm', color: '#8b5cf6', icon: '☁' },
   { label: 'TVOC', value: formatNumber(store.tvoc, 0), unit: 'ppb', color: '#06b6d4', icon: '◆' },
   { label: '危气', value: store.gasStatus ? '泄漏' : '正常', unit: '', color: store.gasStatus ? '#ef4444' : '#22c55e', icon: '⚠' },
   { label: '火焰', value: store.flameStatus ? '触发' : '正常', unit: '', color: store.flameStatus ? '#ef4444' : '#22c55e', icon: '🔥' },
-  { label: '平均电量', value: avgBattery.value, unit: '%', color: '#22c55e', icon: '⚡' },
   { label: '告警等级', value: alertInfo.value.label, unit: '', color: alertInfo.value.color, icon: '●' }
 ])
 </script>

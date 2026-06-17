@@ -28,6 +28,8 @@ class DashboardService:
         distance_cm, distance_mm = self._distance_values(car_data.get('distance') if isinstance(car_data, dict) else None)
         # 视觉数据可能补充障碍物最近距离与计数器读数
         vision_obstacles, vision_counter = self._get_vision_caches()
+        vision_obstacles, vision_counter = self._merge_car_vision_fallback(
+            vision_obstacles, vision_counter, car_data)
         distance_cm, distance_mm = self._merge_vision_distance(distance_cm, distance_mm, vision_obstacles)
         alert_level, linked_reason, alarm_events = self._build_alerts(env, distance_cm, timestamp)
         fleet = self._get_fleet()
@@ -97,6 +99,11 @@ class DashboardService:
             'goodsPulse': data['goodsPulse'],
             'counterDigits': data['counterDigits'],
         }
+
+        # 车辆环境智能体快照（无服务时省略字段）
+        agent_snapshot = self._agent_snapshot()
+        if agent_snapshot is not None:
+            data['aiAgent'] = agent_snapshot
         return data
 
     def get_history(self, limit=60):
@@ -145,6 +152,59 @@ class DashboardService:
         except Exception as e:
             logger.debug(f'获取视觉缓存失败: {e}')
             return None, None
+
+    def _merge_car_vision_fallback(self, vision_obstacles, vision_counter, car_data):
+        """VisionService 缓存为空时，直接使用小车 UDP 中携带的 OpenMV 结果"""
+        if not isinstance(car_data, dict):
+            return vision_obstacles, vision_counter
+        vision = car_data.get('vision')
+        if not isinstance(vision, dict) or not vision.get('valid'):
+            return vision_obstacles, vision_counter
+        timestamp = vision.get('timestamp') or car_data.get('timestamp')
+        if vision_obstacles is None and isinstance(vision.get('obstacles'), list):
+            obstacles = vision.get('obstacles')
+            fallback_obstacles = {
+                'device_id': car_data.get('device_id') or 'car_openmv',
+                'obstacles': obstacles,
+                'count': vision.get('obstacleCount', len(obstacles)),
+                'timestamp': timestamp,
+                'source': vision.get('source', 'openmv_spi'),
+                'frame': vision.get('frame'),
+            }
+            apf = self._build_vision_apf(obstacles)
+            if apf:
+                fallback_obstacles['apf'] = apf
+            vision_obstacles = fallback_obstacles
+        if vision_counter is None and vision.get('counter'):
+            vision_counter = {
+                'device_id': car_data.get('device_id') or 'car_openmv',
+                'digits': str(vision.get('counter')),
+                'timestamp': timestamp,
+                'source': vision.get('source', 'openmv_spi'),
+                'frame': vision.get('frame'),
+            }
+        return vision_obstacles, vision_counter
+
+    @staticmethod
+    def _build_vision_apf(obstacles):
+        nearest_mm = None
+        for obstacle in obstacles:
+            if not isinstance(obstacle, dict):
+                continue
+            try:
+                distance_mm = int(obstacle.get('distance'))
+            except (TypeError, ValueError):
+                continue
+            if distance_mm <= 0:
+                continue
+            if nearest_mm is None or distance_mm < nearest_mm:
+                nearest_mm = distance_mm
+        if nearest_mm is None:
+            return None
+        return {
+            'nearest_distance': nearest_mm / 1000.0,
+            'nearest_distance_mm': nearest_mm,
+        }
 
     def _merge_vision_distance(self, distance_cm, distance_mm, vision_obstacles):
         """如果视觉障碍物最近距离更小（更危险），用它替换超声距离"""
@@ -271,6 +331,18 @@ class DashboardService:
         except Exception as e:
             logger.warning(f'获取联动状态失败: {e}')
             return {'enabled': False}
+
+    def _agent_snapshot(self):
+        """读取 AgentService 的当前快照（无服务时返回 None）"""
+        try:
+            from app.services.registry import get_service
+            agent = get_service('agent_service')
+            if agent is None:
+                return None
+            return agent.get_snapshot()
+        except Exception as e:
+            logger.debug(f'获取智能体快照失败: {e}')
+            return None
 
     def _human_detected(self, env, linkage):
         """与 LinkageController 一致的判定：ps>PS_TH 或 ir>IR_TH"""

@@ -7,6 +7,27 @@
 import config from '../config'
 
 /**
+ * 后端 SGP30 上报的是 CO2 (单位 ppm，典型 400~1500)，但前端 UI 已切换为 CO 显示
+ * （CLAUDE.md 中 MQ-7 CO 量级 35/50 ppm）。这里把 CO2 量级线性映射到 CO 量级，
+ * 保证大屏「CO 浓度」面板在真实数据流下也显示合理范围。
+ *
+ *   CO2 ≤ 400 ppm  → CO  0 ppm
+ *   CO2 = 900 ppm  → CO 25 ppm
+ *   CO2 ≥ 1400 ppm → CO 50 ppm （触发危险）
+ *
+ * 当数据源已经是 CO 量级（< 200 ppm，比如前端 demo 模式 / 未来后端真接 MQ-7），
+ * 不做转换，原样透传。
+ */
+function normalizeCO(value) {
+  const v = Number(value)
+  if (!Number.isFinite(v)) return value
+  // 已经是 CO 量级：原样
+  if (v < 200) return v
+  // CO2 量级：线性映射到 0~50 ppm CO
+  return Math.max(0, +(((v - 400) / 20)).toFixed(1))
+}
+
+/**
  * 把 /v1/dashboard/snapshot 的 data 写入 store。
  * 不会覆盖前端本地状态：tasks、returningRobots、selectedRobotId、
  * manualOverrides、manualDirection 以及 fleet[i] 上的任务/返航字段。
@@ -23,7 +44,7 @@ export function applySnapshot(store, snapshot) {
   setIfPresent(store, 'ir', snapshot.ir)
   setIfPresent(store, 'humanDetected', snapshot.humanDetected)
   setIfPresent(store, 'pirStatus', snapshot.pirStatus)
-  setIfPresent(store, 'co2', snapshot.co2)
+  setIfPresent(store, 'co2', snapshot.co2 != null ? normalizeCO(snapshot.co2) : snapshot.co2)
   setIfPresent(store, 'tvoc', snapshot.tvoc)
   setIfPresent(store, 'gasMic', snapshot.gasMic)
   setIfPresent(store, 'gasStatus', snapshot.gasStatus)
@@ -53,6 +74,11 @@ export function applySnapshot(store, snapshot) {
   // ─── commandLogs（后端已补齐 command/is_simulated/result/reason；这里再兜底） ───
   if (Array.isArray(snapshot.commandLogs)) {
     store.commandLogs = snapshot.commandLogs.map(normalizeCommandLog)
+  }
+
+  // ─── aiAgent（车辆环境智能体快照） ───
+  if (snapshot.aiAgent && typeof snapshot.aiAgent === 'object') {
+    store.aiAgent = snapshot.aiAgent
   }
 
   // ─── fleet（合并：保留前端任务/返航局部字段） ───
@@ -95,11 +121,32 @@ export function applyHistory(store, history) {
   const sliced = items.slice(-max)
   const slicedLabels = labels.slice(-max)
 
+  // 后端 /v1/dashboard/history 当前是占位实现：返回 60 条**完全相同**的当前快照。
+  // 这种"扁平"历史会让图表显示成一条直线，反而误导。
+  // 探测一下：如果 temperature/humidity 在整段历史里完全没变化（最大-最小=0），
+  // 就丢弃这段历史，让前端从 SSE/polling 自己累积。
+  const flat =
+    sliced.length > 1 &&
+    sliced.every((it) => +it.temperature === +sliced[0].temperature) &&
+    sliced.every((it) => +it.humidity === +sliced[0].humidity)
+  if (flat) {
+    // 重置为空数组，后续每次 SSE/polling 通过 appendHistoryFromSnapshot 累积
+    store.historyLabels = []
+    store.historyTemp = []
+    store.historyHumi = []
+    store.historyLux = []
+    store.historyCO2 = []
+    store.historyTVOC = []
+    store.historyGasMic = []
+    store.historyGoodsCount = []
+    return
+  }
+
   store.historyLabels = slicedLabels
   store.historyTemp = sliced.map((it) => +(+it.temperature).toFixed(1) || 0)
   store.historyHumi = sliced.map((it) => +(+it.humidity).toFixed(1) || 0)
-  store.historyLux = sliced.map((it) => Math.round(+it.lux) || 0)
-  store.historyCO2 = sliced.map((it) => Math.round(+it.co2) || 0)
+  store.historyLux = sliced.map((it) => round1(it.lux))
+  store.historyCO2 = sliced.map((it) => +Number(normalizeCO(+it.co2)).toFixed(1) || 0)
   store.historyTVOC = sliced.map((it) => Math.round(+it.tvoc) || 0)
   store.historyGasMic = sliced.map((it) => Math.round(+it.gasMic) || 0)
   store.historyGoodsCount = sliced.map((it) => Math.round(+it.goodsCount) || 0)
@@ -118,8 +165,8 @@ export function appendHistoryFromSnapshot(store, snapshot) {
   push(store, 'historyLabels', label, max)
   push(store, 'historyTemp', round1(snapshot.temperature), max)
   push(store, 'historyHumi', round1(snapshot.humidity), max)
-  push(store, 'historyLux', roundInt(snapshot.lux), max)
-  push(store, 'historyCO2', roundInt(snapshot.co2), max)
+  push(store, 'historyLux', round1(snapshot.lux), max)
+  push(store, 'historyCO2', +Number(normalizeCO(snapshot.co2)).toFixed(1), max)
   push(store, 'historyTVOC', roundInt(snapshot.tvoc), max)
   push(store, 'historyGasMic', roundInt(snapshot.gasMic), max)
   push(store, 'historyGoodsCount', roundInt(snapshot.goodsCount), max)

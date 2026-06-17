@@ -21,7 +21,7 @@ const { start: startResize } = useChartResize(chartEl, () => chart)
 
 function updateChart() {
   if (!chart) return
-  const v = store.lux ?? 0
+  const v = +Number(store.lux ?? 0).toFixed(1)
   chart.setOption({
     series: [{ data: [{ value: v }] }]
   })
@@ -47,7 +47,7 @@ onMounted(() => {
       pointer: { width: 4, length: '60%', itemStyle: { color: '#2563eb' } },
       axisTick: { distance: -12, length: 4, lineStyle: { color: '#64748b', width: 1 } },
       axisLabel: { color: '#64748b', fontSize: 12, distance: 16 },
-      detail: { valueAnimation: true, formatter: '{value} lux', color: '#1e293b', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '58%'] },
+      detail: { valueAnimation: true, formatter: (value) => `${Number(value).toFixed(1)} lux`, color: '#1e293b', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '58%'] },
       data: [{ value: 0 }]
     }]
   })

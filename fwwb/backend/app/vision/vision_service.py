@@ -89,6 +89,18 @@ class VisionService:
         self._counter_cache: Optional[Dict] = None
         self._cache_lock = threading.Lock()
 
+        # ─── 外部预览帧缓存（OpenMV GUI 上报的最近一帧 JPEG 字节）───
+        # 大屏前端通过 GET /v1/vision/frame.jpg 拉取
+        self._latest_frame_bytes: Optional[bytes] = None
+        self._latest_frame_ts: float = 0.0
+        self._latest_frame_source: str = ''   # 'preview' / 'counter' / 'cargo'
+        self._frame_lock = threading.Lock()
+
+        # ─── 计数器识别远程开关 ───
+        # GUI 后台轮询 /v1/vision/counter/control 获取此值并按需启停识别循环
+        self._counter_enabled = False
+        self._counter_enabled_at = 0.0
+
         # 持久化限流
         self._last_persist_obstacle = 0.0
         self._last_persist_counter = 0.0
@@ -307,6 +319,30 @@ class VisionService:
         with self._cache_lock:
             self._counter_cache = data
         self._broadcast('counter', data)
+
+    # ------------ 外部预览帧缓存（GUI → 大屏） ------------
+
+    def update_external_frame(self, jpg_bytes: bytes, source: str = 'preview') -> None:
+        """OpenMV GUI 把最新 JPEG 帧推到后端，前端 <img> 拉取展示"""
+        if not jpg_bytes:
+            return
+        with self._frame_lock:
+            self._latest_frame_bytes = jpg_bytes
+            self._latest_frame_ts = time.time()
+            self._latest_frame_source = source or ''
+
+    def get_latest_frame(self) -> Tuple[Optional[bytes], float, str]:
+        with self._frame_lock:
+            return self._latest_frame_bytes, self._latest_frame_ts, self._latest_frame_source
+
+    # ------------ 计数器识别远程开关（前端按钮 → GUI） ------------
+
+    def set_counter_enabled(self, enabled: bool) -> None:
+        self._counter_enabled = bool(enabled)
+        self._counter_enabled_at = time.time()
+
+    def get_counter_enabled(self) -> bool:
+        return self._counter_enabled
 
     # ------------ 状态/查询 ------------
 

@@ -76,8 +76,7 @@ function init() {
 
   // OrbitControls
   controls = new OrbitControls(camera, renderer.domElement)
-  controls.enableDamping = true
-  controls.dampingFactor = 0.08
+  controls.enableDamping = false
   controls.minDistance = 5
   controls.maxDistance = 35
   controls.maxPolarAngle = Math.PI / 2.1

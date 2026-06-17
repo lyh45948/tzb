@@ -11,14 +11,14 @@ export const dashboardModules = [
     label: '环境监测',
     icon: '🌡',
     color: '#ef4444',
-    desc: '温湿度、照度、CO2/TVOC趋势，对齐 /v1/sensors/current 的展示规划'
+    desc: '温湿度、照度、CO/TVOC趋势，对齐 /v1/sensors/current 的展示规划'
   },
   {
     key: 'gas',
     label: '危气安全',
     icon: '⚠',
     color: '#ef4444',
-    desc: 'CO2、TVOC、gasMic、火焰与风扇/蜂鸣器联动告警'
+    desc: 'CO、TVOC、gasMic、火焰与风扇/蜂鸣器联动告警'
   },
   {
     key: 'agv',

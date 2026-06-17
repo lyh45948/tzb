@@ -1,6 +1,6 @@
 <template>
   <div class="panel-frame">
-    <div class="panel-header"><span class="dot"></span>CO2 浓度</div>
+    <div class="panel-header"><span class="dot"></span>CO 浓度</div>
     <div class="panel-body">
       <div ref="chartEl" style="width:100%;height:100%"></div>
     </div>
@@ -22,17 +22,18 @@ const { start: startResize } = useChartResize(chartEl, () => chart)
 function updateChart(val) {
   if (!chart) return
   const v = val ?? 0
+  const display = +Number(v).toFixed(1)
   chart.setOption({
     series: [{
-      data: [{ value: v, itemStyle: { color: getColor(v) } }],
-      detail: { formatter: `${v} ppm` }
+      data: [{ value: display, itemStyle: { color: getColor(display) } }],
+      detail: { formatter: `${display} ppm` }
     }]
   })
 }
 
 function getColor(v) {
-  if (v >= 1000) return '#ef4444'
-  if (v >= 800) return '#f59e0b'
+  if (v >= 50) return '#ef4444'
+  if (v >= 35) return '#f59e0b'
   return '#22c55e'
 }
 
@@ -44,13 +45,14 @@ onMounted(() => {
       startAngle: 210,
       endAngle: -30,
       min: 0,
-      max: 1500,
+      max: 100,
       radius: '92%',
       center: ['50%', '58%'],
       axisLine: {
         lineStyle: {
           width: 12,
-          color: [[0.53, '#22c55e'], [0.67, '#f59e0b'], [1, '#ef4444']]
+          // 0~35 安全(绿) / 35~50 警戒(黄) / 50~100 危险(红)
+          color: [[0.35, '#22c55e'], [0.50, '#f59e0b'], [1, '#ef4444']]
         }
       },
       pointer: { width: 4, length: '55%', itemStyle: { color: '#2563eb' } },

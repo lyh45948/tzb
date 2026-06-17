@@ -6,10 +6,13 @@
 - 后端主动捕帧推理（/vision/detect, /vision/recognize）
 - 控制后台循环（/vision/start, /vision/stop, /vision/status）
 - 历史回溯（/vision/history）
+- 外部预览帧中继（/vision/frame.jpg、/vision/frame [POST]）—— OpenMV GUI 推到后端，
+  大屏前端通过 <img> 拉取，避免 GUI 直接对外暴露端口
+- 计数器识别远程开关（/vision/counter/control）—— 大屏前端按钮 ↔ GUI 后台轮询
 """
 from datetime import datetime
 
-from flask import jsonify, request
+from flask import Response, jsonify, request
 
 from app.routes import api_bp
 from app.services.registry import get_service
@@ -244,3 +247,67 @@ def vision_history():
             pass
     rows = q.order_by(VisionResult.timestamp.desc()).limit(limit).all()
     return jsonify({"code": 0, "data": [r.to_dict() for r in rows], "count": len(rows)})
+
+
+# ================ 外部预览帧中继 ================
+
+@api_bp.route('/vision/frame', methods=['POST'])
+def upload_frame():
+    """OpenMV GUI 推送最近一帧 JPEG。
+
+    - Content-Type: image/jpeg，body 为 JPEG 字节流
+    - 可选 query 参数 source：preview / counter / cargo（标识帧来源）
+    """
+    vs = _vs()
+    if vs is None:
+        return jsonify({"code": 1, "message": "VisionService 未启用"}), 503
+
+    data = request.get_data() or b''
+    if not data:
+        return jsonify({"code": 1, "message": "缺少图像字节"}), 400
+
+    source = request.args.get('source', 'preview')
+    vs.update_external_frame(data, source=source)
+    return jsonify({"code": 0, "data": {"bytes": len(data), "source": source}})
+
+
+@api_bp.route('/vision/frame.jpg', methods=['GET'])
+def get_frame_jpg():
+    """大屏前端拉取最近一帧 JPEG，<img> 直接 src 引用。"""
+    vs = _vs()
+    if vs is None:
+        return Response(status=503)
+    jpg, ts, source = vs.get_latest_frame()
+    if not jpg:
+        return Response(status=204)  # 暂无帧
+    resp = Response(jpg, mimetype='image/jpeg')
+    # 防止浏览器缓存旧帧
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['X-Frame-Source'] = source or ''
+    if ts:
+        resp.headers['X-Frame-Timestamp'] = str(int(ts * 1000))
+    return resp
+
+
+# ================ 计数器识别开关 ================
+
+@api_bp.route('/vision/counter/control', methods=['GET', 'POST'])
+def counter_control():
+    """计数器识别远程开关。
+
+    - GET：返回当前 enabled，GUI 后台 1Hz 轮询此端点决定启停识别循环
+    - POST：body {enabled: bool}，前端按钮触发
+    """
+    vs = _vs()
+    if vs is None:
+        return jsonify({"code": 1, "message": "VisionService 未启用"}), 503
+
+    if request.method == 'POST':
+        payload = request.get_json(silent=True) or {}
+        if 'enabled' not in payload:
+            return jsonify({"code": 1, "message": "缺少 enabled 字段"}), 400
+        vs.set_counter_enabled(bool(payload['enabled']))
+        logger.info(f"计数器识别远程开关 → {vs.get_counter_enabled()}")
+
+    return jsonify({"code": 0, "data": {"enabled": vs.get_counter_enabled()}})

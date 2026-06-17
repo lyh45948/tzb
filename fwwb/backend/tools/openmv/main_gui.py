@@ -79,6 +79,22 @@ class OpenMVVisionGUI:
         self.backend_base_url = (os.getenv('BACKEND_BASE_URL', 'http://127.0.0.1:5000') or '').rstrip('/')
         self._post_lock = threading.Lock()
         self._last_post_log_at = 0.0  # 错误节流
+        self._last_frame_post_log_at = 0.0    # 帧上传错误节流
+        self._last_remote_log_at = 0.0        # 远程开关错误节流
+        self._frame_post_lock = threading.Lock()
+
+        # 远程开关线程：1Hz 轮询 /v1/vision/counter/control
+        # 本地手动开关 ↔ 远程开关任一为 True 都会启动识别循环
+        self._remote_counter_enabled = False
+        self._remote_thread = None
+        self._remote_running = False
+
+        # 远程「开始计数」可能在 OpenMV 还没连上 / 模型还没加载完时就到达，
+        # 把"想要识别"挂起，等条件就绪后由 _maybe_resume_pending_counter 自动启动
+        self._pending_remote_counter = False
+        # 自动连接重试：避免还在连的同时再点连接
+        self._auto_connect_attempting = False
+        self._auto_connect_timer_id = None
 
         # 构建UI
         self._build_ui()
@@ -241,6 +257,11 @@ class OpenMVVisionGUI:
         self._log("系统启动中...")
         if self.backend_base_url:
             self._log(f"识别结果将上报至: {self.backend_base_url}/v1/vision/counter")
+            self._log("已开启远程托管模式：前端按钮可直接驱动连接和计数，无需手动操作 GUI")
+            # 启动远程开关轮询线程（前端按钮 → 后端 → GUI 自动启停识别）
+            self._remote_running = True
+            self._remote_thread = threading.Thread(target=self._remote_control_loop, daemon=True)
+            self._remote_thread.start()
         else:
             self._log("未配置 BACKEND_BASE_URL，识别结果不会上报后端")
         self._log("正在加载模型...")
@@ -404,6 +425,9 @@ class OpenMVVisionGUI:
                 self.result_queue.put(("preview", frame))
                 self.result_queue.put(("stats", f"预览帧数: {self.preview_frame_count}"))
 
+                # 同步推一帧给后端 → 大屏前端可以拉到画面
+                self._post_frame_to_backend(frame, source='preview')
+
                 time.sleep(0.05)
 
             except Exception as e:
@@ -522,6 +546,9 @@ class OpenMVVisionGUI:
                 self.result_queue.put(("preview", annotated))
                 self.result_queue.put(("counter_result", results))
 
+                # 把带标注的画面推给后端 → 前端摄像头模块同步显示
+                self._post_frame_to_backend(annotated, source='counter')
+
                 # 保存带标注的图像
                 if results:
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -590,6 +617,124 @@ class OpenMVVisionGUI:
                 self._last_post_log_at = now
                 self._log(f"上报后端失败: {e} （后续 30s 内不再提示）")
 
+    def _post_frame_to_backend(self, frame, source='preview'):
+        """把当前帧 JPEG 编码后推到 /v1/vision/frame，由后端转发给前端 <img>。"""
+        if not self.backend_base_url or frame is None:
+            return
+        # 单帧串行上传，避免堆积
+        if not self._frame_post_lock.acquire(blocking=False):
+            return
+        try:
+            try:
+                ok, buf = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                if not ok:
+                    return
+                jpg_bytes = buf.tobytes()
+            except Exception:
+                return
+
+            url = f"{self.backend_base_url}/v1/vision/frame?source={source}"
+            req = urlrequest.Request(
+                url,
+                data=jpg_bytes,
+                method='POST',
+                headers={'Content-Type': 'image/jpeg'},
+            )
+            try:
+                with urlrequest.urlopen(req, timeout=1.0) as resp:
+                    resp.read(64)
+            except (URLError, OSError, TimeoutError) as e:
+                now = time.time()
+                if now - self._last_frame_post_log_at > 30:
+                    self._last_frame_post_log_at = now
+                    self._log(f"上传画面失败: {e} （后续 30s 内不再提示）")
+        finally:
+            self._frame_post_lock.release()
+
+    def _remote_control_loop(self):
+        """1Hz 轮询后端的计数器开关状态，与本地按钮联动。
+
+        前端「开始计数」/「停止计数」按钮 → POST /v1/vision/counter/control
+                                       → GUI 这里 GET 轮询到变化 → 自动按一次本地按钮
+        """
+        if not self.backend_base_url:
+            return
+        url = f"{self.backend_base_url}/v1/vision/counter/control"
+        while self._remote_running:
+            try:
+                req = urlrequest.Request(url, method='GET')
+                with urlrequest.urlopen(req, timeout=1.5) as resp:
+                    body = resp.read(1024).decode('utf-8', errors='replace')
+                payload = json.loads(body)
+                desired = bool(((payload or {}).get('data') or {}).get('enabled', False))
+            except (URLError, OSError, TimeoutError, ValueError) as e:
+                now = time.time()
+                if now - self._last_remote_log_at > 60:
+                    self._last_remote_log_at = now
+                    self._log(f"远程开关轮询失败: {e} （后续 60s 内不再提示）")
+                time.sleep(2.0)
+                continue
+
+            if desired != self._remote_counter_enabled:
+                self._remote_counter_enabled = desired
+                # 切到 UI 线程做实际启停（按钮状态需要主线程更新）
+                self.root.after(0, self._apply_remote_counter, desired)
+            time.sleep(1.0)
+
+    def _apply_remote_counter(self, desired):
+        """主线程：根据远程开关启停计数器识别。
+
+        - desired=True 但 OpenMV 还没连 / 模型还没加载完：把意图挂在 _pending_remote_counter，
+          并尝试自动连接；模型加载完成或连接成功后由 _maybe_resume_pending_counter 自动启动
+        - desired=False：清掉 pending，已经在跑就停
+        """
+        if desired:
+            self._pending_remote_counter = True
+            if self.is_recognizing_counter:
+                return
+            if self.connected and self.models_loaded:
+                self._log("收到远程开始计数指令")
+                self._start_counter_recognize()
+                self._pending_remote_counter = False
+            else:
+                # 条件不齐：先挂起，并按需自动触发连接
+                self._log("收到远程开始计数指令，等待 OpenMV 连接 / 模型就绪")
+                self._auto_connect_if_needed()
+        else:
+            self._pending_remote_counter = False
+            if self.is_recognizing_counter:
+                self._log("收到远程停止计数指令")
+                self._stop_counter_recognize()
+
+    def _maybe_resume_pending_counter(self):
+        """模型加载或连接成功后调用：如有 pending 的远程开始计数请求，立即启动"""
+        if not self._pending_remote_counter:
+            return
+        if not (self.connected and self.models_loaded):
+            return
+        if self.is_recognizing_counter:
+            self._pending_remote_counter = False
+            return
+        self._log("条件就绪，自动启动远程请求的计数器识别")
+        self._start_counter_recognize()
+        self._pending_remote_counter = False
+
+    def _auto_connect_if_needed(self):
+        """无人值守模式下自动连接 OpenMV，避免用户必须去 GUI 点「连接 OpenMV」"""
+        if self.connected or self._auto_connect_attempting:
+            return
+        # 后端没注入 base_url（即独立运行）就不自动连，保留原本"用户手点"行为
+        if not self.backend_base_url:
+            return
+        self._auto_connect_attempting = True
+        self._log("自动尝试连接 OpenMV...")
+        # 复用现有 _connect_camera 流程；它内部会异步连接、回调 result_queue("connected", ok)
+        try:
+            self._connect_camera()
+        except Exception as e:
+            self._log(f"自动连接异常: {e}")
+            self._auto_connect_attempting = False
+
     # ==================== UI更新 ====================
 
     def _update_preview(self, frame):
@@ -647,8 +792,13 @@ class OpenMVVisionGUI:
                     self.models_loaded = True
                     self.status_model.config(text="● 模型: 已加载", foreground='green')
                     self._update_button_states()
+                    # 远程托管模式下，模型加载完后如果还没连 OpenMV，主动连一次
+                    if self.backend_base_url and not self.connected:
+                        self._auto_connect_if_needed()
+                    self._maybe_resume_pending_counter()
 
                 elif msg_type == "connected":
+                    self._auto_connect_attempting = False
                     if data:
                         self.connected = True
                         self.status_camera.config(text="● OpenMV: 已连接", foreground='green')
@@ -656,9 +806,17 @@ class OpenMVVisionGUI:
                         self.btn_disconnect.config(state=tk.NORMAL)
                         self._update_button_states()
                         self._log("OpenMV连接成功")
+                        self._maybe_resume_pending_counter()
                     else:
                         self._log("OpenMV连接失败")
                         self.btn_connect.config(state=tk.NORMAL)
+                        # 远程托管 + 仍有 pending 计数请求 → 6s 后再尝试一次
+                        if self.backend_base_url and self._pending_remote_counter:
+                            if self._auto_connect_timer_id is not None:
+                                try: self.root.after_cancel(self._auto_connect_timer_id)
+                                except Exception: pass
+                            self._auto_connect_timer_id = self.root.after(
+                                6000, self._auto_connect_if_needed)
 
                 elif msg_type == "preview":
                     self._update_preview(data)
@@ -696,6 +854,7 @@ class OpenMVVisionGUI:
         self.is_previewing = False
         self.is_detecting_cargo = False
         self.is_recognizing_counter = False
+        self._remote_running = False
         if self.connected:
             self.receiver.disconnect()
         self.root.destroy()

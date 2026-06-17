@@ -180,6 +180,22 @@ def normalize_car_data(data):
             if src_key in agri and agri[src_key] is not None:
                 env[dst_key] = agri[src_key]
     data['env'] = env
+
+    vision = data.get('vision')
+    if isinstance(vision, dict):
+        obstacles = vision.get('obstacles')
+        if not isinstance(obstacles, list):
+            obstacles = []
+        try:
+            obstacle_count = int(vision.get('obstacleCount', len(obstacles)) or 0)
+        except (TypeError, ValueError):
+            obstacle_count = len(obstacles)
+        vision['obstacleCount'] = obstacle_count
+        vision['obstacles'] = obstacles
+        vision['valid'] = 1 if vision.get('valid') else 0
+        if 'source' not in vision:
+            vision['source'] = 'openmv_spi'
+        data['vision'] = vision
     return data
 
 

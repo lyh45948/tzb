@@ -78,7 +78,7 @@ export const SENSOR_RANGES = {
   temperature: { min: 0, max: 60, warnHigh: 30, dangerHigh: 35, unit: '℃' },
   humidity: { min: 0, max: 100, warnHigh: 75, dangerHigh: 80, unit: '%' },
   lux: { min: 0, max: 2000, warnLow: 100, warnHigh: 1600, unit: 'lux' },
-  co2: { min: 300, max: 2000, warnHigh: 800, dangerHigh: 1000, unit: 'ppm' },
+  co2: { min: 0, max: 100, warnHigh: 35, dangerHigh: 50, unit: 'ppm' },
   tvoc: { min: 0, max: 1200, warnHigh: 600, dangerHigh: 900, unit: 'ppb' },
   // 当前前端仍按演示模拟值 300/500 触发；未来接真实后端前需再次确认接口文档量程
   gasMic: { min: 0, max: 1000, warnHigh: 300, dangerHigh: 500, unit: '' },

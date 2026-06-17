@@ -147,6 +147,16 @@ class WebSocketManager {
     this._send(createQueryRequest(action, params))
   }
 
+  // 拉取联动控制器当前配置（响应消息 type=linkage_config）
+  getLinkageConfig(): void {
+    this._send({ type: 'linkage_config_get' } as WSMessage)
+  }
+
+  // 推送联动控制器配置（仅传需修改字段；响应 type=linkage_config_set_result + 广播 linkage_config）
+  setLinkageConfig(partial: Record<string, number>): void {
+    this._send({ type: 'linkage_config_set', config: partial } as WSMessage)
+  }
+
   // 发送原始消息
   sendRaw(msg: WSMessage): void {
     this._send(msg)

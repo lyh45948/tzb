@@ -33,6 +33,7 @@ class CarConnection:
         self.latest_data = None
         self.last_receive_time = None
         self.last_save_time = 0
+        self.last_vision_frame = None
 
         self.on_data_received = None
         self.on_connection_change = None
@@ -182,9 +183,87 @@ class CarConnection:
                     self.data_service.save_car_data(self.device_id, data)
 
             self._forward_wheel_speed(data)
+            self._handle_vision_data(data)
 
         except Exception as e:
             logger.error(f"[{self.device_id}] 数据处理错误: {e}")
+
+    def _handle_vision_data(self, data):
+        vision = data.get('vision') if isinstance(data, dict) else None
+        if not isinstance(vision, dict):
+            return
+        if not vision.get('valid'):
+            return
+
+        frame = vision.get('frame')
+        if frame is not None and frame == self.last_vision_frame:
+            return
+        self.last_vision_frame = frame
+
+        try:
+            from app.services.registry import get_service
+            vision_service = get_service('vision_service')
+        except Exception as e:
+            logger.debug(f"[{self.device_id}] 获取视觉服务失败: {e}")
+            vision_service = None
+        if vision_service is None:
+            return
+
+        timestamp = int(time.time() * 1000)
+        source = vision.get('source') or 'openmv_spi'
+        obstacles = vision.get('obstacles')
+        if isinstance(obstacles, list):
+            payload = {
+                'device_id': self.device_id,
+                'obstacles': obstacles,
+                'count': int(vision.get('obstacleCount', len(obstacles)) or 0),
+                'timestamp': timestamp,
+                'source': source,
+                'frame': frame,
+            }
+            apf = self._build_vision_apf(obstacles)
+            if apf:
+                payload['apf'] = apf
+            try:
+                vision_service.receive_external_obstacles(payload)
+            except Exception as e:
+                logger.debug(f"[{self.device_id}] 写入视觉障碍物缓存失败: {e}")
+
+        counter = vision.get('counter')
+        if counter is not None and str(counter) != '':
+            payload = {
+                'device_id': self.device_id,
+                'digits': str(counter),
+                'timestamp': timestamp,
+                'source': source,
+                'frame': frame,
+            }
+            try:
+                vision_service.receive_external_counter(payload)
+            except Exception as e:
+                logger.debug(f"[{self.device_id}] 写入视觉计数器缓存失败: {e}")
+
+    @staticmethod
+    def _build_vision_apf(obstacles):
+        nearest_mm = None
+        for obstacle in obstacles:
+            if not isinstance(obstacle, dict):
+                continue
+            distance = obstacle.get('distance')
+            try:
+                distance_mm = int(distance)
+            except (TypeError, ValueError):
+                continue
+            if distance_mm <= 0:
+                continue
+            if nearest_mm is None or distance_mm < nearest_mm:
+                nearest_mm = distance_mm
+        if nearest_mm is None:
+            return None
+        return {
+            'nearest_distance': nearest_mm / 1000.0,
+            'nearest_distance_mm': nearest_mm,
+        }
 
     def _forward_wheel_speed(self, data):
         if not self.forward_socket:

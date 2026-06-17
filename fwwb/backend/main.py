@@ -41,6 +41,7 @@ class SmartCarBackend:
         self.imu_service = None  # IMU 服务
         self.vision_service = None  # 视觉识别服务
         self.linkage_controller = None  # 联动控制器（PIR/温湿度/危气）
+        self.agent_service = None  # 车辆环境智能体
         self.openmv_gui_process = None  # OpenMV 调试 GUI 子进程
         self.running = False
 
@@ -152,6 +153,21 @@ class SmartCarBackend:
         else:
             logger.info("数字孪生 SSE 推送未启用 (DASHBOARD_STREAM_ENABLED=false)")
 
+        # 初始化车辆环境智能体（异常监测 + critical 时自动下发硬件命令）
+        if getattr(self.config, 'AGENT_ENABLED', True):
+            logger.info("初始化车辆环境智能体...")
+            from app.services.agent_service import AgentService
+            self.agent_service = AgentService(
+                app=self.app,
+                config=self.config,
+                udp_car_service=self.udp_car_service,
+                data_service=self.data_service,
+                linkage_controller=self.linkage_controller,
+            )
+            self.agent_service.start()
+        else:
+            logger.info("车辆环境智能体未启用 (AGENT_ENABLED=false)")
+
         # 注册服务实例到registry（供REST API调用）
         from app.services.registry import register_services
         from app.services.simulation_service import SimulationService
@@ -168,6 +184,7 @@ class SmartCarBackend:
             dashboard_stream_service=self.dashboard_stream_service,
             vision_service=self.vision_service,
             linkage_controller=self.linkage_controller,
+            agent_service=self.agent_service,
         )
         logger.info("服务实例已注册到registry")
 
@@ -319,6 +336,13 @@ class SmartCarBackend:
                 logger.info("联动控制器已关闭")
             except Exception as e:
                 logger.warning(f"关闭联动控制器异常: {e}")
+
+        if self.agent_service:
+            try:
+                self.agent_service.stop()
+                logger.info("车辆环境智能体已关闭")
+            except Exception as e:
+                logger.warning(f"关闭车辆环境智能体异常: {e}")
 
         if self.dashboard_stream_service:
             try:
