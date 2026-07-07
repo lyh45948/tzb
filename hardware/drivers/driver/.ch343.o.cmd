@@ -1,8 +1,8 @@
-savedcmd_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := gcc -Wp,-MMD,/home/tzb/Desktop/ch343ser_linux-main/driver/.ch343.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fcf-protection=none -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mindirect-branch-cs-prefix -mfunction-return=thunk-extern -fno-jump-tables -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fno-reorder-blocks -fno-ipa-cp-clone -fno-partial-inlining -fstack-protector-strong -fno-omit-frame-pointer -fno-optimize-sibling-calls -ftrivial-auto-var-init=zero -fno-stack-clash-protection -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -fno-inline-functions-called-once -falign-functions=16 -fms-extensions -fno-strict-overflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wframe-larger-than=4096 -Wno-main -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-dangling-pointer -Wvla -Wno-pointer-sign -Wcast-function-type -Wno-array-bounds -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-restrict -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-overflow -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -g -gdwarf-5  -DMODULE  -DKBUILD_BASENAME='"ch343"' -DKBUILD_MODNAME='"ch343"' -D__KBUILD_MODNAME=kmod_ch343 -c -o /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.c   ; ./tools/objtool/objtool --hacks=jump_label --hacks=noinstr --hacks=skylake --retpoline --rethunk --stackval --static-call --uaccess --prefix=16   --module /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o
+savedcmd_/home/tzb/tzb/hardware/drivers/driver/ch343.o := gcc -Wp,-MMD,/home/tzb/tzb/hardware/drivers/driver/.ch343.o.d -nostdinc -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/compiler-version.h -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -fmacro-prefix-map=./= -std=gnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-strict-aliasing -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -fcf-protection=none -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -Wno-sign-compare -fno-asynchronous-unwind-tables -mindirect-branch=thunk-extern -mindirect-branch-register -mindirect-branch-cs-prefix -mfunction-return=thunk-extern -fno-jump-tables -fpatchable-function-entry=16,16 -fno-delete-null-pointer-checks -O2 -fno-allow-store-data-races -fno-reorder-blocks -fno-ipa-cp-clone -fno-partial-inlining -fstack-protector-strong -fno-omit-frame-pointer -fno-optimize-sibling-calls -ftrivial-auto-var-init=zero -fno-stack-clash-protection -pg -mrecord-mcount -mfentry -DCC_USING_FENTRY -fno-inline-functions-called-once -falign-functions=16 -fms-extensions -fno-strict-overflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wundef -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Werror=strict-prototypes -Wno-format-security -Wno-trigraphs -Wno-frame-address -Wno-address-of-packed-member -Wframe-larger-than=4096 -Wno-main -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-dangling-pointer -Wvla -Wno-pointer-sign -Wcast-function-type -Wno-array-bounds -Wno-alloc-size-larger-than -Wimplicit-fallthrough=5 -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wenum-conversion -Wno-unused-but-set-variable -Wno-unused-const-variable -Wno-restrict -Wno-packed-not-aligned -Wno-format-overflow -Wno-format-truncation -Wno-stringop-overflow -Wno-stringop-truncation -Wno-missing-field-initializers -Wno-type-limits -Wno-shift-negative-value -Wno-maybe-uninitialized -Wno-sign-compare -g -gdwarf-5  -DMODULE  -DKBUILD_BASENAME='"ch343"' -DKBUILD_MODNAME='"ch343"' -D__KBUILD_MODNAME=kmod_ch343 -c -o /home/tzb/tzb/hardware/drivers/driver/ch343.o /home/tzb/tzb/hardware/drivers/driver/ch343.c   ; ./tools/objtool/objtool --hacks=jump_label --hacks=noinstr --hacks=skylake --retpoline --rethunk --stackval --static-call --uaccess --prefix=16   --module /home/tzb/tzb/hardware/drivers/driver/ch343.o
 
-source_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.c
+source_/home/tzb/tzb/hardware/drivers/driver/ch343.o := /home/tzb/tzb/hardware/drivers/driver/ch343.c
 
-deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
+deps_/home/tzb/tzb/hardware/drivers/driver/ch343.o := \
     $(wildcard include/config/COMPAT) \
     $(wildcard include/config/PM) \
   include/linux/compiler-version.h \
@@ -317,13 +317,6 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/HARDENED_USERCOPY) \
     $(wildcard include/config/SH) \
   include/linux/restart_block.h \
-  include/linux/time64.h \
-  include/linux/math64.h \
-    $(wildcard include/config/ARCH_SUPPORTS_INT128) \
-  include/vdso/math64.h \
-  include/vdso/time64.h \
-  include/uapi/linux/time.h \
-  include/uapi/linux/time_types.h \
   arch/x86/include/asm/thread_info.h \
     $(wildcard include/config/VM86) \
     $(wildcard include/config/X86_IOPL_IOPERM) \
@@ -431,6 +424,9 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   arch/x86/include/asm/shstk.h \
   include/linux/personality.h \
   include/uapi/linux/personality.h \
+  include/linux/math64.h \
+    $(wildcard include/config/ARCH_SUPPORTS_INT128) \
+  include/vdso/math64.h \
   arch/x86/include/asm/smp.h \
     $(wildcard include/config/DEBUG_NMI_SELFTEST) \
   include/linux/percpu.h \
@@ -528,6 +524,7 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/LRU_GEN) \
     $(wildcard include/config/LRU_GEN_STATS) \
     $(wildcard include/config/MEMCG) \
+    $(wildcard include/config/ZSWAP) \
     $(wildcard include/config/MEMORY_FAILURE) \
     $(wildcard include/config/PAGE_EXTENSION) \
     $(wildcard include/config/DEFERRED_STRUCT_PAGE_INIT) \
@@ -537,17 +534,18 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/linux/list_nulls.h \
   include/linux/wait.h \
     $(wildcard include/config/WAKE_UP_PIPE) \
-  include/uapi/linux/wait.h \
   include/linux/seqlock.h \
   include/linux/mutex.h \
-    $(wildcard include/config/MUTEX_SPIN_ON_OWNER) \
     $(wildcard include/config/DEBUG_MUTEXES) \
   include/linux/osq_lock.h \
     $(wildcard include/config/LOCK_SPIN_ON_OWNER_CNA) \
   include/linux/hash.h \
     $(wildcard include/config/HAVE_ARCH_HASH) \
   include/linux/debug_locks.h \
+  include/linux/mutex_types.h \
+    $(wildcard include/config/MUTEX_SPIN_ON_OWNER) \
   include/linux/nodemask.h \
+  include/linux/nodemask_types.h \
   include/linux/random.h \
     $(wildcard include/config/VMGENID) \
   include/uapi/linux/random.h \
@@ -564,8 +562,8 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/HAVE_ALIGNED_STRUCT_PAGE) \
     $(wildcard include/config/HUGETLB_PMD_PAGE_TABLE_SHARING) \
     $(wildcard include/config/USERFAULTFD) \
-    $(wildcard include/config/PER_VMA_LOCK) \
     $(wildcard include/config/ANON_VMA_NAME) \
+    $(wildcard include/config/PER_VMA_LOCK) \
     $(wildcard include/config/SCHED_MM_CID) \
     $(wildcard include/config/HAVE_ARCH_COMPAT_MMAP_BASES) \
     $(wildcard include/config/MEMBARRIER) \
@@ -585,6 +583,7 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   arch/x86/include/uapi/asm/auxvec.h \
   include/linux/kref.h \
   include/linux/refcount.h \
+  include/linux/refcount_types.h \
   include/linux/rbtree.h \
   include/linux/rbtree_types.h \
   include/linux/maple_tree.h \
@@ -611,8 +610,13 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/linux/timer.h \
     $(wildcard include/config/DEBUG_OBJECTS_TIMERS) \
   include/linux/ktime.h \
+  include/linux/jiffies.h \
   include/linux/time.h \
     $(wildcard include/config/POSIX_TIMERS) \
+  include/linux/time64.h \
+  include/vdso/time64.h \
+  include/uapi/linux/time.h \
+  include/uapi/linux/time_types.h \
   include/linux/time32.h \
   include/linux/timex.h \
   include/uapi/linux/timex.h \
@@ -621,7 +625,6 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   arch/x86/include/asm/tsc.h \
   include/vdso/time32.h \
   include/vdso/time.h \
-  include/linux/jiffies.h \
   include/vdso/jiffies.h \
   include/generated/timeconst.h \
   include/vdso/ktime.h \
@@ -647,6 +650,7 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/HUGETLB_PAGE_OPTIMIZE_VMEMMAP) \
   include/linux/local_lock.h \
   include/linux/local_lock_internal.h \
+  include/linux/zswap.h \
   include/linux/memory_hotplug.h \
     $(wildcard include/config/HAVE_ARCH_NODEDATA_EXTENSION) \
     $(wildcard include/config/ARCH_HAS_ADD_PAGES) \
@@ -755,15 +759,14 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/PREEMPT_VOLUNTARY) \
     $(wildcard include/config/DEBUG_RSEQ) \
   include/uapi/linux/sched.h \
-  include/linux/pid.h \
-  include/linux/rculist.h \
-    $(wildcard include/config/PROVE_RCU_LIST) \
+  include/linux/pid_types.h \
   include/linux/sem.h \
   include/uapi/linux/sem.h \
   include/linux/ipc.h \
   include/linux/uidgid.h \
     $(wildcard include/config/MULTIUSER) \
     $(wildcard include/config/USER_NS) \
+  include/linux/uidgid_types.h \
   include/linux/highuid.h \
   include/linux/rhashtable-types.h \
   include/uapi/linux/ipc.h \
@@ -771,10 +774,6 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/uapi/asm-generic/ipcbuf.h \
   arch/x86/include/uapi/asm/sembuf.h \
   include/linux/shm.h \
-  include/uapi/linux/shm.h \
-  include/uapi/asm-generic/hugetlb_encode.h \
-  arch/x86/include/uapi/asm/shmbuf.h \
-  include/uapi/asm-generic/shmbuf.h \
   arch/x86/include/asm/shmparam.h \
   include/linux/kmsan_types.h \
   include/linux/plist.h \
@@ -817,12 +816,10 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/uapi/asm-generic/signal-defs.h \
   arch/x86/include/uapi/asm/siginfo.h \
   include/uapi/asm-generic/siginfo.h \
-  include/linux/syscall_user_dispatch.h \
+  include/linux/syscall_user_dispatch_types.h \
   include/linux/task_io_accounting.h \
     $(wildcard include/config/TASK_IO_ACCOUNTING) \
-  include/linux/posix-timers.h \
-  include/linux/alarmtimer.h \
-    $(wildcard include/config/RTC_CLASS) \
+  include/linux/posix-timers_types.h \
   include/uapi/linux/rseq.h \
   include/linux/kcsan.h \
   include/linux/rv.h \
@@ -912,6 +909,8 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/linux/kdev_t.h \
   include/uapi/linux/kdev_t.h \
   include/linux/dcache.h \
+  include/linux/rculist.h \
+    $(wildcard include/config/PROVE_RCU_LIST) \
   include/linux/rculist_bl.h \
   include/linux/list_bl.h \
   include/linux/bit_spinlock.h \
@@ -923,6 +922,7 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/linux/list_lru.h \
   include/linux/shrinker.h \
     $(wildcard include/config/SHRINKER_DEBUG) \
+  include/linux/pid.h \
   include/linux/capability.h \
   include/uapi/linux/capability.h \
   include/linux/semaphore.h \
@@ -1004,6 +1004,9 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/IOMMUFD) \
     $(wildcard include/config/WATCH_QUEUE) \
   include/linux/ratelimit.h \
+  include/linux/posix-timers.h \
+  include/linux/alarmtimer.h \
+    $(wildcard include/config/RTC_CLASS) \
   include/linux/rcu_sync.h \
   include/linux/delayed_call.h \
   include/linux/uuid.h \
@@ -1120,6 +1123,7 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
     $(wildcard include/config/HAVE_ARCH_USERFAULTFD_MINOR) \
     $(wildcard include/config/SHMEM) \
     $(wildcard include/config/MIGRATION) \
+    $(wildcard include/config/ARCH_HAS_GIGANTIC_PAGE) \
     $(wildcard include/config/ARCH_HAS_PTE_SPECIAL) \
     $(wildcard include/config/DEBUG_VM_RB) \
     $(wildcard include/config/PAGE_POISONING) \
@@ -1160,7 +1164,6 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   include/linux/vm_event_item.h \
     $(wildcard include/config/MEMORY_BALLOON) \
     $(wildcard include/config/BALLOON_COMPACTION) \
-    $(wildcard include/config/ZSWAP) \
   arch/x86/include/asm/io.h \
     $(wildcard include/config/MTRR) \
     $(wildcard include/config/X86_PAT) \
@@ -1233,10 +1236,10 @@ deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o := \
   arch/x86/include/generated/asm/unaligned.h \
   include/asm-generic/unaligned.h \
   include/linux/unaligned/packed_struct.h \
-  /home/tzb/Desktop/ch343ser_linux-main/driver/ch343.h \
+  /home/tzb/tzb/hardware/drivers/driver/ch343.h \
 
-/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o: $(deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o)
+/home/tzb/tzb/hardware/drivers/driver/ch343.o: $(deps_/home/tzb/tzb/hardware/drivers/driver/ch343.o)
 
-$(deps_/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o):
+$(deps_/home/tzb/tzb/hardware/drivers/driver/ch343.o):
 
-/home/tzb/Desktop/ch343ser_linux-main/driver/ch343.o: $(wildcard ./tools/objtool/objtool)
+/home/tzb/tzb/hardware/drivers/driver/ch343.o: $(wildcard ./tools/objtool/objtool)

@@ -35,6 +35,7 @@
 #include "hal_bsp_sht20.h"
 #include "hal_bsp_ap3216c.h"
 #include "hal_bsp_sgp30.h"
+#include "hal_bsp_openmv.h"
 
 #include "sys_config.h"
 #include "oled_show_log.h"
@@ -42,11 +43,9 @@
 #include "udp_send_task.h"
 #include "udp_recv_task.h"
 #include "uart_recv_task.h"
-#include "smart_light_task.h"
 #include "agriculture/agriculture_sensor_task.h"
 #include "agriculture/pwm_rgb.h"
-#include "task/imu_task.h"
-#include "hal_bsp_h30.h"
+#include "task/openmv_task.h"
 
 #include "lwip/netifapi.h"
 #include "lwip/sockets.h"
@@ -58,9 +57,8 @@ osThreadId_t uart1_recv_task_id;
 osThreadId_t udp_send_task_id;
 osThreadId_t udp_recv_task_id;
 osThreadId_t auto_avoid_task_id;
-osThreadId_t smart_light_task_id;
 osThreadId_t agriculture_sensor_task_id;
-osThreadId_t imu_task_id;
+osThreadId_t openmv_task_id;
 tn_pcf8574_io_t pcf8574_io;
 
 system_value_t systemValue = {0}; // 系统全局变量
@@ -250,9 +248,8 @@ void SC_peripheral_init(void)
     SGP30_Init();   // SGP30 CO2/TVOC传感器初始化
     pwm_rgb_init(); // PWM RGB初始化 (绿色通道)
     pwm1_rgb_init(); // PWM1 RGB初始化 (蓝色通道)
-    smart_light_init(); // 智能光照初始化
     uart_init(); // 串口初始化
-    H30_Init();  // H30 IMU 传感器初始化
+    OpenMV_Init(); // WT OpenMV 视觉模块初始化
 }
 /**
  * @brief  智能小车的入口函数
@@ -324,15 +321,6 @@ static void smartCar_example(void)
         printf("ID = %d, Create auto_avoid_task_id is OK!\r\n", auto_avoid_task_id);
     }
 
-    /********************************** 智能光照任务 **********************************/
-    options.name = "smart_light_task";
-    options.priority = osPriorityNormal;
-    options.stack_size = 2048;
-    smart_light_task_id = osThreadNew((osThreadFunc_t)smart_light_task, NULL, &options);
-    if (smart_light_task_id != NULL) {
-        printf("ID = %d, Create smart_light_task_id is OK!\r\n", smart_light_task_id);
-    }
-
     /********************************** 农业安防传感器任务 **********************************/
     options.name = "agriculture_sensor_task";
     options.priority = osPriorityNormal;
@@ -342,13 +330,13 @@ static void smartCar_example(void)
         printf("ID = %d, Create agriculture_sensor_task_id is OK!\r\n", agriculture_sensor_task_id);
     }
 
-    /********************************** IMU传感器读取任务 **********************************/
-    options.name = "imu_task";
+    /********************************** OpenMV视觉结果读取任务 **********************************/
+    options.name = "openmv_task";
     options.priority = osPriorityNormal;
-    options.stack_size = 4096;  // IMU 解析需要较大栈空间
-    imu_task_id = osThreadNew((osThreadFunc_t)imu_task, NULL, &options);
-    if (imu_task_id != NULL) {
-        printf("ID = %d, Create imu_task_id is OK!\r\n", imu_task_id);
+    options.stack_size = 2048;
+    openmv_task_id = osThreadNew((osThreadFunc_t)openmv_task, NULL, &options);
+    if (openmv_task_id != NULL) {
+        printf("ID = %d, Create openmv_task_id is OK!\r\n", openmv_task_id);
     }
 }
 SYS_RUN(smartCar_example);

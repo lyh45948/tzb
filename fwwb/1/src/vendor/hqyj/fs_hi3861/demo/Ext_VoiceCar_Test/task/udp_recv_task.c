@@ -34,7 +34,6 @@
 #include "cJSON.h"
 #include "hal_bsp_pcf8574.h"
 #include "hal_bsp_aw2013.h"
-#include "smart_light_task.h"
 
 char udp_recvBuff[2048] = {0};                    // 增大缓冲区以接收完整路径
 char uart_sendBuff[128] = {0};                   // 发送数据缓冲区
@@ -260,43 +259,7 @@ static void parse_json_data(const char *payload)
             cJSON *b = cJSON_GetObjectItem(json_rgb, "b");
             if (r && g && b) {
                 printf("[UDP_RGB]: R=%d, G=%d, B=%d\n", r->valueint, g->valueint, b->valueint);
-                // 使用智能光照模块设置RGB颜色（保存颜色，智能光照只调节亮度）
-                smart_light_set_rgb((uint8_t)r->valueint, (uint8_t)g->valueint, (uint8_t)b->valueint);
-            }
-        }
-
-        // --- 新增：智能光照控制 ---
-        cJSON *json_smartLight = cJSON_GetObjectItem(root, "smartLight");
-        if (json_smartLight != NULL) {
-            cJSON *mode = cJSON_GetObjectItem(json_smartLight, "mode");
-            cJSON *brightness = cJSON_GetObjectItem(json_smartLight, "brightness");
-
-            int is_auto_mode = -1;  // -1 = 未设置, 0 = manual, 1 = auto
-
-            // 解析模式
-            if (mode != NULL) {
-                if (!strcmp(mode->valuestring, "auto")) {
-                    is_auto_mode = 1;
-                    printf("[UDP_SmartLight]: Mode=AUTO\n");
-                } else if (!strcmp(mode->valuestring, "manual")) {
-                    is_auto_mode = 0;
-                    printf("[UDP_SmartLight]: Mode=MANUAL\n");
-                }
-            }
-
-            // 设置亮度（仅在手动模式下生效，自动模式亮度由算法计算）
-            // 注意：smart_light_set_brightness 会自动切换到手动模式，所以要先判断
-            if (brightness != NULL && is_auto_mode != 1) {
-                uint8_t val = (uint8_t)brightness->valueint;
-                if (val > 100) val = 100;
-                smart_light_set_brightness(val);
-            }
-
-            // 最后设置模式（在亮度之后），确保模式不会被覆盖
-            if (is_auto_mode == 1) {
-                smart_light_set_mode(1);
-            } else if (is_auto_mode == 0) {
-                smart_light_set_mode(0);
+                AW2013_Control_RGB((uint8_t)r->valueint, (uint8_t)g->valueint, (uint8_t)b->valueint);
             }
         }
     }

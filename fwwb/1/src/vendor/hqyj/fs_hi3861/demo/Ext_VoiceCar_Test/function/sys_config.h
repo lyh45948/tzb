@@ -26,6 +26,7 @@
 #define UNUSED(x) (void)(x)
 
 #include "hal_bsp_structAll.h"
+#include "hal_bsp_openmv.h"
 
 #define MOTOR_LOW_SPEED 40    // 低等速度
 #define MOTOR_MIDDLE_SPEED 70 // 中等速度
@@ -101,10 +102,6 @@ typedef struct _system_value {
     uint16_t env_ps;            // AP3216C 接近距离
     uint16_t env_ir;            // AP3216C 人体检测
 
-    // --- 智能光照状态 ---
-    uint8_t smart_light_mode;       // 智能光照模式 (1=auto, 0=manual)
-    uint8_t smart_light_brightness; // 当前亮度 (0-100)
-
     // --- LD-STL-19P 激光雷达 ---
     uint16_t lidar_speed;           // 雷达转速 (deg/s)
     uint16_t lidar_start_angle;     // 起始角度 (0.01°)
@@ -112,24 +109,8 @@ typedef struct _system_value {
     LidarPoint lidar_points[LIDAR_POINT_PER_PACK]; // 12个测量点
     uint16_t lidar_timestamp;       // 时间戳 (ms)
 
-    // --- H30 IMU 传感器数据 ---
-    float imu_accel_x;              // 加速度 X (m/s²)
-    float imu_accel_y;              // 加速度 Y (m/s²)
-    float imu_accel_z;              // 加速度 Z (m/s²)
-    float imu_gyro_x;               // 角速度 X (°/s)
-    float imu_gyro_y;               // 角速度 Y (°/s)
-    float imu_gyro_z;               // 角速度 Z (°/s)
-    float imu_pitch;                // 俯仰角 (°)
-    float imu_roll;                 // 横滚角 (°)
-    float imu_yaw;                  // 航向角 (°)
-    float imu_q0;                   // 四元数 w
-    float imu_q1;                   // 四元数 x
-    float imu_q2;                   // 四元数 y
-    float imu_q3;                   // 四元数 z
-    float imu_temperature;          // IMU 温度 (°C)
-    uint8_t imu_fusion_status;      // 融合状态
-    uint16_t imu_tid;               // 帧序号
-    uint8_t imu_valid;              // 数据有效标志 (1=有效)
+    // --- WT OpenMV 视觉识别结果 ---
+    openmv_vision_t vision;         // I2C 读取的紧凑视觉结果
 } system_value_t;
 extern system_value_t systemValue; // 系统全局变量
 

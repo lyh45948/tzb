@@ -4,6 +4,7 @@
 from datetime import datetime
 
 from app.services.registry import get_latest_sensor_data, get_default_sensor_data
+from app.utils.alert_rules import evaluate_gas_alert_level
 from app.utils.logger import get_logger
 
 logger = get_logger('dashboard_service')
@@ -12,11 +13,12 @@ logger = get_logger('dashboard_service')
 class DashboardService:
     """数字孪生大屏快照服务"""
 
-    def __init__(self, app, data_service=None, udp_car_service=None, agv_task_service=None):
+    def __init__(self, app, data_service=None, udp_car_service=None, agv_task_service=None, linkage_controller=None):
         self.app = app
         self.data_service = data_service
         self.udp_car_service = udp_car_service
         self.agv_task_service = agv_task_service
+        self.linkage_controller = linkage_controller
 
     def get_snapshot(self):
         """获取数字孪生大屏当前快照"""
@@ -24,13 +26,16 @@ class DashboardService:
         car_data = self._get_current_car_data()
         env = car_data.get('env', {}) if isinstance(car_data, dict) else {}
         distance_cm, distance_mm = self._distance_values(car_data.get('distance') if isinstance(car_data, dict) else None)
-        smart_light = self._smart_light(env)
         # 视觉数据可能补充障碍物最近距离与计数器读数
         vision_obstacles, vision_counter = self._get_vision_caches()
+        vision_obstacles, vision_counter = self._merge_car_vision_fallback(
+            vision_obstacles, vision_counter, car_data)
         distance_cm, distance_mm = self._merge_vision_distance(distance_cm, distance_mm, vision_obstacles)
         alert_level, linked_reason, alarm_events = self._build_alerts(env, distance_cm, timestamp)
         fleet = self._get_fleet()
         command_logs = self._get_command_logs()
+        linkage = self._linkage_snapshot()
+        human_detected = self._human_detected(env, linkage)
 
         data = {
             'timestamp': timestamp,
@@ -42,8 +47,8 @@ class DashboardService:
             'lux': self._int(env.get('lux'), 650),
             'ps': self._int(env.get('ps'), 0),
             'ir': self._int(env.get('ir'), 0),
-            'humanDetected': 1 if self._int(env.get('ir'), 0) else 0,
-            'pirStatus': 'detected' if self._int(env.get('ir'), 0) else 'clear',
+            'humanDetected': 1 if human_detected else 0,
+            'pirStatus': 'detected' if human_detected else 'clear',
 
             'co2': self._int(env.get('co2'), 520),
             'tvoc': self._int(env.get('tvoc'), 180),
@@ -65,7 +70,7 @@ class DashboardService:
 
             'alertLevel': alert_level,
             'linkedActionReason': linked_reason,
-            'smartLight': smart_light,
+            'linkage': linkage,
             'fleet': fleet,
             'alarmEvents': alarm_events,
             'commandLogs': command_logs,
@@ -94,6 +99,11 @@ class DashboardService:
             'goodsPulse': data['goodsPulse'],
             'counterDigits': data['counterDigits'],
         }
+
+        # 车辆环境智能体快照（无服务时省略字段）
+        agent_snapshot = self._agent_snapshot()
+        if agent_snapshot is not None:
+            data['aiAgent'] = agent_snapshot
         return data
 
     def get_history(self, limit=60):
@@ -117,7 +127,6 @@ class DashboardService:
                 'tvoc': snapshot['tvoc'],
                 'gasMic': snapshot['gasMic'],
                 'goodsCount': snapshot['goodsCount'],
-                'smartLightBrightness': snapshot['smartLight']['brightness'],
             })
         return {
             'labels': labels,
@@ -143,6 +152,59 @@ class DashboardService:
         except Exception as e:
             logger.debug(f'获取视觉缓存失败: {e}')
             return None, None
+
+    def _merge_car_vision_fallback(self, vision_obstacles, vision_counter, car_data):
+        """VisionService 缓存为空时，直接使用小车 UDP 中携带的 OpenMV 结果"""
+        if not isinstance(car_data, dict):
+            return vision_obstacles, vision_counter
+        vision = car_data.get('vision')
+        if not isinstance(vision, dict) or not vision.get('valid'):
+            return vision_obstacles, vision_counter
+        timestamp = vision.get('timestamp') or car_data.get('timestamp')
+        if vision_obstacles is None and isinstance(vision.get('obstacles'), list):
+            obstacles = vision.get('obstacles')
+            fallback_obstacles = {
+                'device_id': car_data.get('device_id') or 'car_openmv',
+                'obstacles': obstacles,
+                'count': vision.get('obstacleCount', len(obstacles)),
+                'timestamp': timestamp,
+                'source': vision.get('source', 'openmv_spi'),
+                'frame': vision.get('frame'),
+            }
+            apf = self._build_vision_apf(obstacles)
+            if apf:
+                fallback_obstacles['apf'] = apf
+            vision_obstacles = fallback_obstacles
+        if vision_counter is None and vision.get('counter'):
+            vision_counter = {
+                'device_id': car_data.get('device_id') or 'car_openmv',
+                'digits': str(vision.get('counter')),
+                'timestamp': timestamp,
+                'source': vision.get('source', 'openmv_spi'),
+                'frame': vision.get('frame'),
+            }
+        return vision_obstacles, vision_counter
+
+    @staticmethod
+    def _build_vision_apf(obstacles):
+        nearest_mm = None
+        for obstacle in obstacles:
+            if not isinstance(obstacle, dict):
+                continue
+            try:
+                distance_mm = int(obstacle.get('distance'))
+            except (TypeError, ValueError):
+                continue
+            if distance_mm <= 0:
+                continue
+            if nearest_mm is None or distance_mm < nearest_mm:
+                nearest_mm = distance_mm
+        if nearest_mm is None:
+            return None
+        return {
+            'nearest_distance': nearest_mm / 1000.0,
+            'nearest_distance_mm': nearest_mm,
+        }
 
     def _merge_vision_distance(self, distance_cm, distance_mm, vision_obstacles):
         """如果视觉障碍物最近距离更小（更危险），用它替换超声距离"""
@@ -198,86 +260,98 @@ class DashboardService:
         try:
             device_id = getattr(self.udp_car_service, 'device_id', None) or 'car_001'
             logs = self.data_service.query_command_history(device_id, limit=10)
-            return [{
-                'id': item.get('id'),
-                'timestamp': item.get('timestamp'),
-                'device_id': item.get('device_id'),
-                'command_type': item.get('command_type'),
-                'command_data': item.get('command_data'),
-                'source': item.get('source'),
-            } for item in logs]
+            return [self._normalize_command_log(item) for item in logs]
         except Exception as e:
             logger.warning(f'获取控制日志失败: {e}')
             return []
 
-    def _build_alerts(self, env, distance_cm, timestamp):
-        alerts = []
-        level = 'normal'
-        reason = '系统运行正常，无联动动作'
-
-        co2 = self._int(env.get('co2'), 520)
-        tvoc = self._int(env.get('tvoc'), 180)
-        gas_mic = self._int(env.get('gasMic'), 120)
-        gas_status = self._int(env.get('gasStatus'), 0)
-        flame_status = self._int(env.get('flameStatus'), 0)
-
-        def push(alert_level, alert_type, message, metric, value, threshold, suggestion):
-            alerts.append({
-                'id': timestamp + len(alerts),
-                'timestamp': timestamp,
-                'level': alert_level,
-                'type': alert_type,
-                'asset': '智慧工厂',
-                'device_id': getattr(self.udp_car_service, 'device_id', None) or 'factory_001',
-                'title': message,
-                'message': message,
-                'metric': metric,
-                'value': value,
-                'threshold': threshold,
-                'source': 'backend',
-                'handled': False,
-                'suggestion': suggestion,
-                'status': 'active',
-            })
-
-        if flame_status:
-            level = 'critical'
-            reason = '检测到火焰风险，已建议蜂鸣器报警并联动停车'
-            push('critical', 'flame', '检测到火焰风险', '火焰状态', flame_status, '0', '立即停机并检查现场')
-        elif gas_status or gas_mic >= 500 or co2 >= 1000 or tvoc >= 900:
-            level = 'danger'
-            reason = '危气指标达到危险阈值，建议开启通风并暂停AGV任务'
-            push('danger', 'gas', '危气指标达到危险阈值', '危气/CO2/TVOC', max(gas_mic, co2, tvoc), 'danger', '开启通风并检查危气源')
-        elif gas_mic >= 300 or co2 >= 800 or tvoc >= 600:
-            level = 'warning'
-            reason = '危气指标偏高，建议关注通风状态'
-            push('warning', 'gas', '危气指标偏高', '危气/CO2/TVOC', max(gas_mic, co2, tvoc), 'warning', '加强通风并持续观察')
-        elif distance_cm is not None and distance_cm <= 15:
-            level = 'danger'
-            reason = 'AGV距离障碍物过近，建议立即停车'
-            push('danger', 'obstacle', f'AGV距离障碍物过近 {distance_cm}cm', '安全距离', distance_cm, '15cm', 'AGV停车，清理通道障碍')
-        elif distance_cm is not None and distance_cm <= 30:
-            level = 'warning'
-            reason = 'AGV接近障碍物，建议减速避障'
-            push('warning', 'obstacle', f'AGV接近障碍物 {distance_cm}cm', '安全距离', distance_cm, '30cm', 'AGV减速，检查通道')
-
-        return level, reason, alerts
-
-    def _smart_light(self, env):
-        data = env.get('smartLight') or {}
-        mode = self._int(data.get('mode'), 1)
-        time_period = self._int(data.get('timePeriod'), 1)
-        light_level = self._int(data.get('lightLevel'), 3)
+    @staticmethod
+    def _normalize_command_log(item):
+        """把后端 command_data 同时映射为前端期望的 command 字符串，并补齐缺失字段"""
+        cmd_data = item.get('command_data')
+        if isinstance(cmd_data, str):
+            cmd_str = cmd_data
+        elif cmd_data is None:
+            cmd_str = ''
+        else:
+            try:
+                import json as _json
+                cmd_str = _json.dumps(cmd_data, ensure_ascii=False)
+            except Exception:
+                cmd_str = str(cmd_data)
         return {
-            'mode': mode,
-            'modeName': '自动' if mode == 1 else '手动',
-            'brightness': self._int(data.get('brightness'), 50),
-            'targetBrightness': self._int(data.get('targetBrightness'), 70),
-            'timePeriod': time_period,
-            'timePeriodName': self._time_period_name(time_period),
-            'lightLevel': light_level,
-            'lightLevelName': self._light_level_name(light_level),
+            'id': item.get('id'),
+            'timestamp': item.get('timestamp'),
+            'device_id': item.get('device_id'),
+            'command_type': item.get('command_type'),
+            'command_data': cmd_data,
+            'command': cmd_str,
+            'source': item.get('source'),
+            'is_simulated': bool(item.get('is_simulated', False)),
+            'result': item.get('result', ''),
+            'reason': item.get('reason', ''),
         }
+
+    def _build_alerts(self, env, distance_cm, timestamp):
+        device_id = getattr(self.udp_car_service, 'device_id', None) or 'factory_001'
+        thresholds = None
+        controller = self._get_linkage_controller()
+        if controller is not None:
+            try:
+                thresholds = controller.get_alert_thresholds()
+            except Exception as e:
+                logger.debug(f'读取告警阈值失败: {e}')
+        return evaluate_gas_alert_level(env, distance_cm, device_id=device_id,
+                                        timestamp=timestamp, thresholds=thresholds)
+
+    def _get_linkage_controller(self):
+        if self.linkage_controller is not None:
+            return self.linkage_controller
+        try:
+            from app.services.registry import get_service
+            return get_service('linkage_controller')
+        except Exception:
+            return None
+
+    def _linkage_snapshot(self):
+        """读取 LinkageController 的当前状态（无控制器时返回禁用占位）"""
+        controller = self._get_linkage_controller()
+        if controller is None:
+            return {
+                'enabled': False,
+                'fan': None,
+                'led': None,
+                'rgb': {'r': 0, 'g': 0, 'b': 0},
+                'alertLevel': 'normal',
+                'reasons': {},
+                'manualOverrideRemaining': {},
+            }
+        try:
+            return controller.get_status_snapshot()
+        except Exception as e:
+            logger.warning(f'获取联动状态失败: {e}')
+            return {'enabled': False}
+
+    def _agent_snapshot(self):
+        """读取 AgentService 的当前快照（无服务时返回 None）"""
+        try:
+            from app.services.registry import get_service
+            agent = get_service('agent_service')
+            if agent is None:
+                return None
+            return agent.get_snapshot()
+        except Exception as e:
+            logger.debug(f'获取智能体快照失败: {e}')
+            return None
+
+    def _human_detected(self, env, linkage):
+        """与 LinkageController 一致的判定：ps>PS_TH 或 ir>IR_TH"""
+        thresholds = (linkage or {}).get('thresholds') or {}
+        ps_th = self._int(thresholds.get('irPs'), 200)
+        ir_th = self._int(thresholds.get('irIr'), 100)
+        ps = self._int(env.get('ps'), 0)
+        ir = self._int(env.get('ir'), 0)
+        return ps > ps_th or ir > ir_th
 
     def _distance_values(self, raw):
         if raw is None:
@@ -286,26 +360,6 @@ class DashboardService:
         if raw_int > 200:
             return int(round(raw_int / 10)), raw_int
         return raw_int, raw_int * 10
-
-    def _time_period_name(self, value):
-        return {
-            0: '夜间节能',
-            1: '上午生产',
-            2: '午间巡检',
-            3: '下午生产',
-            4: '晚间巡检',
-            5: '深夜待机',
-        }.get(value, '自动')
-
-    def _light_level_name(self, value):
-        return {
-            0: '极暗',
-            1: '偏暗',
-            2: '较暗',
-            3: '正常',
-            4: '明亮',
-            5: '强光',
-        }.get(value, '正常')
 
     def _safe_limit(self, value, default=60, maximum=200):
         try:

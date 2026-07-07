@@ -111,6 +111,9 @@ export interface ConnectionConfig {
 }
 
 // 阈值配置
+// 注意：tempWarning/humiWarning/coWarning 等仅 webapp 本地用于显示告色（橙/红）；
+// 后端实际告警分级用 co2/tvoc/smoke/distance 这几路。tvocWarning/tvocDanger 字段虽是新增，
+// 在 SettingsPage 上不一定显示，主要供后端联动使用。
 export interface ThresholdConfig {
   tempWarning: number
   tempDanger: number
@@ -120,8 +123,38 @@ export interface ThresholdConfig {
   co2Danger: number
   smokeWarning: number
   smokeDanger: number
+  tvocWarning: number
+  tvocDanger: number
   coWarning: number
   coDanger: number
+  distanceWarning: number
+  distanceDanger: number
+}
+
+// 联动控制器配置（与后端 LinkageController.get_config 一一对应）
+// 字段命名 camelCase；除 tvoc/distance 复用 ThresholdConfig 外，其余仅在此结构内
+export interface LinkageConfig {
+  // 风扇联动（双门限回滞）
+  fanTempOn: number
+  fanTempOff: number
+  fanHumiOn: number
+  fanHumiOff: number
+  // 人体感应联动（PIR/AP3216C）
+  irPs: number
+  irIr: number
+  irDebounceOn: number
+  irDebounceOff: number
+  // 联动控制器节奏
+  tickSeconds: number
+  manualOverrideTtl: number
+  rgbBlinkHz: number
+  // 告警阈值（与 ThresholdConfig 部分字段重叠，后端是唯一可信源）
+  co2Warning: number
+  co2Danger: number
+  tvocWarning: number
+  tvocDanger: number
+  gasMicWarning: number
+  gasMicDanger: number
   distanceWarning: number
   distanceDanger: number
 }

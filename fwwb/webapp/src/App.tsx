@@ -16,6 +16,7 @@ import SettingsPage from '@/pages/SettingsPage'
 import NfcPage from '@/pages/NfcPage'
 import { useAppStore } from '@/store/app-store'
 import { wsManager } from '@/services/websocket-manager'
+import type { LinkageConfig, WSMessage } from '@/types'
 
 function App() {
   // 页面加载时自动恢复 WebSocket 连接
@@ -26,6 +27,29 @@ function App() {
       console.log('[App] 自动恢复 WebSocket 连接:', wsUrl)
       wsManager.connect(wsUrl)
     }
+  }, [])
+
+  // 注册全局消息处理：linkage_config 响应（获取/广播）写入 store
+  useEffect(() => {
+    const handleMessage = (msg: WSMessage) => {
+      if (msg.type === 'linkage_config' && msg.success && msg.config) {
+        useAppStore.getState().setLinkageConfig(msg.config as LinkageConfig)
+      }
+    }
+    wsManager.onMessage(handleMessage)
+    return () => wsManager.offMessage(handleMessage)
+  }, [])
+
+  // 连接成功后拉一次最新配置（覆盖 localStorage 中可能过期的本地副本）
+  useEffect(() => {
+    const handleConnectionChange = (connected: boolean) => {
+      if (connected) {
+        // 略延迟一下，给后端 ping 握手时间
+        setTimeout(() => wsManager.getLinkageConfig(), 200)
+      }
+    }
+    wsManager.onConnectionChange(handleConnectionChange)
+    return () => wsManager.offConnectionChange(handleConnectionChange)
   }, [])
 
   return (

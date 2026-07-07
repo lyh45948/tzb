@@ -1,7 +1,7 @@
 """
 数字孪生大屏聚合接口
 """
-from flask import jsonify, request
+from flask import Response, jsonify, request, stream_with_context
 
 from app.routes import api_bp
 from app.services.registry import get_service
@@ -61,3 +61,22 @@ def get_dashboard_history():
     except Exception as e:
         logger.error(f'获取数字孪生历史数据失败: {e}')
         return _error(str(e), 500)
+
+
+@api_bp.route('/dashboard/stream', methods=['GET'])
+def dashboard_stream():
+    """SSE 长连接，周期性推送 dashboard 快照（event: snapshot）+ 心跳（event: ping）"""
+    stream_service = get_service('dashboard_stream_service')
+    if stream_service is None:
+        return _error('SSE 推送服务未启用', 503)
+
+    q = stream_service.subscribe()
+    response = Response(
+        stream_with_context(stream_service.event_stream(q)),
+        mimetype='text/event-stream',
+    )
+    # 关键 header：禁缓存 + 关闭代理缓冲 + 保持长连接
+    response.headers['Cache-Control'] = 'no-cache, no-transform'
+    response.headers['X-Accel-Buffering'] = 'no'
+    response.headers['Connection'] = 'keep-alive'
+    return response

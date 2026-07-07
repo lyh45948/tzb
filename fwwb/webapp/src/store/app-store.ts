@@ -8,6 +8,7 @@ import type {
   ThresholdConfig,
   ConnectionConfig,
   Car,
+  LinkageConfig,
 } from '@/types'
 import { storage, STORAGE_KEYS } from '@/utils/local-storage'
 
@@ -40,6 +41,9 @@ interface AppState {
   // 阈值配置
   thresholds: ThresholdConfig
 
+  // 联动控制配置（后端可信源；首次连接后端时拉取）
+  linkageConfig: LinkageConfig | null
+
   // 多车管理
   cars: Car[]
   activeCarId: string | null
@@ -62,6 +66,7 @@ interface AppState {
   addHistoryPoint: (point: HistoryPoint) => void
   setConnectionConfig: (config: Partial<ConnectionConfig>) => void
   setThresholds: (thresholds: Partial<ThresholdConfig>) => void
+  setLinkageConfig: (config: LinkageConfig | null) => void
   setCars: (cars: Car[]) => void
   setActiveCarId: (id: string | null) => void
   addCar: (car: Car) => void
@@ -109,6 +114,8 @@ const defaultThresholds: ThresholdConfig = {
   co2Danger: 1000,
   smokeWarning: 300,
   smokeDanger: 500,
+  tvocWarning: 600,
+  tvocDanger: 900,
   coWarning: 35,
   coDanger: 50,
   distanceWarning: 30,
@@ -155,6 +162,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   autoControl: persisted.autoControl,
   connectionConfig: persisted.connectionConfig,
   thresholds: persisted.thresholds,
+  linkageConfig: storage.get<LinkageConfig>(STORAGE_KEYS.LINKAGE_CONFIG) || null,
 
   // 其他运行时状态
   sensorData: { ...defaultSensorData },
@@ -227,6 +235,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     const newThresholds = { ...get().thresholds, ...thresholds }
     storage.set(STORAGE_KEYS.THRESHOLDS, newThresholds)
     set({ thresholds: newThresholds })
+  },
+
+  setLinkageConfig: (config) => {
+    if (config) {
+      storage.set(STORAGE_KEYS.LINKAGE_CONFIG, config)
+    } else {
+      storage.remove(STORAGE_KEYS.LINKAGE_CONFIG)
+    }
+    set({ linkageConfig: config })
   },
 
   setCars: (cars) => set({ cars }),

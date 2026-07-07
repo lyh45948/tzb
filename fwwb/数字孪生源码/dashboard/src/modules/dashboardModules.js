@@ -22,7 +22,7 @@ export const dashboardModules = [
   },
   {
     key: 'agv',
-    label: 'AGV避障',
+    label: 'AGV调度',
     icon: '◆',
     color: '#06b6d4',
     desc: '多车状态、左右轮速、安全距离和本地演示控制'

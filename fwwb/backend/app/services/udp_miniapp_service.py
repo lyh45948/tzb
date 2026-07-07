@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 from app.utils.logger import get_logger
 from app.utils.protocol import ProtocolParser
-from app.services.smart_light_service import smart_light_service
+from app.services.registry import get_service
 
 logger = get_logger('udp_miniapp_service')
 
@@ -266,6 +266,20 @@ class UDPMiniAppService:
             return
 
         command = message.get('command', {})
+
+        # 手动控制时通知 LinkageController 让出该路 30s 自动联动
+        try:
+            linkage = get_service('linkage_controller')
+            if linkage is not None and isinstance(command, dict):
+                if 'fan' in command:
+                    linkage.notify_manual('fan')
+                if 'led' in command:
+                    linkage.notify_manual('led')
+                if 'rgb' in command:
+                    linkage.notify_manual('rgb')
+        except Exception as e:
+            logger.debug(f"notify_manual 异常: {e}")
+
         if self.udp_car_service.send_command(command):
             # 记录控制日志
             if self.data_service:
@@ -327,119 +341,33 @@ class UDPMiniAppService:
             self._send_message(addr, ProtocolParser.create_error_message(f"查询失败: {str(e)}"))
 
     def _handle_smart_light_get(self, message, addr):
-        """处理获取智能光照状态请求"""
-        device_id = message.get('deviceId', 'car_001')
-        lux = message.get('lux', 0)
-
-        try:
-            # 更新光照并获取状态
-            status = smart_light_service.update_lux(device_id, lux)
-
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'data': {
-                    'mode': status.get('mode', 'auto'),
-                    'brightness': status.get('brightness', 0),
-                    'targetBrightness': status.get('target_brightness', 0),
-                    'timePeriod': status.get('time_period', 0),
-                    'timePeriodName': status.get('time_period_name', '未知'),
-                    'lightLevel': status.get('light_level', 0),
-                    'lux': status.get('lux', 0)
-                }
-            })
-            logger.info(f"智能光照状态: {device_id} -> {status}")
-
-        except Exception as e:
-            logger.error(f"获取智能光照状态失败: {e}")
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'success': False,
-                'message': str(e)
-            })
+        """[已废弃] 智能光照功能已被联动控制器替代，仅返回兼容性占位响应。"""
+        self._send_smart_light_deprecated(addr)
 
     def _handle_smart_light_set_mode(self, message, addr):
-        """处理设置光照模式请求"""
-        device_id = message.get('deviceId', 'car_001')
-        auto_mode = message.get('autoMode', True)
-        manual_brightness = message.get('brightness', 0)
-
-        try:
-            status = smart_light_service.set_mode(device_id, auto_mode, manual_brightness)
-
-            # 发送命令到小车
-            if self.udp_car_service and self.udp_car_service.connected:
-                light_cmd = {
-                    'smartLight': {
-                        'mode': 'auto' if auto_mode else 'manual',
-                        'brightness': status.get('brightness', 0)
-                    }
-                }
-                self.udp_car_service.send_command(light_cmd)
-
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'data': {
-                    'mode': status.get('mode', 'auto'),
-                    'brightness': status.get('brightness', 0),
-                    'targetBrightness': status.get('target_brightness', 0),
-                    'timePeriod': status.get('time_period', 0),
-                    'timePeriodName': status.get('time_period_name', '未知'),
-                    'lightLevel': status.get('light_level', 0),
-                    'lux': status.get('lux', 0)
-                }
-            })
-
-            mode_text = '自动' if auto_mode else '手动'
-            logger.info(f"智能光照模式切换: {device_id} -> {mode_text}")
-
-        except Exception as e:
-            logger.error(f"设置光照模式失败: {e}")
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'success': False,
-                'message': str(e)
-            })
+        """[已废弃] 同上"""
+        self._send_smart_light_deprecated(addr)
 
     def _handle_smart_light_set_brightness(self, message, addr):
-        """处理设置亮度请求"""
-        device_id = message.get('deviceId', 'car_001')
-        brightness = message.get('brightness', 0)
+        """[已废弃] 同上"""
+        self._send_smart_light_deprecated(addr)
 
-        try:
-            status = smart_light_service.set_brightness(device_id, brightness)
-
-            # 发送命令到小车
-            if self.udp_car_service and self.udp_car_service.connected:
-                light_cmd = {
-                    'smartLight': {
-                        'mode': 'manual',
-                        'brightness': status.get('brightness', 0)
-                    }
-                }
-                self.udp_car_service.send_command(light_cmd)
-
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'data': {
-                    'mode': status.get('mode', 'manual'),
-                    'brightness': status.get('brightness', 0),
-                    'targetBrightness': status.get('target_brightness', 0),
-                    'timePeriod': status.get('time_period', 0),
-                    'timePeriodName': status.get('time_period_name', '未知'),
-                    'lightLevel': status.get('light_level', 0),
-                    'lux': status.get('lux', 0)
-                }
-            })
-
-            logger.info(f"智能光照亮度设置: {device_id} -> {brightness}%")
-
-        except Exception as e:
-            logger.error(f"设置亮度失败: {e}")
-            self._send_message(addr, {
-                'type': 'smart_light_status',
-                'success': False,
-                'message': str(e)
-            })
+    def _send_smart_light_deprecated(self, addr):
+        """对旧版小程序保持响应结构稳定（避免崩溃），但不再做实际控制。"""
+        self._send_message(addr, {
+            'type': 'smart_light_status',
+            'data': {
+                'mode': 'manual',
+                'brightness': 0,
+                'targetBrightness': 0,
+                'timePeriod': 0,
+                'timePeriodName': '已废弃',
+                'lightLevel': 0,
+                'lux': 0,
+            },
+            'deprecated': True,
+            'message': '智能光照已被联动控制器替代',
+        })
 
     def _on_car_data(self, device_id=None, data=None):
         """小车数据回调，推送给所有已连接的客户端"""

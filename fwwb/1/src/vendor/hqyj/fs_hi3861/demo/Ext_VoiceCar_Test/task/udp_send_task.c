@@ -28,9 +28,8 @@
 #include "hal_bsp_sht20.h"
 #include "hal_bsp_ap3216c.h"
 #include "hal_bsp_pcf8574.h"
-#include "smart_light_task.h"
 #include "agriculture_sensor_task.h"
-#include "imu_task.h"
+#include "openmv_task.h"
 
 struct sockaddr_in client; // 客户端
 #define  TASK_DELAY_TIME (50 * 1000)
@@ -73,15 +72,6 @@ void udp_send_task(void)
             cJSON_AddItemToObject(agri, "gasMic", cJSON_CreateNumber(agricultureValue.gas_mic));
             cJSON_AddItemToObject(env, "agri", agri);
 
-            // 智能光照状态
-            cJSON *smartLight = cJSON_CreateObject();
-            cJSON_AddItemToObject(smartLight, "mode", cJSON_CreateNumber(smartLightState.auto_mode));
-            cJSON_AddItemToObject(smartLight, "brightness", cJSON_CreateNumber(smartLightState.current_brightness));
-            cJSON_AddItemToObject(smartLight, "targetBrightness", cJSON_CreateNumber(smartLightState.target_brightness));
-            cJSON_AddItemToObject(smartLight, "timePeriod", cJSON_CreateNumber(smartLightState.time_period));
-            cJSON_AddItemToObject(smartLight, "lightLevel", cJSON_CreateNumber(smartLightState.light_level));
-            cJSON_AddItemToObject(env, "smartLight", smartLight);
-
             // LD-STL-19P 激光雷达数据
             cJSON *lidar = cJSON_CreateObject();
             cJSON_AddItemToObject(lidar, "speed", cJSON_CreateNumber(systemValue.lidar_speed));
@@ -109,40 +99,32 @@ void udp_send_task(void)
             else strcpy(mode_str, "manual");
             cJSON_AddItemToObject(json_root, "carMode", cJSON_CreateString(mode_str));
 
-            // H30 IMU 传感器数据
-            cJSON *imu = cJSON_CreateObject();
-            if (g_imuDataValid && g_imuData.valid) {
-                cJSON_AddItemToObject(imu, "tid", cJSON_CreateNumber(g_imuData.tid));
-                cJSON_AddItemToObject(imu, "temperature", cJSON_CreateNumber(g_imuData.temperature));
+            // WT OpenMV 视觉识别结果
+            cJSON *vision = cJSON_CreateObject();
+            cJSON_AddItemToObject(vision, "source", cJSON_CreateString("openmv_spi"));
+            cJSON_AddItemToObject(vision, "valid", cJSON_CreateNumber(systemValue.vision.valid));
+            if (systemValue.vision.valid) {
+                cJSON_AddItemToObject(vision, "frame", cJSON_CreateNumber(systemValue.vision.frame_counter));
+                cJSON_AddItemToObject(vision, "flags", cJSON_CreateNumber(systemValue.vision.flags));
+                cJSON_AddItemToObject(vision, "obstacleCount", cJSON_CreateNumber(systemValue.vision.obstacle_count));
 
-                cJSON *accel = cJSON_CreateObject();
-                cJSON_AddItemToObject(accel, "x", cJSON_CreateNumber(g_imuData.accel_x));
-                cJSON_AddItemToObject(accel, "y", cJSON_CreateNumber(g_imuData.accel_y));
-                cJSON_AddItemToObject(accel, "z", cJSON_CreateNumber(g_imuData.accel_z));
-                cJSON_AddItemToObject(imu, "accel", accel);
-
-                cJSON *gyro = cJSON_CreateObject();
-                cJSON_AddItemToObject(gyro, "x", cJSON_CreateNumber(g_imuData.gyro_x));
-                cJSON_AddItemToObject(gyro, "y", cJSON_CreateNumber(g_imuData.gyro_y));
-                cJSON_AddItemToObject(gyro, "z", cJSON_CreateNumber(g_imuData.gyro_z));
-                cJSON_AddItemToObject(imu, "gyro", gyro);
-
-                cJSON *euler = cJSON_CreateObject();
-                cJSON_AddItemToObject(euler, "pitch", cJSON_CreateNumber(g_imuData.pitch));
-                cJSON_AddItemToObject(euler, "roll", cJSON_CreateNumber(g_imuData.roll));
-                cJSON_AddItemToObject(euler, "yaw", cJSON_CreateNumber(g_imuData.yaw));
-                cJSON_AddItemToObject(imu, "euler", euler);
-
-                cJSON *quat = cJSON_CreateObject();
-                cJSON_AddItemToObject(quat, "w", cJSON_CreateNumber(g_imuData.q0));
-                cJSON_AddItemToObject(quat, "x", cJSON_CreateNumber(g_imuData.q1));
-                cJSON_AddItemToObject(quat, "y", cJSON_CreateNumber(g_imuData.q2));
-                cJSON_AddItemToObject(quat, "z", cJSON_CreateNumber(g_imuData.q3));
-                cJSON_AddItemToObject(imu, "quaternion", quat);
-
-                cJSON_AddItemToObject(imu, "fusion_status", cJSON_CreateNumber(g_imuData.fusion_status));
+                cJSON *obstacles = cJSON_CreateArray();
+                for (int i = 0; i < systemValue.vision.obstacle_count && i < OPENMV_MAX_OBSTACLES; i++) {
+                    cJSON *obs = cJSON_CreateObject();
+                    cJSON_AddItemToObject(obs, "class_id", cJSON_CreateNumber(systemValue.vision.obstacles[i].class_id));
+                    cJSON_AddItemToObject(obs, "confidence", cJSON_CreateNumber(systemValue.vision.obstacles[i].confidence));
+                    cJSON_AddItemToObject(obs, "x", cJSON_CreateNumber(systemValue.vision.obstacles[i].x));
+                    cJSON_AddItemToObject(obs, "y", cJSON_CreateNumber(systemValue.vision.obstacles[i].y));
+                    cJSON_AddItemToObject(obs, "w", cJSON_CreateNumber(systemValue.vision.obstacles[i].w));
+                    cJSON_AddItemToObject(obs, "h", cJSON_CreateNumber(systemValue.vision.obstacles[i].h));
+                    cJSON_AddItemToObject(obs, "distance", cJSON_CreateNumber(systemValue.vision.obstacles[i].distance));
+                    cJSON_AddItemToArray(obstacles, obs);
+                }
+                cJSON_AddItemToObject(vision, "obstacles", obstacles);
+                cJSON_AddItemToObject(vision, "counter", cJSON_CreateString(systemValue.vision.counter_digits));
             }
-            cJSON_AddItemToObject(json_root, "imu", imu);
+            cJSON_AddItemToObject(json_root, "vision", vision);
+
         }
         char *payload = cJSON_PrintUnformatted(json_root);
 
