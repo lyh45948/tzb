@@ -73,3 +73,54 @@ Serial port `/dev/wheeltec_lidar` is created via symlink to actual device. If us
 ```bash
 sudo bash /home/tzb/lidar/ldlidar_ros1/ldlidar_udev.sh
 ```
+
+## Git Workflow (Mandatory)
+
+> This sub-project follows the workspace-wide **GitHub Flow** (see root `AGENTS.md` §8). Full rules below.
+
+### Iron Rule
+
+- `main` **must always be runnable**. **Never commit any code change directly to `main`** — C++ drivers, Python scripts, launch files, lua configs, and shell scripts all require a branch.
+- Any code change must be made on a dedicated branch cut from the latest `main`, then merged back.
+- **Exception**: changes limited to `AGENTS.md` / `CLAUDE.md` / `*.md` / comments (no executable logic) may be committed directly to `main` — but a branch is still encouraged.
+
+### Standard Flow (every change)
+
+```bash
+# 1. Start from the latest main
+git checkout main && git pull
+
+# 2. Create a branch
+git checkout -b <type>/<scope>-<summary>
+
+# 3. Work & commit with Conventional Commits
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. Self-check: rebuild per §11 checklist if C++/lua/launch changed; review diff
+git diff main
+
+# 5. Merge back to main (no-ff keeps branch history)
+git checkout main && git merge --no-ff <branch>
+
+# 6. Delete the branch
+git branch -d <branch>
+```
+
+### Branch Naming
+
+- **Types:** `feat`, `fix`, `docs`, `refactor`, `chore`
+- **Scopes:** `slam`, `ldlidar`, `yesense`, `cartographer`, `docker`, `docs`, `config`
+- Examples: `fix/ldlidar-frame-parse`, `feat/cartographer-imu-tune`, `chore/docker-resource-limit`
+
+### Commit Format
+```
+<type>(<scope>): <subject>
+```
+
+### Sync Obligation
+
+If a change affects anything described in this file or `AGENTS.md` — TF tree, serial port mapping, Cartographer parameters, launch configs, or the branch model — **update the corresponding guidance file in the same branch**. Docs/code drift is technical debt; do not leave it.
+
+### Workspace Hygiene
+
+- `git status` should be clean before cutting a new branch. `git stash` or commit uncommitted changes first — **never mix unrelated changes into a task branch**.

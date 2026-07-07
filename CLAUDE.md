@@ -48,6 +48,56 @@ cd fwwb/1/src && hb set && hb build
 cd lidar && sudo ./start_slam.sh
 ```
 
+## Git Workflow (Mandatory)
+
+> This is the **unified Git workflow for the entire workspace** — it applies equally to both `fwwb/` and `lidar/` sub-projects. Uses **GitHub Flow** (no `develop` branch). The sub-project `AGENTS.md` / `CLAUDE.md` files follow the same rule, differing only in `scope` naming.
+
+### Iron Rule
+
+- `main` **must always be runnable**. **Never commit any code change directly to `main`.**
+- Any code change (`.c/.cpp/.py/.js/.ts/.vue/.lua/.launch/.sh`, etc.) must be made on a dedicated branch cut from the latest `main`, then merged back.
+- **Exception**: changes limited to `AGENTS.md` / `CLAUDE.md` / `*.md` / comments (no executable logic) may be committed directly to `main` — but a branch is still encouraged for consistency.
+
+### Standard Flow (every change)
+
+```bash
+# 1. Start from the latest main
+git checkout main && git pull
+
+# 2. Create a branch (type/scope/summary — see naming below)
+git checkout -b <type>/<scope>-<summary>
+
+# 3. Work & commit with Conventional Commits
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. Self-check: build/run locally if possible; review diff against main
+git diff main
+
+# 5. Merge back to main (no-ff keeps branch history traceable)
+git checkout main && git merge --no-ff <branch>
+
+# 6. Delete the branch
+git branch -d <branch>
+```
+
+### Branch Naming
+
+- **type**: `feat` (new feature), `fix` (bug fix), `docs` (documentation), `refactor`, `chore` (build/tooling)
+- **scope** (pick by sub-project):
+  - Common: `fwwb`, `lidar`, `docs`, `config`
+  - fwwb only: `backend`, `miniapp`, `hi3861`, `stm32`, `dashboard`, `agent`, `vision`
+  - lidar only: `slam`, `ldlidar`, `yesense`, `cartographer`, `docker`
+- Examples: `feat/backend-add-imu-endpoint`, `fix/ldlidar-frame-parse`, `docs/git-workflow-rules`
+
+### Sync Obligation
+
+If a change affects anything described in a guidance file (`AGENTS.md` / `CLAUDE.md` in either sub-project) — architecture, style, config, ports, FreeRTOS tasks, protocols, TF tree, or the branch model itself — **you must update the corresponding guidance file in the same branch**. Drift between docs and code is technical debt; do not leave it behind.
+
+### Workspace Hygiene
+
+- `git status` should be clean before cutting a new branch. If there are uncommitted changes, `git stash` or commit them first — **never mix unrelated changes into a task branch**.
+- Before merging, ensure the branch contains only this task's changes.
+
 ## Cross-Cutting Concerns
 
 - **Language**: Both projects use Chinese as the primary language for comments, documentation, logs, and variable names

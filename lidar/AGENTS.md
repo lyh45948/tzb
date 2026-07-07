@@ -312,3 +312,56 @@ sudo docker stop ros_container
 - [ ] 修改串口参数（波特率、设备名）时，需同步更新 `launch` 文件与 `start_slam.sh` 中的检测逻辑
 - [ ] 新增 ROS 包时，需将其放入 `catkin_ws/src/` 并重新编译
 - [ ] 所有路径硬编码为 `/home/tzb/lidar/`，若迁移项目需全局替换
+
+---
+
+## 12. Git 工作流（铁律）
+
+> 本子项目遵循工作空间统一的 **GitHub Flow**（详见根目录 `AGENTS.md` 第 8 节）。此处给出本子项目适用的完整规则。
+
+### 铁律
+
+- `main` 分支**始终保持可运行**，**严禁直接在其上提交任何代码改动**（C++ 驱动、Python 脚本、launch、lua 配置、shell 脚本等一律开分支）。
+- 任何代码改动必须先从最新 `main` 拉出独立分支，完成后再合并回 `main`。
+- **例外**：仅修改 `AGENTS.md` / `CLAUDE.md` / `*.md` / 注释这类**无代码逻辑**的改动，允许直接在 `main` 提交（仍鼓励开分支）。
+
+### 标准流程（每次改动）
+
+```bash
+# 1. 基于最新 main 起步
+git checkout main && git pull
+
+# 2. 新建分支
+git checkout -b <type>/<scope>-<简述>
+
+# 3. 在分支上开发、按 Conventional Commits 提交
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. 自检：C++/lua/launch 改动后按第 11 节 checklist 决定是否重编译；复查差异
+git diff main
+
+# 5. 合并回 main（--no-ff 保留分支记录）
+git checkout main && git merge --no-ff <分支名>
+
+# 6. 合并后删除分支
+git branch -d <分支名>
+```
+
+### 分支命名规范
+
+- **type**：`feat`（新功能）、`fix`（缺陷修复）、`docs`（文档）、`refactor`（重构）、`chore`（构建/杂务）
+- **scope**：`slam`（SLAM 整体）、`ldlidar`（激光雷达驱动）、`yesense`（IMU 驱动）、`cartographer`（SLAM 配置）、`docker`（容器/部署）、`docs`、`config`
+- 示例：`fix/ldlidar-frame-parse`、`feat/cartographer-imu-tune`、`chore/docker-resource-limit`
+
+### 提交格式
+```
+<type>(<scope>): <subject>
+```
+
+### 同步义务
+
+凡改动影响到本文件或 `CLAUDE.md` 描述的**坐标系与 TF 树、串口设备映射、Cartographer 参数、launch 配置、分支模型**等内容，**必须同步更新对应说明文件**，并在同一分支一并提交。说明文件与代码不一致是技术债，禁止留下。
+
+### 工作区卫生
+
+- 开新分支前 `git status` 应干净；未提交改动先 `git stash` 或提交，**不要把无关改动混入新分支**。

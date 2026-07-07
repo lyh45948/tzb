@@ -148,7 +148,59 @@ sudo ./start_slam.sh --cartographer  # Cartographer 模式
 
 ---
 
-## 8. 相关文档索引
+## 8. Git 工作流（铁律）
+
+> 本规则**同时适用于 `fwwb/` 与 `lidar/` 两个子项目**，是本工作空间的统一 Git 工作流。采用 **GitHub Flow** 模型（无 `develop` 中间分支）。各子项目的 `AGENTS.md` / `CLAUDE.md` 遵循同一规则，仅在 scope 命名上有差异。
+
+### 铁律
+
+- `main` 分支**始终保持可运行**，**严禁直接在其上提交任何代码改动**。
+- 任何代码改动（`.c/.cpp/.py/.js/.ts/.vue/.lua/.launch/.sh` 等）必须先从最新 `main` 拉出独立分支，完成后再合并回 `main`。
+- **例外**：仅修改 `AGENTS.md` / `CLAUDE.md` / `*.md` / 注释这类**无代码逻辑**的改动，允许直接在 `main` 提交（但仍鼓励开分支，保持习惯一致）。
+
+### 标准流程（每次改动）
+
+```bash
+# 1. 基于最新 main 起步
+git checkout main && git pull
+
+# 2. 新建分支：type/scope/简述 见下方命名规范
+git checkout -b <type>/<scope>-<简述>
+
+# 3. 在分支上开发、按 Conventional Commits 提交
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. 自检：能本地编译/启动的先验证；复查相对 main 的差异
+git diff main
+
+# 5. 合并回 main（保留分支记录，便于追溯）
+git checkout main && git merge --no-ff <分支名>
+
+# 6. 合并后删除分支
+git branch -d <分支名>
+```
+
+### 分支命名规范
+
+- **type**：`feat`（新功能）、`fix`（缺陷修复）、`docs`（文档）、`refactor`（重构）、`chore`（构建/杂务）
+- **scope**（按子项目选用）：
+  - 通用：`fwwb`、`lidar`、`docs`、`config`
+  - fwwb 专属：`backend`、`miniapp`、`hi3861`、`stm32`、`dashboard`、`agent`、`vision`
+  - lidar 专属：`slam`、`ldlidar`、`yesense`、`cartographer`、`docker`
+- 示例：`feat/backend-add-imu-endpoint`、`fix/ldlidar-frame-parse`、`docs/git-workflow-rules`
+
+### 同步义务
+
+凡改动影响到任一说明文件（`AGENTS.md` / `CLAUDE.md` 及各子项目同名文件）所描述的**架构、风格、配置、端口、FreeRTOS 任务、通信协议、TF 树、分支模型**等内容，**必须同步更新对应说明文件**，并在同一分支一并提交。说明文件与代码不一致是技术债，禁止留下。
+
+### 工作区卫生
+
+- 开新分支前 `git status` 应干净；若有未提交改动，先 `git stash` 或提交，**不要把无关改动混入新分支**。
+- 合并前确保分支只包含本次任务的改动。
+
+---
+
+## 9. 相关文档索引
 
 | 文档路径 | 内容 |
 |----------|------|
