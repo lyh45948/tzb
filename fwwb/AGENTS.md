@@ -301,22 +301,56 @@ ModeByte：`0x00` 遥控、`0xD0` 避障、`0xF0` 巡线、`0xE0` 规划路径
 4. **通信未加密**：小程序 ↔ 后端 ↔ Hi3861 全程明文 UDP/TCP，存在中间人攻击与重放攻击风险。
 5. **SQL 注入防护**：后端使用 Flask-SQLAlchemy ORM，基本避免 SQL 注入；但手写原生 SQL 时需谨慎。
 
-## Git 分支与提交规范
+## Git 工作流（铁律）
 
-### 分支管理
-- `main` — 生产分支，始终保持可运行
-- `develop` — 开发分支
-- `feature/*` — 新功能
-- `bugfix/*` — Bug 修复
-- `release/*` — 发布准备
+> 本子项目遵循工作空间统一的 **GitHub Flow**（详见根目录 `AGENTS.md` 第 8 节）。此处给出本子项目适用的完整规则。
+
+### 铁律
+
+- `main` 分支**始终保持可运行**，**严禁直接在其上提交任何代码改动**（后端、小程序、Hi3861 固件、STM32 工程等一律开分支）。
+- 任何代码改动必须先从最新 `main` 拉出独立分支，完成后再合并回 `main`。
+- **例外**：仅修改 `AGENTS.md` / `CLAUDE.md` / `*.md` / 注释这类**无代码逻辑**的改动，允许直接在 `main` 提交（仍鼓励开分支）。
+
+### 标准流程（每次改动）
+
+```bash
+# 1. 基于最新 main 起步
+git checkout main && git pull
+
+# 2. 新建分支
+git checkout -b <type>/<scope>-<简述>
+
+# 3. 在分支上开发、按 Conventional Commits 提交
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. 自检：后端能本地启动的先跑通；小程序在开发者工具模拟器验证；复查差异
+git diff main
+
+# 5. 合并回 main（--no-ff 保留分支记录）
+git checkout main && git merge --no-ff <分支名>
+
+# 6. 合并后删除分支
+git branch -d <分支名>
+```
+
+### 分支命名规范
+
+- **type**：`feat`（新功能）、`fix`（缺陷修复）、`docs`（文档）、`style`（格式）、`refactor`（重构）、`test`（测试）、`chore`（构建/杂务）
+- **scope**：`backend`、`miniapp`、`hi3861`、`stm32`、`dashboard`（数字孪生大屏）、`agent`（车辆智能体）、`vision`（视觉识别）、`docs`、`config`
+- 示例：`feat/backend-add-imu-endpoint`、`fix/miniapp-reconnect`、`feat/dashboard-sse-live`
 
 ### 提交格式
 ```
 <type>(<scope>): <subject>
 ```
 
-**type**：feat, fix, docs, style, refactor, test, chore
-**scope**：backend, miniapp, hi3861, stm32, docs, config
+### 同步义务
+
+凡改动影响到本文件或 `CLAUDE.md` 描述的**架构、五层通信协议、端口、FreeRTOS 任务、I2C 设备地址、阈值参数、分支模型**等内容，**必须同步更新对应说明文件**，并在同一分支一并提交。说明文件与代码不一致是技术债，禁止留下。
+
+### 工作区卫生
+
+- 开新分支前 `git status` 应干净；未提交改动先 `git stash` 或提交，**不要把无关改动混入新分支**。
 
 ## 常见问题排查
 

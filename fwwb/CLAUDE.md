@@ -249,18 +249,53 @@ Key pages:
 - Database save interval: 1 second
 - Mode switching: 500ms lockout
 
-## Git Version Control
+## Git Workflow (Mandatory)
 
-### Branch Management
-- `main` — Production, always stable
-- `develop` — Development branch
-- `feature/*` — New features
-- `bugfix/*` — Bug fixes
-- `release/*` — Release preparation
+> This sub-project follows the workspace-wide **GitHub Flow** (see root `AGENTS.md` §8). Full rules below.
+
+### Iron Rule
+
+- `main` **must always be runnable**. **Never commit any code change directly to `main`** — backend, mini-program, Hi3861 firmware, and STM32 projects all require a branch.
+- Any code change must be made on a dedicated branch cut from the latest `main`, then merged back.
+- **Exception**: changes limited to `AGENTS.md` / `CLAUDE.md` / `*.md` / comments (no executable logic) may be committed directly to `main` — but a branch is still encouraged.
+
+### Standard Flow (every change)
+
+```bash
+# 1. Start from the latest main
+git checkout main && git pull
+
+# 2. Create a branch
+git checkout -b <type>/<scope>-<summary>
+
+# 3. Work & commit with Conventional Commits
+git commit -m "<type>(<scope>): <subject>"
+
+# 4. Self-check: run backend locally / verify mini-program in DevTools simulator; review diff
+git diff main
+
+# 5. Merge back to main (no-ff keeps branch history)
+git checkout main && git merge --no-ff <branch>
+
+# 6. Delete the branch
+git branch -d <branch>
+```
+
+### Branch Naming
+
+- **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- **Scopes:** `backend`, `miniapp`, `hi3861`, `stm32`, `dashboard`, `agent`, `vision`, `docs`, `config`
+- Examples: `feat/backend-add-imu-endpoint`, `fix/miniapp-reconnect`, `feat/dashboard-sse-live`
 
 ### Commit Format
 ```
 <type>(<scope>): <subject>
 ```
-**Types:** feat, fix, docs, style, refactor, test, chore
-**Scopes:** backend, miniapp, hi3861, stm32, docs, config
+
+### Sync Obligation
+
+If a change affects anything described in this file or `AGENTS.md` — architecture, 5-layer protocol, ports, FreeRTOS tasks, I2C addresses, thresholds, or the branch model — **update the corresponding guidance file in the same branch**. Docs/code drift is technical debt; do not leave it.
+
+### Workspace Hygiene
+
+- `git status` should be clean before cutting a new branch. `git stash` or commit uncommitted changes first — **never mix unrelated changes into a task branch**.
