@@ -31,7 +31,7 @@
 │   ├── 1/src/               # OpenHarmony Hi3861 固件源码
 │   ├── FS-Hi3861-Motor-Driver(Release)/   # STM32 电机驱动（Keil MDK）
 │   ├── FS-STM32G030-CS100A(Release)/      # STM32 传感器板（Keil MDK）
-│   ├── lidar/               # LD-STL-19P 激光雷达文档（仅文档，无驱动代码）
+│   ├── lidar_docs/          # LD-STL-19P 激光雷达文档（仅 PDF + 数据包格式.md，无驱动代码）
 │   ├── fig/                 # 架构图、时序图
 │   ├── doc/ 及各 .md 文件    # 接口说明、算法设计、通信协议汇总
 │   ├── AGENTS.md            # ← fwwb 子项目详细指南
@@ -64,10 +64,9 @@
 ```
 
 **与激光雷达/IMU 的关系**：
-- Hi3861 固件通过 **UART** 直接连接 LD-STL-19P 激光雷达模块，解析其私有协议（帧头 `0x54`），并将点云数据打包为 JSON 通过 UDP 上报给后端。
-- Hi3861 固件通过 **I2C/UART** 读取 Yesense H30 IMU 数据，同样以 JSON 形式 UDP 透传至后端。
-- 后端 `backend/app/services/imu_service.py` 支持三种 IMU 接入模式：`tcp`（网口版直连）、`serial`（USB 串口版直连）、`udp_passive`（Hi3861 JSON 透传）。
-- **注意**：`fwwb/lidar/` 目录下**仅有雷达开发手册 PDF 和协议文档**，没有 ROS 驱动代码；实际的雷达 ROS 驱动位于根目录 `lidar/` 中。
+- Hi3861 固件**预留**了 LD-STL-19P 激光雷达数据结构（`sys_config.h` 中的 `LiDARFrame`，帧头 `0x54`），并在 `udp_send_task.c` 中将点云序列化为 JSON 上报后端；**但目前无任何任务解析 0x54 帧**，`systemValue.lidar_*` 字段始终为零值（解析任务待实现或由外部网口模块预解析）。
+- Hi3861 固件**当前不直接读取 IMU**。IMU 数据由后端 `backend/app/services/imu_service.py` 独立读取，支持三种接入模式：`tcp`（网口版直连）、`serial`（USB 串口版直连）、`udp_passive`（被动接收 JSON，需上游喂数据）。早期固件中的 IMU 读取任务已被移除。
+- **注意**：`fwwb/lidar_docs/` 目录下**仅有雷达开发手册 PDF 和协议文档**，没有 ROS 驱动代码；实际的雷达 ROS 驱动位于根目录 `lidar/` 中。
 
 **构建入口**：
 - 后端：`cd fwwb/backend && pip install -r requirements.txt && python main.py`
@@ -79,12 +78,12 @@
 
 ### 3.2 lidar/ — ROS1 Noetic SLAM 系统
 
-**目标**：基于 LD-14P 激光雷达（或 LD-STL-19P）与 Yesense H30 IMU，使用 Hector SLAM 或 Cartographer 实现 2D 栅格地图构建与定位。
+**目标**：基于 LD-14P 激光雷达（或 LD-STL-19P）与 Yesense H30 IMU，使用 **Cartographer 2D** 实现 2D 栅格地图构建与定位（无 Hector SLAM）。
 
 **运行方式**：
 - 采用 **Docker 容器化**部署，基础镜像 `osrf/ros:noetic-desktop`
 - 一键启动脚本 `start_slam.sh`（需 `sudo`）：自动检测 CH343 串口、创建设备别名、启动容器、编译工作空间、后台运行 ROS 节点
-- 支持**纯雷达模式**（未检测到 IMU 时自动禁用 IMU 节点）
+- 支持**纯雷达模式**（未检测到 IMU 时自动禁用 IMU 节点）；脚本根据 IMU/轮速组合自动选择 4 种 Cartographer Lua 配置之一
 
 **与 fwwb/ 的关系**：
 - 使用**完全相同**的 LD-14P / LD-STL-19P 激光雷达和 Yesense H30 IMU 硬件。
@@ -94,9 +93,9 @@
 
 **构建入口**：
 ```bash
-cd /home/tzb/lidar
-sudo ./start_slam.sh              # Hector SLAM 模式
-sudo ./start_slam.sh --cartographer  # Cartographer 模式
+cd /home/tzb/tzb/lidar
+sudo ./start_slam.sh              # 默认 Cartographer 2D（含轮速融合）
+sudo ./start_slam.sh --no-wheel-odom   # 禁用轮速里程计，仅雷达（+可选 IMU）
 ```
 
 > **详细坐标系定义、TF 树、诊断命令、地图保存方法请阅读 `lidar/AGENTS.md`。**
@@ -211,6 +210,6 @@ git branch -d <分支名>
 | `fwwb/4层通信协议汇总.md` | 完整协议定义（实际为 5 层） |
 | `fwwb/HARDWARE_DATA_FORMAT.md` | Yesense H30 IMU 与 LD14P 激光雷达的串口协议、数据结构 |
 | `lidar/AGENTS.md` | ROS1 SLAM 系统详细架构、构建命令、坐标系与 TF 树、诊断命令 |
-| `lidar/CLAUDE.md` | Hector SLAM 原理与调优、Cartographer 配置说明 |
+| `lidar/CLAUDE.md` | ROS1 雷达驱动构建、容器管理命令、Git 工作流 |
 | `lidar/启动指南.md` | 硬件连接与启动指南 |
-| `lidar/SLAM架构与优化分析.md` | Hector SLAM 原理与调优 |
+| `lidar/SLAM架构与优化分析.md` | Cartographer 2D 架构与调优分析 |

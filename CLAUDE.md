@@ -19,8 +19,8 @@ Both projects use the same LD-14P/LD-STL-19P LiDAR and Yesense H30 IMU, but acce
 
 | Hardware | `fwwb/` Access | `lidar/` Access | Conflict |
 |----------|----------------|-----------------|----------|
-| LD-14P/LD-STL-19P LiDAR | Hi3861 reads via UART, forwards JSON over UDP to backend | Direct USB serial in Docker (`/dev/ttyCH343USB0`) | **Mutually exclusive** |
-| Yesense H30 IMU | Hi3861 reads via I2C/UART, forwards JSON over UDP | Direct USB serial in Docker (`/dev/ttyCH343USB0/1`) | **Mutually exclusive** |
+| LD-14P/LD-STL-19P LiDAR | Hi3861 has reserved the data struct (`LiDARFrame`, header `0x54`) in `sys_config.h` and serializes it to JSON in `udp_send_task.c`, but **no parsing task fills it yet** — fields stay zero. Effective LiDAR use is via `lidar/`. | Direct USB serial in Docker (`/dev/ttyCH343USB0`) → `/dev/wheeltec_lidar` | **Mutually exclusive** |
+| Yesense H30 IMU | Hi3861 firmware **does not read IMU** (the old IMU task was removed). The `fwwb` backend reads IMU directly via `imu_service.py` (`tcp`/`serial`/`udp_passive`). | Direct USB serial in Docker (`/dev/ttyCH343USB0/1`) → `/dev/yesense_imu` | **Mutually exclusive** |
 
 - `lidar/start_slam.sh` auto-detects CH343 ports and identifies devices by first byte (`0x59` = IMU, `0x54` = Lidar)
 - If `fwwb` Hi3861 already occupies the hardware, `lidar/` cannot start; stop `fwwb` first or use separate hardware instances

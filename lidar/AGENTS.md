@@ -117,11 +117,12 @@ sudo ./start_slam.sh          # Cartographer 2D SLAM
 | 包名 | 职责 |
 |------|------|
 | `ldlidar` | 读取串口激光数据 → 解析点云 → 发布 `sensor_msgs/LaserScan` (`/scan`) |
-| `yesense_imu` | 读取串口 IMU 数据 → 解析 YIS 协议 → 发布 `sensor_msgs/Imu` (`/imu`) 及 15 种自定义消息 |
-| `imu_tf_broadcaster` | 订阅 `/imu` → 广播 `imu_link` 相对于 `world` 的 TF 变换（演示用） |
-| `cartographer_ld06` | 提供 Cartographer 的 Lua 配置与 launch 文件，支持 Lidar（+ 可选 IMU）|
-| `rf2o_laser_odometry` | （已弃用，保留但不启动）2D 激光帧间里程计 |
-| `robot_localization` | （已弃用，保留但不启动）EKF 融合激光里程计 + IMU |
+| `yesense_imu` | 读取串口 IMU 数据 → 解析 YIS 协议 → 发布 `sensor_msgs/Imu`（`/imu_raw`，后经 `imu_complementary_filter` 滤波为 `/imu`）及 15 种自定义消息 |
+| `imu_tf_broadcaster` | 订阅 `/imu` → 广播 `imu_link` 相对于 `world` 的 TF 变换（**演示用**，不参与 Cartographer SLAM 链路） |
+| `cartographer_ld06` | 提供 Cartographer 的 Lua 配置与 launch 文件，支持 Lidar（+ 可选 IMU + 可选轮速里程计）|
+| `wheel_odom` | 接收后端 UDP:7799 轮速（L_spd/R_spd），自适应互补滤波发布 `/odom`（默认启用，`--no-wheel-odom` 关闭）|
+| `rf2o_laser_odometry_ros1` | （已弃用，保留但不启动）2D 激光帧间里程计 |
+| `allan_variance_ros` | IMU Allan 方差标定工具（独立，配合 `imu_calibration.sh` 使用） |
 
 ---
 
@@ -165,7 +166,7 @@ map ──(cartographer)──→ odom ──→ base_link ──→ laser
 ```
 
 - `base_link → laser`: `0 0 0.18 0 0 0`（z=0.18m）
-- `base_link → imu_link`: `0 0.08 -0.05 0 0 0`（y=0.08m, z=-0.05m，仅 IMU 存在时发布）
+- `base_link → imu_link`: `0 0 0 0 0 0`（平移为零——Cartographer 要求 IMU frame 与 tracking_frame `base_link` 几乎重合 translation < 1e-5，故此处强制为零；仅 IMU 存在时由 `cartographer_ld06.launch` 的 static_transform_publisher 发布）
 - Cartographer 2D 发布 `map → odom → base_link`，`provide_odom_frame = true`
 - 有 IMU 时：IMU 提供重力对齐和旋转约束，辅助 scan matching
 - 无 IMU 时：纯 scan matching，Cartographer 自行估计位姿
@@ -182,7 +183,9 @@ map ──(cartographer)──→ odom ──→ base_link ──→ laser
 | `yesense_port` | `/dev/yesense_imu` |
 | `yesense_baudrate` | `460800` |
 | `frame_id` | `imu_link` |
-| `imu_topic` | `imu` |
+| `imu_topic` | `imu_raw`（原始数据；后经 `imu_complementary_filter` 滤波为 `/imu`） |
+
+> **IMU 数据链路**：`yesense_driver` 发布 `/imu_raw` → `imu_complementary_filter` 节点（见 `cartographer_ld06/launch/imu_filter.launch`，做在线陀螺零偏估计）→ 发布 `/imu` → 供 `cartographer_node` 消费。注意：独立目录 `lidar/yesense_imu/launch/yesense_ahrs.launch` 仍是旧版 `imu`，实际 SLAM 链路用的是 `catkin_ws/src/` 副本里的 `imu_raw`。
 
 ### `catkin_ws/src/ldlidar/launch/ld14p.launch`
 

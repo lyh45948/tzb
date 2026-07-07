@@ -169,26 +169,28 @@ backend/
 
 | Task | Priority | Interval | Purpose |
 |------|----------|----------|---------|
-| UDP Recv | High | Event-driven | Receive commands from backend |
-| UDP Send | Medium | 50ms | Send sensor/status to backend |
-| UART Recv | High | Event-driven | Receive data from STM32 |
-| OLED Show | Low | 100ms | Update display |
-| Auto Avoid | Medium | 5ms | Obstacle avoidance algorithm |
-| Smart Light | Low | 100ms | Ambient light adjustment |
+| UDP Recv | Normal1 (slightly higher) | Event-driven | Receive commands from backend (port 7788) |
+| UDP Send | Normal | 50ms | Send sensor/status/lidar/vision JSON to backend |
+| UART2 Recv (STM32) | Normal | Event-driven | Receive JSON status from STM32 motor board |
+| UART1 Recv (Voice) | Normal | Event-driven | Receive voice module binary commands (0xAA 0x55) |
+| OLED Show | Normal | 50ms | Update SSD1306 display |
+| Auto Avoid | Normal | 5ms | Obstacle avoidance algorithm |
+| Agriculture Sensor | Normal | 2s | SGP30 CO2/TVOC + flame/gas digital inputs sampling |
+| OpenMV Vision | Normal | 100ms | Read OpenMV counter/obstacle results via I2C addr 0x12 |
 
-Synchronization via global `system_value_t systemValue` struct in `sys_config.h`.
+> 注：除 `udp_recv` 略高外，其余任务均为 `osPriorityNormal`。`smart_light_task` 已移除（智能照明改由后端联动控制 + OpenMV 承担）。Synchronization via global `system_value_t systemValue` struct in `sys_config.h`.
 
 ## Peripheral I2C Addresses
 | Device | Address | Function |
 |--------|---------|----------|
-| PCF8574 | 0x43 | IO expander (fan/buzzer/LED/PIR/gas) |
-| SHT20 | 0x80 | Temperature/humidity sensor |
-| SGP30 | 0x80 | CO2/TVOC sensor |
+| PCF8574 | 0x43 | IO expander (fan/buzzer/LED/flame/gas) |
+| SHT20 | 0x80 | Temperature/humidity sensor (7-bit: 0x40) |
+| SGP30 | 0xB0 | CO2/TVOC sensor (7-bit: 0x58) |
 | AW2013 | 0x8A | RGB LED driver |
-| AP3216C | 0x3C | Ambient light/proximity sensor |
+| AP3216C | 0x3C | Ambient light/proximity sensor (IR channel used for human presence) |
 | SSD1306 | 0x78 | OLED display |
 
-All I2C: GPIO_9 (SCL) + GPIO_10 (SDA) at 100kHz.
+Addresses are 8-bit (with R/W bit). All I2C: GPIO_9 (SCL) + GPIO_10 (SDA) at 100kHz.
 
 ## PCF8574 I/O Definition
 | Pin | Function |
@@ -196,10 +198,11 @@ All I2C: GPIO_9 (SCL) + GPIO_10 (SDA) at 100kHz.
 | P0 | Fan control |
 | P1 | Buzzer |
 | P2 | LED indicator |
-| P4 | Flame sensor |
-| P5 | Gas sensor |
-| P6 | Goods count pulse |
-| P7 | PIR human detection |
+| P4 | Flame sensor (bit4 = 0x10) |
+| P5 | (reserved/D2 — see `set_D2`; code comment mentions 可燃气体,归属待澄清) |
+| bit7 (0x80) | Gas sensor (`GAS_SENSOR_BIT` in `agriculture_sensor_task.c`) |
+
+> 注：`P6`(货物计数脉冲)与 `P7`(PIR)在当前固件中**未使用**。货物计数已迁移到 **OpenMV 视觉模块**（`vision.counter_digits`），人体检测改由 **AP3216C 的 IR 通道**（`env_ir`）承担。
 
 ## UART Pin Mapping
 | UART | RX | TX | Purpose |
