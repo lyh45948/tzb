@@ -44,17 +44,22 @@ onMounted(() => {
     animationDurationUpdate: chartAnimationDuration,
     animationEasing: 'linear',
     animationEasingUpdate: 'linear',
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['温度(℃)', '湿度(%)', 'CO(ppm)', 'TVOC(ppb)', '危气(ppm)'], textStyle: { color: '#64748b', fontSize: 12 }, top: 4, left: 'center' },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(8,18,40,0.9)',
+      borderColor: 'rgba(49,171,227,0.5)',
+      textStyle: { color: '#e0f7ff' }
+    },
+    legend: { data: ['温度(℃)', '湿度(%)', 'CO(ppm)', 'TVOC(ppb)', '危气(ppm)'], textStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, top: 4, left: 'center' },
     grid: { left: 50, right: 160, top: 36, bottom: '5%', containLabel: true },
     xAxis: {
       type: 'category', data: [],
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { color: '#64748b', fontSize: 11, interval: 9 },
+      axisLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 11, interval: 9 },
       splitLine: { show: false }
     },
     yAxis: [
-      { type: 'value', name: '℃/%', min: 0, max: 100, nameLocation: 'middle', nameGap: 36, nameRotate: 90, nameTextStyle: { color: '#64748b', fontSize: 12 }, axisLabel: { color: '#64748b', fontSize: 12 }, splitLine: { lineStyle: { color: '#cbd5e1' } } },
+      { type: 'value', name: '℃/%', min: 0, max: 100, nameLocation: 'middle', nameGap: 36, nameRotate: 90, nameTextStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, splitLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } } },
       { type: 'value', name: 'TVOC', min: 0, max: 1200, nameLocation: 'middle', nameGap: 36, nameRotate: 90, nameTextStyle: { color: '#06b6d4', fontSize: 12 }, axisLabel: { color: '#06b6d4', fontSize: 12 }, splitLine: { show: false }, position: 'right' },
       { type: 'value', name: '危气', min: 0, max: 1200, nameLocation: 'middle', nameGap: 36, nameRotate: 90, nameTextStyle: { color: '#f59e0b', fontSize: 12 }, axisLabel: { color: '#f59e0b', fontSize: 12 }, splitLine: { show: false }, position: 'right', offset: 50 },
       // CO 量级 0~80 ppm 独占第四轴，避免与 ppb 量级混轴
@@ -62,7 +67,7 @@ onMounted(() => {
     ],
     series: [
       { name: '温度(℃)', type: 'line', smooth: true, symbol: 'none', lineStyle: { color: '#ef4444' }, itemStyle: { color: '#ef4444' }, data: [] },
-      { name: '湿度(%)', type: 'line', smooth: true, symbol: 'none', lineStyle: { color: '#2563eb' }, itemStyle: { color: '#2563eb' }, data: [] },
+      { name: '湿度(%)', type: 'line', smooth: true, symbol: 'none', lineStyle: { color: '#60a5fa' }, itemStyle: { color: '#60a5fa' }, data: [] },
       { name: 'CO(ppm)', type: 'line', smooth: true, symbol: 'none', yAxisIndex: 3, lineStyle: { color: '#8b5cf6' }, itemStyle: { color: '#8b5cf6' }, data: [] },
       { name: 'TVOC(ppb)', type: 'line', smooth: true, symbol: 'none', yAxisIndex: 1, lineStyle: { color: '#06b6d4', type: 'dashed' }, itemStyle: { color: '#06b6d4' }, data: [] },
       { name: '危气(ppm)', type: 'line', smooth: true, symbol: 'none', yAxisIndex: 2, lineStyle: { color: '#f59e0b', type: 'dashed', width: 1.5 }, itemStyle: { color: '#f59e0b' }, data: [] }

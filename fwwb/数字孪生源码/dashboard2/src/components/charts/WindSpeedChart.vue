@@ -50,24 +50,27 @@ onMounted(() => {
     animationEasingUpdate: 'linear',
     tooltip: {
       trigger: 'axis',
-      formatter: '{b}<br/>气体浓度: {c}'
+      formatter: '{b}<br/>气体浓度: {c}',
+      backgroundColor: 'rgba(8,18,40,0.9)',
+      borderColor: 'rgba(49,171,227,0.5)',
+      textStyle: { color: '#e0f7ff' }
     },
     grid: { left: '3%', right: '4%', top: 32, bottom: '5%', containLabel: true },
     xAxis: {
       type: 'category',
       data: [],
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { color: '#64748b', fontSize: 11, interval: 9 },
+      axisLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 11, interval: 9 },
       splitLine: { show: false }
     },
     yAxis: {
       type: 'value',
       name: 'raw',
-      nameTextStyle: { color: '#64748b', fontSize: 12 },
+      nameTextStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 12 },
       min: 0,
       max: 800,
-      axisLabel: { color: '#64748b', fontSize: 12 },
-      splitLine: { lineStyle: { color: '#cbd5e1' } }
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12 },
+      splitLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } }
     },
     series: [{
       name: '气体浓度',

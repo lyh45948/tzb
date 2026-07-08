@@ -54,8 +54,8 @@ const indexRadioChange=(flag: boolean)=>{
         </span>
         <div class="setting_content">
           <el-radio-group v-model="isScaleRadio" @change="(flag)=>isScaleChange(flag as boolean)">
-            <el-radio :label="true">是</el-radio>
-            <el-radio :label="false">否</el-radio>
+            <el-radio :value="true">是</el-radio>
+            <el-radio :value="false">否</el-radio>
           </el-radio-group>
         </div>
       </div>
@@ -69,8 +69,8 @@ const indexRadioChange=(flag: boolean)=>{
             v-model="leftBottomRadio"
             @change="(flag)=>indexRadioChange(flag as boolean)"
           >
-            <el-radio :label="true">是</el-radio>
-            <el-radio :label="false">否</el-radio>
+            <el-radio :value="true">是</el-radio>
+            <el-radio :value="false">否</el-radio>
           </el-radio-group>
         </div>
       </div>
@@ -81,8 +81,8 @@ const indexRadioChange=(flag: boolean)=>{
             v-model="rightBottomRadio"
             @change="(flag)=>indexRadioChange(flag as boolean)"
           >
-            <el-radio :label="true">是</el-radio>
-            <el-radio :label="false">否</el-radio>
+            <el-radio :value="true">是</el-radio>
+            <el-radio :value="false">否</el-radio>
           </el-radio-group>
         </div>
       </div>

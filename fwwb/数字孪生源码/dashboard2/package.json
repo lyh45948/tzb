@@ -9,6 +9,7 @@
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
+    "@pinia/colada": "^0.21.7",
     "axios": "^1.17.0",
     "countup.js": "^2.10.0",
     "dayjs": "^1.11.21",

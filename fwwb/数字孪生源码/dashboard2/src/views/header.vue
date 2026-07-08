@@ -40,7 +40,7 @@ timeFn();
 // 在线设备数 + 最高告警等级
 const onlineCount = computed(() => store.fleet?.filter((r: any) => r.status !== "offline").length ?? 0);
 const totalCount = computed(() => store.fleet?.length ?? 0);
-const highestAlert = computed(() => store.highestAlertLevel || "normal");
+const highestAlert = computed(() => store.highestAlert || "normal");
 const alertLabel = computed(() => {
   const m: Record<string, string> = { normal: "正常", watch: "关注", warning: "预警", danger: "危险", critical: "紧急" };
   return m[highestAlert.value] || "正常";
@@ -79,7 +79,7 @@ const switchModule = (key: string) => emit("update:active", key);
     <!-- 右侧: 时钟 + 连接小车 + 设置 -->
     <div class="header-right">
       <button class="btn-connect" @click="emit('connect')">
-        <span class="btn-dot" :class="{ on: store.connectionState === 'live' }"></span>
+        <span class="btn-dot" :class="{ on: store.connectionStatus === 'live' }"></span>
         连接小车
       </button>
       <div class="timers">
