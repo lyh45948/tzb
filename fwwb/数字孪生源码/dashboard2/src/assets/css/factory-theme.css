@@ -1,0 +1,90 @@
+/* ============================================================
+ * 工厂数字孪生大屏 — 深色科技主题全局覆盖样式
+ * 将 dashboard1 迁移组件的浅色 CSS 变量重映射为 IofTV 深色主题
+ * 同时隐藏迁移组件内联的 .panel-frame 外壳 (由 ItemWrap 统一提供)
+ * ============================================================ */
+
+:root {
+  /* 背景: 浅色商务 → 深色科技大屏 */
+  --bg-primary: #03050c;
+  --bg-secondary: #0a1128;
+  --bg-panel: rgba(8, 18, 40, 0.6);
+  --bg-panel-header: rgba(0, 114, 255, 0.12);
+
+  /* 边框: 弱蓝 → 科技青蓝发光 */
+  --border-glow: #31abe3;
+  --border-dim: rgba(49, 171, 227, 0.25);
+  --border-radius: 4px;
+
+  /* 文字: 深色文字 → 高对比浅色 */
+  --text-primary: #e0f7ff;
+  --text-secondary: rgba(224, 247, 255, 0.65);
+  --text-accent: #00eaff;
+
+  /* 强调色: 保留但提亮为霓虹 */
+  --accent-blue: #0072ff;
+  --accent-green: #07f7a8;
+  --accent-yellow: #e3b337;
+  --accent-red: #fc1a1a;
+  --accent-purple: #a855f7;
+  --accent-cyan: #00eaff;
+
+  /* 阴影: 改为科技发光 */
+  --shadow-glow: 0 0 12px rgba(0, 234, 255, 0.2);
+  --shadow-panel: 0 0 16px rgba(0, 0, 0, 0.4);
+
+  /* 布局尺寸 (保留 dashboard1 定义) */
+  --header-height: 90px;
+  --footer-height: 0px;
+  --sidebar-width: 0px;
+  --sidebar-collapsed-width: 0px;
+  --gap: 12px;
+  --radius: 4px;
+}
+
+/* ============================================================
+ * 隐藏迁移组件内联的 .panel-frame 外壳
+ * dashboard1 的 panel/chart 各自手抄了 .panel-frame > .panel-header > .panel-body
+ * 在 dashboard2 中统一由 ItemWrap(BorderBox13) 提供深色科技外壳
+ * 这里把内联外壳"透明化": 移除其白底/边框/标题栏, 只保留内容区
+ * ============================================================ */
+
+/* 迁移组件的 .panel-frame: 变成透明容器, 不再有独立卡片外观 */
+.panel-frame {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* 隐藏迁移组件自带的 .panel-header (标题由 ItemWrap 提供) */
+.panel-frame > .panel-header {
+  display: none !important;
+}
+
+/* 迁移组件的 .panel-body: 撑满 ItemWrap 内容区 */
+.panel-frame > .panel-body,
+.panel-frame > div:not(.panel-header) {
+  padding: 4px 2px !important;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* 独立 chart 组件 (无 panel-frame 包裹的) 也撑满 */
+.section-page > div,
+.col > div {
+  min-height: 0;
+}
+
+/* ============================================================
+ * 通用深色滚动条
+ * ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(3, 5, 12, 0.3); }
+::-webkit-scrollbar-thumb { background: rgba(49, 171, 227, 0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(49, 171, 227, 0.7); }
