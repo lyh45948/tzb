@@ -22,22 +22,82 @@ def filter_env(env, fields):
     return {k: v for k, v in env.items() if k.lower() in fields}
 
 
+def _co2_to_co(co2_raw):
+    """CO2(SGP30, ppm) → CO(MQ-7 量级, ppm) 映射。
+
+    与 DashboardService._co2_to_co 保持完全一致，保证传感器接口与大屏
+    报出的 CO 同源。后端数据目前只有 CO2，无 MQ-7 真值，前端「CO 浓度」
+    期望的是 0~50ppm 量级，故在此统一映射。
+    """
+    try:
+        v = float(co2_raw)
+    except (TypeError, ValueError):
+        return None
+    if v <= 400:
+        return 0.0
+    if v >= 1400:
+        return 50.0
+    if v < 200:
+        # 已经是 CO 量级，原样透传
+        return round(v, 1)
+    return round((v - 400) / 20.0, 1)
+
+
 def env_from_db_record(record):
     """从数据库记录构造 env 字典，兼容 API 文档字段"""
     if record is None:
         return {}
     data = record.to_dict() if hasattr(record, 'to_dict') else record
-    return {
+    co2 = data.get('co2')
+    env = {
         "temp": data.get('temperature'),
         "humi": data.get('humidity'),
         "lux": data.get('lux'),
-        "co2": data.get('co2'),
+        "co2": co2,
+        "co": _co2_to_co(co2),
         "tvoc": data.get('tvoc'),
         "gasStatus": data.get('gas_status'),
         "gasMic": data.get('gas_mic'),
         "ps": data.get('proximity'),
         "ir": data.get('ir_value'),
     }
+    return env
+
+
+def _normalize_history_item(item):
+    """将一条历史记录归一化为驼峰命名结构。
+
+    与 /sensors/current 返回结构对齐：传感器字段放入 env（复用
+    env_from_db_record 保证命名一致），co2→co 映射同源；其余车辆状态
+    字段（速度/电量/外设等）保持驼峰放外层。
+
+    兼容设计：env 中的传感器字段同时平铺到顶层，让沿用旧读法
+    （如 d.get("co") / d.get("gasStatus") / d.get("temp")）的
+    vehicle_agent1.2.py 无需改动即可读到，同时 env 子结构保持与
+    /sensors/current 对齐。
+    """
+    if not isinstance(item, dict):
+        return item
+    env = env_from_db_record(item)
+    record = {
+        "id": item.get('id'),
+        "device_id": item.get('device_id'),
+        "timestamp": item.get('timestamp'),
+        "env": env,
+        "carStatus": item.get('car_status'),
+        "carMode": item.get('car_mode'),
+        "leftSpeed": item.get('left_speed'),
+        "rightSpeed": item.get('right_speed'),
+        "batteryVoltage": item.get('battery_voltage'),
+        "distance": item.get('distance'),
+        "fan": item.get('fan'),
+        "led": item.get('led'),
+        "buzzer": item.get('buzzer'),
+        "createdAt": item.get('created_at'),
+    }
+    # 顶层冗余传感器字段（与 env 同值），兼容智能体顶层读取
+    record.update(env)
+    return record
 
 
 @api_bp.route('/sensors/current', methods=['GET'])
@@ -299,16 +359,18 @@ def _query_history(device_id, args):
             interval=interval
         )
 
-        # 字段筛选（支持 API 文档中的全部字段别名）
+        # 将每条记录归一化为驼峰命名，并注入由 co2 映射而来的 co 字段，
+        # 使历史接口与 /sensors/current 的 env 字段命名保持一致。
+        # 注意：data_service.query_sensor_history() 返回的原始结果（snake_case）
+        # 不在此处修改——后端内置 AgentService 直接读取它，须保持原样。
+        result = [_normalize_history_item(item) for item in result]
+
+        # 字段筛选（作用于归一化后的驼峰键名，大小写不敏感）
         if fields is not None:
             for item in result:
-                item['temperature'] = item.get('temperature') if 'temperature' in fields else None
-                item['humidity'] = item.get('humidity') if 'humidity' in fields else None
-                item['lux'] = item.get('lux') if 'lux' in fields else None
-                item['co2'] = item.get('co2') if 'co2' in fields else None
-                item['tvoc'] = item.get('tvoc') if 'tvoc' in fields else None
-                item['gas_status'] = item.get('gas_status') if 'gasstatus' in fields else None
-                item['gas_mic'] = item.get('gas_mic') if 'gasmic' in fields else None
+                env = item.get('env', {})
+                item['env'] = {k: v for k, v in env.items()
+                               if k.lower() in fields}
 
         return jsonify({
             "code": 0,
