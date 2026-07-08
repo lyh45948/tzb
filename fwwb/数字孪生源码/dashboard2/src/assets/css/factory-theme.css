@@ -61,15 +61,41 @@
   width: 100%;
 }
 
-/* 隐藏迁移组件自带的 .panel-header (标题由 ItemWrap 提供) */
+/* 隐藏迁移组件自带的 .panel-header 中的 .dot 和标题文本 (标题由 ItemWrap 提供)
+   但保留 .header-actions/.header-sub/.header-tools 等交互控件和统计计数 */
+.panel-frame > .panel-header > .dot,
+.panel-frame > .panel-header > .panel-title,
+.panel-frame > .panel-header > .title-text,
+.panel-frame > .panel-header > span:first-child {
+  display: none !important;
+}
+/* panel-header 本身改为薄横条,容纳保留的交互控件 */
 .panel-frame > .panel-header {
+  background: transparent !important;
+  border: none !important;
+  padding: 2px 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+/* 若 panel-header 里只剩交互控件(计数/按钮),让它靠右紧凑显示 */
+.panel-frame > .panel-header > .header-actions,
+.panel-frame > .panel-header > .header-sub,
+.panel-frame > .panel-header > .header-tools,
+.panel-frame > .panel-header > .meta {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary) !important;
+}
+/* 若 panel-header 内已无任何有用内容(只有已隐藏的dot/标题),整体折叠 */
+.panel-frame > .panel-header:not(:has(.header-actions, .header-sub, .header-tools, .meta)) {
   display: none !important;
 }
 
 /* 迁移组件的 .panel-body: 撑满 ItemWrap 内容区 */
 .panel-frame > .panel-body,
 .panel-frame > div:not(.panel-header) {
-  padding: 4px 2px !important;
+  padding: 6px 4px !important;
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -88,3 +114,50 @@
 ::-webkit-scrollbar-track { background: rgba(3, 5, 12, 0.3); }
 ::-webkit-scrollbar-thumb { background: rgba(49, 171, 227, 0.4); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(49, 171, 227, 0.7); }
+
+/* ============================================================
+ * 白底卡片 → 深色科技卡片 (修复"白卡浅字"导致文字消失)
+ * 迁移组件用了 rgba(255,255,255,*) 等浅色背景, 在深色大屏上突兀且其内
+ * 文字经 --text-primary 覆盖为浅色后双重不可见。这里统一改为深色半透卡片。
+ * ============================================================ */
+.risk-detail,
+.latest-card,
+.latest-card.warning,
+.latest-card.critical,
+.report-card,
+.camera-meta {
+  background: rgba(8, 18, 40, 0.6) !important;
+  border: 1px solid rgba(49, 171, 227, 0.25) !important;
+  color: var(--text-primary) !important;
+}
+.latest-card.warning { border-color: rgba(227, 179, 55, 0.4) !important; }
+.latest-card.critical { border-color: rgba(252, 26, 26, 0.5) !important; background: rgba(60, 8, 12, 0.6) !important; }
+
+/* CarConnectDialog 白卡 → 深色 (该对话框 Teleport 到 body, :root 变量仍命中浅色覆盖) */
+.dialog-card {
+  background: rgba(8, 18, 40, 0.95) !important;
+  border: 1px solid rgba(49, 171, 227, 0.4) !important;
+  color: var(--text-primary) !important;
+}
+.dialog-card input,
+.dialog-card .car-item {
+  background: rgba(3, 5, 12, 0.5) !important;
+  border-color: rgba(49, 171, 227, 0.3) !important;
+  color: var(--text-primary) !important;
+}
+.dialog-card input::placeholder { color: var(--text-secondary) !important; }
+
+/* ============================================================
+ * 极暗色修正 (#7f1d1d 紧急 / #92400e 联动 在黑底上几乎不可见)
+ * ============================================================ */
+.risk-level-critical,
+.level-critical,
+.rank-critical,
+.rank-紧急 {
+  color: #ff4d4d !important;
+  border-color: rgba(255, 77, 77, 0.5) !important;
+  background: rgba(60, 8, 12, 0.4) !important;
+}
+.linked-reason {
+  color: #f59e0b !important;
+}

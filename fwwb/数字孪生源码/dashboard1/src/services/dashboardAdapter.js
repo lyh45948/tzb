@@ -3,29 +3,11 @@
  *
  * 字段映射依据：/v1/dashboard/snapshot 响应与 deviceStore.js state 几乎一一对应，
  * 这里只做轻量的归一化与"保留前端本地状态"的合并。
+ *
+ * CO2→CO 映射已由后端完成（dashboard_service._co2_to_co），前端直接使用
+ * snapshot.co 字段，不再做转换。
  */
 import config from '../config'
-
-/**
- * 后端 SGP30 上报的是 CO2 (单位 ppm，典型 400~1500)，但前端 UI 已切换为 CO 显示
- * （CLAUDE.md 中 MQ-7 CO 量级 35/50 ppm）。这里把 CO2 量级线性映射到 CO 量级，
- * 保证大屏「CO 浓度」面板在真实数据流下也显示合理范围。
- *
- *   CO2 ≤ 400 ppm  → CO  0 ppm
- *   CO2 = 900 ppm  → CO 25 ppm
- *   CO2 ≥ 1400 ppm → CO 50 ppm （触发危险）
- *
- * 当数据源已经是 CO 量级（< 200 ppm，比如前端 demo 模式 / 未来后端真接 MQ-7），
- * 不做转换，原样透传。
- */
-function normalizeCO(value) {
-  const v = Number(value)
-  if (!Number.isFinite(v)) return value
-  // 已经是 CO 量级：原样
-  if (v < 200) return v
-  // CO2 量级：线性映射到 0~50 ppm CO
-  return Math.max(0, +(((v - 400) / 20)).toFixed(1))
-}
 
 /**
  * 把 /v1/dashboard/snapshot 的 data 写入 store。
@@ -44,7 +26,9 @@ export function applySnapshot(store, snapshot) {
   setIfPresent(store, 'ir', snapshot.ir)
   setIfPresent(store, 'humanDetected', snapshot.humanDetected)
   setIfPresent(store, 'pirStatus', snapshot.pirStatus)
-  setIfPresent(store, 'co2', snapshot.co2 != null ? normalizeCO(snapshot.co2) : snapshot.co2)
+  // 后端已提供 co（CO2→CO 映射后的值），直接使用
+  setIfPresent(store, 'co', snapshot.co)
+  setIfPresent(store, 'co2', snapshot.co2)
   setIfPresent(store, 'tvoc', snapshot.tvoc)
   setIfPresent(store, 'gasMic', snapshot.gasMic)
   setIfPresent(store, 'gasStatus', snapshot.gasStatus)
@@ -146,7 +130,7 @@ export function applyHistory(store, history) {
   store.historyTemp = sliced.map((it) => +(+it.temperature).toFixed(1) || 0)
   store.historyHumi = sliced.map((it) => +(+it.humidity).toFixed(1) || 0)
   store.historyLux = sliced.map((it) => round1(it.lux))
-  store.historyCO2 = sliced.map((it) => +Number(normalizeCO(+it.co2)).toFixed(1) || 0)
+  store.historyCO2 = sliced.map((it) => +Number(it.co).toFixed(1) || 0)
   store.historyTVOC = sliced.map((it) => Math.round(+it.tvoc) || 0)
   store.historyGasMic = sliced.map((it) => Math.round(+it.gasMic) || 0)
   store.historyGoodsCount = sliced.map((it) => Math.round(+it.goodsCount) || 0)
@@ -166,7 +150,7 @@ export function appendHistoryFromSnapshot(store, snapshot) {
   push(store, 'historyTemp', round1(snapshot.temperature), max)
   push(store, 'historyHumi', round1(snapshot.humidity), max)
   push(store, 'historyLux', round1(snapshot.lux), max)
-  push(store, 'historyCO2', +Number(normalizeCO(snapshot.co2)).toFixed(1), max)
+  push(store, 'historyCO2', +Number(snapshot.co).toFixed(1), max)
   push(store, 'historyTVOC', roundInt(snapshot.tvoc), max)
   push(store, 'historyGasMic', roundInt(snapshot.gasMic), max)
   push(store, 'historyGoodsCount', roundInt(snapshot.goodsCount), max)

@@ -44,10 +44,10 @@ onMounted(() => {
           color: [[0.3, '#f97316'], [0.6, '#f59e0b'], [1, '#22c55e']]
         }
       },
-      pointer: { width: 4, length: '60%', itemStyle: { color: '#2563eb' } },
-      axisTick: { distance: -12, length: 4, lineStyle: { color: '#64748b', width: 1 } },
-      axisLabel: { color: '#64748b', fontSize: 12, distance: 16 },
-      detail: { valueAnimation: true, formatter: (value) => `${Number(value).toFixed(1)} lux`, color: '#1e293b', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '58%'] },
+      pointer: { width: 4, length: '60%', itemStyle: { color: '#60a5fa' } },
+      axisTick: { distance: -12, length: 4, lineStyle: { color: 'rgba(49,171,227,0.25)', width: 1 } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12, distance: 16 },
+      detail: { valueAnimation: true, formatter: (value) => `${Number(value).toFixed(1)} lux`, color: '#e0f7ff', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '58%'] },
       data: [{ value: 0 }]
     }]
   })

@@ -5,7 +5,7 @@
       <div class="safety-summary">
         <div class="safety-row">
           <span class="label">CO浓度</span>
-          <span class="value" :style="{ color: co2Color }">{{ Math.round(store.co2) }} ppm</span>
+          <span class="value" :style="{ color: coColor }">{{ Math.round(store.co) }} ppm</span>
         </div>
         <div class="safety-row">
           <span class="label">TVOC</span>
@@ -57,9 +57,9 @@ const store = useDeviceStore()
 const GAS_ALARM_TYPES = new Set(['flame', 'gas', 'co2'])
 const events = computed(() => store.alarmEvents.filter(e => GAS_ALARM_TYPES.has(e.type)))
 
-const co2Color = computed(() => {
-  if (store.co2 >= 50) return '#ef4444'
-  if (store.co2 >= 35) return '#f59e0b'
+const coColor = computed(() => {
+  if (store.co >= 50) return '#ef4444'
+  if (store.co >= 35) return '#f59e0b'
   return '#22c55e'
 })
 

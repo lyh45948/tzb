@@ -43,20 +43,26 @@ function updateChart() {
 onMounted(() => {
   chart = echarts.init(chartEl.value, null, { renderer: 'canvas' })
   chart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(8,18,40,0.9)',
+      borderColor: 'rgba(49,171,227,0.5)',
+      textStyle: { color: '#e0f7ff' }
+    },
     grid: { left: 40, right: 10, top: 15, bottom: 25 },
     xAxis: {
       type: 'category',
       data: [],
-      axisLabel: { color: '#64748b', fontSize: 12, interval: 0 },
-      axisLine: { lineStyle: { color: 'rgba(30,80,180,0.15)' } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12, interval: 0 },
+      axisLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } },
       axisTick: { show: false }
     },
     yAxis: {
       type: 'value',
       min: 0,
       max: 100,
-      axisLabel: { color: '#64748b', fontSize: 12, formatter: '{value}%' },
-      splitLine: { lineStyle: { color: 'rgba(30,80,180,0.08)' } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12, formatter: '{value}%' },
+      splitLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } },
       axisLine: { show: false },
       axisTick: { show: false }
     },
@@ -66,7 +72,7 @@ onMounted(() => {
       label: {
         show: true,
         position: 'top',
-        color: '#1e293b',
+        color: '#e0f7ff',
         fontSize: 13,
         fontWeight: 'bold',
         formatter: '{c}%'

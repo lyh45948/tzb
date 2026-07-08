@@ -58,11 +58,11 @@ onMounted(() => {
           color: [[0.15, '#ef4444'], [0.3, '#f59e0b'], [1, '#22c55e']]
         }
       },
-      pointer: { width: 4, length: '55%', itemStyle: { color: '#2563eb' } },
+      pointer: { width: 4, length: '55%', itemStyle: { color: '#60a5fa' } },
       axisTick: { show: false },
-      splitLine: { distance: -12, length: 8, lineStyle: { color: '#64748b', width: 1 } },
-      axisLabel: { color: '#64748b', fontSize: 12, distance: 14 },
-      detail: { valueAnimation: true, formatter: '-- cm', color: '#1e293b', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '70%'] },
+      splitLine: { distance: -12, length: 8, lineStyle: { color: 'rgba(49,171,227,0.25)', width: 1 } },
+      axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12, distance: 14 },
+      detail: { valueAnimation: true, formatter: '-- cm', color: '#e0f7ff', fontSize: 16, fontWeight: 'bold', offsetCenter: [0, '70%'] },
       data: [{ value: 0 }]
     }]
   })

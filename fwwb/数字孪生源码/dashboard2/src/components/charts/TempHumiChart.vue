@@ -41,17 +41,22 @@ onMounted(() => {
     animationDurationUpdate: chartAnimationDuration,
     animationEasing: 'linear',
     animationEasingUpdate: 'linear',
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['温度(℃)', '湿度(%)'], textStyle: { color: '#64748b', fontSize: 13 }, top: 0 },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(8,18,40,0.9)',
+      borderColor: 'rgba(49,171,227,0.5)',
+      textStyle: { color: '#e0f7ff' }
+    },
+    legend: { data: ['温度(℃)', '湿度(%)'], textStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 13 }, top: 0 },
     grid: { left: '3%', right: '4%', top: 35, bottom: '5%', containLabel: true },
-    xAxis: { type: 'category', data: [], axisLine: { lineStyle: { color: '#cbd5e1' } }, axisLabel: { color: '#64748b', fontSize: 11, interval: 9 }, splitLine: { show: false } },
+    xAxis: { type: 'category', data: [], axisLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } }, axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 11, interval: 9 }, splitLine: { show: false } },
     yAxis: [
-      { type: 'value', name: '℃', nameTextStyle: { color: '#64748b', fontSize: 12 }, axisLabel: { color: '#64748b', fontSize: 12 }, splitLine: { lineStyle: { color: '#cbd5e1' } }, min: 10, max: 45 },
-      { type: 'value', name: '%', nameTextStyle: { color: '#64748b', fontSize: 12 }, axisLabel: { color: '#64748b', fontSize: 12 }, splitLine: { show: false }, min: 20, max: 100 }
+      { type: 'value', name: '℃', nameTextStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, splitLine: { lineStyle: { color: 'rgba(49,171,227,0.25)' } }, min: 10, max: 45 },
+      { type: 'value', name: '%', nameTextStyle: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, axisLabel: { color: 'rgba(224,247,255,0.7)', fontSize: 12 }, splitLine: { show: false }, min: 20, max: 100 }
     ],
     series: [
       { name: '温度(℃)', type: 'line', smooth: true, symbol: 'none', lineStyle: { color: '#ef4444', width: 2 }, itemStyle: { color: '#ef4444' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(239,68,68,0.25)' }, { offset: 1, color: 'rgba(239,68,68,0)' }]) }, data: [] },
-      { name: '湿度(%)', type: 'line', smooth: true, symbol: 'none', yAxisIndex: 1, lineStyle: { color: '#2563eb', width: 2 }, itemStyle: { color: '#2563eb' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(37,99,235,0.25)' }, { offset: 1, color: 'rgba(37,99,235,0)' }]) }, data: [] }
+      { name: '湿度(%)', type: 'line', smooth: true, symbol: 'none', yAxisIndex: 1, lineStyle: { color: '#60a5fa', width: 2 }, itemStyle: { color: '#60a5fa' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(96,165,250,0.25)' }, { offset: 1, color: 'rgba(96,165,250,0)' }]) }, data: [] }
     ]
   })
   startResize()
