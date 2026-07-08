@@ -26,6 +26,15 @@ function formatCO(v) {
   return Number.isFinite(n) ? n.toFixed(1) : '--'
 }
 
+// 货物固定点配置
+const GOODS_CAPACITY = 60
+const GOODS_TRIGGER = 40
+const CARGO_POINTS = [
+  { id: 'WH-A', name: '原料库A' },
+  { id: 'PROD-1', name: '加工线1' },
+  { id: 'PACK', name: '包装区' }
+]
+
 export const useDeviceStore = defineStore('device', () => {
   // System is always in demo mode
   const demoMode = ref(true)
@@ -92,6 +101,15 @@ export const useDeviceStore = defineStore('device', () => {
     reports: { daily: null, weekly: null },
     updatedAt: 0
   })
+
+  // 三个固定点货物计数 { id, name, count, status, taskId }
+  const cargoPoints = ref(CARGO_POINTS.map(p => ({
+    id: p.id,
+    name: p.name,
+    count: 0,
+    status: 'normal',
+    taskId: null
+  })))
 
   // ─── AGV 调度任务队列 ───
   // 任务结构: { id, type, fromId, toId, robotId, status, priority, progress,
@@ -232,7 +250,8 @@ export const useDeviceStore = defineStore('device', () => {
       distance,
       route, // 送达段路径(包括 from / to)
       pickupRoute: null, // 取货段路径,assign 时计算
-      note: payload.note || ''
+      note: payload.note || '',
+      cargoPointId: payload.cargoPointId || null
     }
     tasks.value = [task, ...tasks.value]
     pushCommandLog('task', `dispatch ${task.id} ${from.id}→${to.id}`, `任务 ${task.id} 已下发,等待分配`, task.robotId || 'auto')
@@ -396,6 +415,16 @@ export const useDeviceStore = defineStore('device', () => {
         task.completedAt = Date.now()
         task.progress = 1
         pushCommandLog('task', `complete ${task.id}`, `任务 ${task.id} 已送达 ${task.toName}`, robot.id)
+        // 货物运输任务完成后,清空对应固定点计数
+        if (task.cargoPointId) {
+          const point = cargoPoints.value.find(p => p.id === task.cargoPointId)
+          if (point) {
+            point.count = 0
+            point.status = 'normal'
+            point.taskId = null
+            pushCommandLog('cargo', `clear ${point.id}`, `${point.name} 货物已运出,计数清零`, 'system')
+          }
+        }
         // 任务完成后,让 AGV 沿走廊驶回默认巡逻起点,而非瞬移
         startReturning(task.robotId, robot)
       }
@@ -479,6 +508,45 @@ export const useDeviceStore = defineStore('device', () => {
     }
 
     if (mutated || ids.length) returningRobots.value = next
+  }
+
+  // 货物固定点计数更新:模拟货物到达、触发运输、上限截断
+  function updateCargoPoints() {
+    cargoPoints.value.forEach(point => {
+      // 已有运输任务(待执行或执行中)时不重复下发
+      const hasActiveTask = tasks.value.some(t =>
+        t.cargoPointId === point.id &&
+        (t.status === 'pending' || t.status === 'running')
+      )
+      if (hasActiveTask) return
+
+      // 模拟货物到达:每 tick 有概率增加 1~2 件
+      if (point.count < GOODS_CAPACITY && Math.random() > 0.55) {
+        const inc = Math.floor(Math.random() * 2) + 1
+        point.count = Math.min(GOODS_CAPACITY, point.count + inc)
+      }
+
+      // 达到触发阈值,派发运输任务到出货口
+      if (point.count >= GOODS_TRIGGER && !point.taskId) {
+        const task = dispatchTask({
+          type: 'transport',
+          fromId: point.id,
+          toId: 'OUT',
+          priority: 'high',
+          cargoPointId: point.id,
+          note: `${point.name} 货物达 ${point.count} 件,自动派车运输`
+        })
+        if (task) {
+          point.taskId = task.id
+          point.status = 'transporting'
+        }
+      }
+
+      // 状态颜色
+      if (point.count >= GOODS_CAPACITY) point.status = 'full'
+      else if (point.count >= GOODS_TRIGGER) point.status = 'warning'
+      else point.status = 'normal'
+    })
   }
 
   // 检测 AGV 互相靠近 (< MIN_AGV_DIST),让低优先级一方原地等待。
@@ -595,6 +663,9 @@ export const useDeviceStore = defineStore('device', () => {
       advanceReturningRobots(fleetData, dt)
       // 4) AGV 间避让 — 相距过近的低优先级一方原地等待
       resolveCollisions(fleetData)
+
+      // 5) 货物固定点计数与自动运输
+      updateCargoPoints()
 
       temperature.value = simData.temperature
       humidity.value = simData.humidity
@@ -728,6 +799,9 @@ export const useDeviceStore = defineStore('device', () => {
     selectedRobotId,
     manualOverrides,
     manualDirection,
+    cargoPoints,
+    GOODS_CAPACITY,
+    GOODS_TRIGGER,
     historyLabels,
     historyTemp,
     historyHumi,
