@@ -1,84 +1,151 @@
 <template>
   <div class="panel-frame">
-    <div class="panel-header"><span class="dot"></span>货物感应计数</div>
+    <div class="panel-header"><span class="dot"></span>货物固定点计数</div>
     <div class="panel-body goods-body">
-      <div class="counter-main">
-        <div>
-          <div class="counter-label">今日累计</div>
-          <div class="counter-value">{{ store.goodsCount }}</div>
-        </div>
-        <div :class="['pulse-badge', { active: store.goodsPulse }]">
-          {{ store.goodsPulse ? 'P6 脉冲' : '等待通过' }}
-        </div>
+      <div class="rule-bar">
+        <span class="rule-item">上限 <strong>{{ store.GOODS_CAPACITY }}</strong> 件</span>
+        <span class="rule-item">≥ <strong>{{ store.GOODS_TRIGGER }}</strong> 件自动派车</span>
       </div>
 
-      <div class="digits-row">
-        <span class="label">视觉计数</span>
-        <span class="digits">{{ store.counterDigits }}</span>
-      </div>
-
-      <div class="goods-list">
-        <div v-for="robot in goodsRobots" :key="robot.id" class="goods-item">
-          <div class="goods-name">
-            <span class="goods-dot"></span>
-            {{ robot.name }}
+      <div class="cargo-list">
+        <div
+          v-for="point in store.cargoPoints"
+          :key="point.id"
+          :class="['cargo-card', 'status-' + point.status]"
+        >
+          <div class="cargo-head">
+            <div class="cargo-name">
+              <span class="cargo-dot" :style="{ background: statusColor(point.status) }"></span>
+              {{ point.name }}
+            </div>
+            <div class="cargo-count">
+              <span class="count-num">{{ point.count }}</span>
+              <span class="count-total">/ {{ store.GOODS_CAPACITY }}</span>
+            </div>
           </div>
-          <div class="goods-meta">
-            <span>{{ robot.device_id }}</span>
-            <strong>{{ robot.goodsCount }} 件</strong>
+
+          <div class="progress-wrap">
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                :style="{ width: progressWidth(point.count), background: statusColor(point.status) }"
+              ></div>
+              <div
+                class="trigger-line"
+                :style="{ left: (store.GOODS_TRIGGER / store.GOODS_CAPACITY * 100) + '%' }"
+                title="自动派车阈值"
+              ></div>
+            </div>
+            <span class="status-tag" :style="{ color: statusColor(point.status) }">
+              {{ statusLabel(point.status) }}
+            </span>
           </div>
         </div>
       </div>
 
-      <div class="hint">演示数据：模拟货物感应/视觉计数，暂未接入后端</div>
+      <div class="hint">货物到达 40 件自动下发运输任务至出货口，小车运走后计数清零</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useDeviceStore } from '../../stores/deviceStore'
 
 const store = useDeviceStore()
 
-const goodsRobots = computed(() => {
-  return store.fleet.filter(r => r.task === 'goodsCount' || r.goodsCount != null).slice(0, 3)
-})
+function progressWidth(count) {
+  return Math.min(100, Math.round((count / store.GOODS_CAPACITY) * 100)) + '%'
+}
+
+const STATUS_MAP = {
+  normal: { label: '正常', color: '#22c55e' },
+  warning: { label: '待运输', color: '#f59e0b' },
+  transporting: { label: '运输中', color: '#2563eb' },
+  full: { label: '已满', color: '#ef4444' }
+}
+
+function statusLabel(status) {
+  return STATUS_MAP[status]?.label || status
+}
+
+function statusColor(status) {
+  return STATUS_MAP[status]?.color || '#94a3b8'
+}
 </script>
 
 <style scoped>
-.goods-body { display: flex; flex-direction: column; gap: 7px; }
-.counter-main {
+.goods-body { display: flex; flex-direction: column; gap: 10px; }
+
+.rule-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: linear-gradient(90deg, rgba(34,197,94,0.12), rgba(6,182,212,0.08));
-}
-.counter-label { color: var(--text-secondary); font-size: 12px; }
-.counter-value { color: #16a34a; font-size: 24px; font-weight: 800; font-family: 'Consolas', monospace; }
-.pulse-badge {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(148,163,184,0.16);
+  background: rgba(30, 80, 180, 0.04);
+  font-size: 12px;
   color: var(--text-secondary);
+}
+.rule-item strong { color: var(--text-primary); font-family: 'Consolas', monospace; }
+
+.cargo-list { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: auto; }
+
+.cargo-card {
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(30, 80, 180, 0.04);
+  border: 1px solid var(--border-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.cargo-card.status-warning { border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.06); }
+.cargo-card.status-transporting { border-color: rgba(37, 99, 235, 0.4); background: rgba(37, 99, 235, 0.06); }
+.cargo-card.status-full { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.06); }
+
+.cargo-head { display: flex; align-items: center; justify-content: space-between; }
+.cargo-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.cargo-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+.cargo-count { display: flex; align-items: baseline; gap: 3px; }
+.count-num { font-size: 22px; font-weight: 800; color: var(--text-primary); font-family: 'Consolas', monospace; }
+.count-total { font-size: 12px; color: var(--text-secondary); }
+
+.progress-wrap { display: flex; align-items: center; gap: 8px; }
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.trigger-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(239, 68, 68, 0.6);
+  transform: translateX(-50%);
+}
+.status-tag {
   font-size: 12px;
   font-weight: 700;
+  width: 48px;
+  text-align: right;
+  flex-shrink: 0;
 }
-.pulse-badge.active {
-  background: rgba(34,197,94,0.18);
-  color: #16a34a;
-  box-shadow: 0 0 10px rgba(34,197,94,0.35);
+
+.hint {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: rgba(30, 80, 180, 0.04);
 }
-.digits-row { display: flex; justify-content: space-between; align-items: center; }
-.label { color: var(--text-secondary); font-size: 13px; }
-.digits { color: #2563eb; font-weight: 800; letter-spacing: 2px; font-family: 'Consolas', monospace; }
-.goods-list { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow: auto; }
-.goods-item { padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.04); }
-.goods-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
-.goods-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
-.goods-meta { margin-top: 2px; display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 12px; }
-.goods-meta strong { color: #16a34a; }
-.hint { color: var(--text-secondary); font-size: 11px; line-height: 1.3; }
 </style>
