@@ -49,6 +49,11 @@ export const useDeviceStore = defineStore('device', () => {
   const humanDetected = ref(0)
   const pirStatus = ref('clear')
   const co2 = ref(8)
+  // co：一氧化碳浓度（CO 量级，0~50ppm）。
+  // 真实模式下来自后端 snapshot.co（后端已做 CO2→CO 映射）；
+  // demo 模式下来自模拟器 simData.co2（实为 CO 量级小数值）。
+  // 注意：store.co2 是 SGP30 CO2 原始值（~400ppm），不能直接当作 CO 显示。
+  const co = ref(8)
   const tvoc = ref(180)
   const gasMic = ref(120)
   const gasStatus = ref(0)
@@ -675,6 +680,8 @@ export const useDeviceStore = defineStore('device', () => {
       humanDetected.value = simData.humanDetected
       pirStatus.value = simData.pirStatus
       co2.value = simData.co2
+      // 模拟器 simData.co2 实为 CO 量级小数值（0~30），直接作为 CO 浓度
+      co.value = simData.co2
       tvoc.value = simData.tvoc
       gasMic.value = simData.gasMic
       gasStatus.value = simData.gasStatus
@@ -715,6 +722,7 @@ export const useDeviceStore = defineStore('device', () => {
       historyHumi.value.push(+simData.humidity.toFixed(1))
       historyLux.value.push(+simData.lux.toFixed(1))
       historyCO2.value.push(+simData.co2.toFixed(1))
+      // historyCO2 数组在图表里表示「CO 浓度」趋势，用 CO 量级值
       historyTVOC.value.push(+simData.tvoc.toFixed(0))
       historyGasMic.value.push(+simData.gasMic.toFixed(0))
       historyGoodsCount.value.push(+simData.goodsCount)
@@ -779,6 +787,7 @@ export const useDeviceStore = defineStore('device', () => {
     humanDetected,
     pirStatus,
     co2,
+    co,
     tvoc,
     gasMic,
     gasStatus,

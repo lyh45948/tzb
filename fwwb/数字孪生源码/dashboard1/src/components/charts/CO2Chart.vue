@@ -66,6 +66,6 @@ onMounted(() => {
   startResize()
 })
 
-watch(() => store.co2, updateChart)
+watch(() => store.co, updateChart)
 onUnmounted(() => { if (chart) chart.dispose() })
 </script>
