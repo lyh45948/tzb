@@ -55,6 +55,20 @@ npm run build        # 生产构建
 
 数据来源：默认 `enableLiveData=true`，尝试连接 `http://localhost:5000`（Flask 后端），失败自动降级到本地模拟。强制模拟模式设 `.env.development` 的 `VITE_ENABLE_LIVE_DATA=false`。
 
+### 端口占用排查
+
+若 `npm run dev` 提示 `Port 8112 is in use` 或浏览器报陈旧的 import 错误，通常是**残留的旧 dev server 进程**。清理：
+
+```bash
+# 查占用 8112 的进程
+lsof -i :8112
+# 杀掉后重启
+kill -9 <PID>
+rm -rf node_modules/.vite   # 清 Vite 依赖缓存
+npm run dev
+# 浏览器硬刷新 Ctrl+Shift+R 或开无痕窗口
+```
+
 ## 注意
 
 - `.gitignore` 全局忽略 `*.png`，本目录的 IofTV 装饰图片已用 `git add -f` 强制纳入版本控制。
