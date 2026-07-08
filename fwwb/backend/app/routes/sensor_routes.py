@@ -70,14 +70,20 @@ def _normalize_history_item(item):
     与 /sensors/current 返回结构对齐：传感器字段放入 env（复用
     env_from_db_record 保证命名一致），co2→co 映射同源；其余车辆状态
     字段（速度/电量/外设等）保持驼峰放外层。
+
+    兼容设计：env 中的传感器字段同时平铺到顶层，让沿用旧读法
+    （如 d.get("co") / d.get("gasStatus") / d.get("temp")）的
+    vehicle_agent1.2.py 无需改动即可读到，同时 env 子结构保持与
+    /sensors/current 对齐。
     """
     if not isinstance(item, dict):
         return item
-    return {
+    env = env_from_db_record(item)
+    record = {
         "id": item.get('id'),
         "device_id": item.get('device_id'),
         "timestamp": item.get('timestamp'),
-        "env": env_from_db_record(item),
+        "env": env,
         "carStatus": item.get('car_status'),
         "carMode": item.get('car_mode'),
         "leftSpeed": item.get('left_speed'),
@@ -89,6 +95,9 @@ def _normalize_history_item(item):
         "buzzer": item.get('buzzer'),
         "createdAt": item.get('created_at'),
     }
+    # 顶层冗余传感器字段（与 env 同值），兼容智能体顶层读取
+    record.update(env)
+    return record
 
 
 @api_bp.route('/sensors/current', methods=['GET'])
