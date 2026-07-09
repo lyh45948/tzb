@@ -1,0 +1,81 @@
+/*
+ * factory 模块 CSS 变量定义（浅色系）
+ *
+ * factory 组件大量使用 var(--gap)、var(--text-primary) 等 CSS 变量，但旧 dashboard3
+ * 从未定义这些变量，导致视觉失效。迁移到新基座时在此集中定义，配色对齐
+ * factory/utils/constants.js（确保图表内联色与卡片配色一致）。
+ *
+ * 在 src/App.vue 全局 import 后对所有 factory 组件生效。
+ */
+:root {
+  /* —— 间距与圆角 —— */
+  --gap: 12px;
+  --radius: 8px;
+  --border-radius: 8px;
+
+  /* —— 文字色（浅色主题）—— */
+  --text-primary: #1e293b; /* slate-800 */
+  --text-secondary: #64748b; /* slate-500，次要文字（最高频使用） */
+  --text-accent: #2563eb; /* 强调文字 */
+
+  /* —— 强调色（与 constants.js / 图表内联色一致）—— */
+  --accent-blue: #2563eb;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #f59e0b;
+  --accent-cyan: #06b6d4;
+
+  /* —— 面板背景与阴影（浅色卡片）—— */
+  --bg-panel: #ffffff;
+  --shadow-panel: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  /* —— 边框（淡色）—— */
+  --border-dim: #e2e8f0; /* slate-200 */
+}
+
+/* ─── 数字孪生 Section 通用基类 ─── */
+/*
+ * 所有 9 个 Section 组件的根元素均使用 class="section-page xxx-section"，
+ * 但旧 dashboard3 从未定义 section-page，导致各 Section 高度塌缩，无法填满
+ * 工厂面板的可视区域。此处集中补齐，使每个 Section 自适应父容器高度。
+ */
+.section-page {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/*
+ * 面板通用框架：确保卡片在 Section 高度固定后通过内部 overflow 自行消化溢出，
+ * 而不是撑高 Section 破坏页面布局。
+ */
+.panel-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+  border: 1px solid var(--border-dim);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 14px;
+}
