@@ -337,6 +337,27 @@ export class CarModel {
   }
 
   dispose() {
+    // 递归清理 group 内所有 mesh 的独立材质（共享材质不 dispose，避免影响其他实例）
+    this.group.traverse((child) => {
+      if (child.geometry && !Object.values(sharedGeo).includes(child.geometry)) {
+        child.geometry.dispose()
+      }
+      if (child.material) {
+        // 共享材质（在 sharedGeo 之外由 _build 创建的材质实例）需要释放
+        // 判断：非共享材质 = 该材质不被其他 CarModel 引用
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose())
+        } else {
+          child.material.dispose()
+        }
+      }
+    })
+    // 清理 warning particles 的独立 geometry/material
+    if (this.warningParticles) {
+      if (this.warningParticles.geometry) this.warningParticles.geometry.dispose()
+      if (this.warningParticles.material) this.warningParticles.material.dispose()
+      this.warningParticles = null
+    }
     this.scene.remove(this.group)
   }
 }

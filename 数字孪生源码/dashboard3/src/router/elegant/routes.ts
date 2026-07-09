@@ -42,22 +42,94 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'factory',
     path: '/factory',
-    component: 'layout.base$view.factory',
+    component: 'layout.base',
     meta: {
       title: 'factory',
       i18nKey: 'route.factory'
-    }
-  },
-  {
-    name: 'home',
-    path: '/home',
-    component: 'layout.base$view.home',
-    meta: {
-      title: 'home',
-      i18nKey: 'route.home',
-      icon: 'mdi:monitor-dashboard',
-      order: 1
-    }
+    },
+    children: [
+      {
+        name: 'factory_agent',
+        path: '/factory/agent',
+        component: 'view.factory_agent',
+        meta: {
+          title: 'factory_agent',
+          i18nKey: 'route.factory_agent'
+        }
+      },
+      {
+        name: 'factory_agv',
+        path: '/factory/agv',
+        component: 'view.factory_agv',
+        meta: {
+          title: 'factory_agv',
+          i18nKey: 'route.factory_agv'
+        }
+      },
+      {
+        name: 'factory_alarm',
+        path: '/factory/alarm',
+        component: 'view.factory_alarm',
+        meta: {
+          title: 'factory_alarm',
+          i18nKey: 'route.factory_alarm'
+        }
+      },
+      {
+        name: 'factory_control',
+        path: '/factory/control',
+        component: 'view.factory_control',
+        meta: {
+          title: 'factory_control',
+          i18nKey: 'route.factory_control'
+        }
+      },
+      {
+        name: 'factory_environment',
+        path: '/factory/environment',
+        component: 'view.factory_environment',
+        meta: {
+          title: 'factory_environment',
+          i18nKey: 'route.factory_environment'
+        }
+      },
+      {
+        name: 'factory_gas',
+        path: '/factory/gas',
+        component: 'view.factory_gas',
+        meta: {
+          title: 'factory_gas',
+          i18nKey: 'route.factory_gas'
+        }
+      },
+      {
+        name: 'factory_goods',
+        path: '/factory/goods',
+        component: 'view.factory_goods',
+        meta: {
+          title: 'factory_goods',
+          i18nKey: 'route.factory_goods'
+        }
+      },
+      {
+        name: 'factory_lighting',
+        path: '/factory/lighting',
+        component: 'view.factory_lighting',
+        meta: {
+          title: 'factory_lighting',
+          i18nKey: 'route.factory_lighting'
+        }
+      },
+      {
+        name: 'factory_overview',
+        path: '/factory/overview',
+        component: 'view.factory_overview',
+        meta: {
+          title: 'factory_overview',
+          i18nKey: 'route.factory_overview'
+        }
+      }
+    ]
   },
   {
     name: 'iframe-page',

@@ -35,21 +35,28 @@ export function createDashboardClient() {
     }
   }
 
+  let cancelled = false  // stop() 被调用后置 true，阻止异步回调继续操作
+
   // ─── 公共 API ───
   async function start(targetStore) {
     if (started) return
     started = true
+    cancelled = false
     store = targetStore
     setStatus('idle')
 
     // 先尝试一次 REST 引导：snapshot + history。任一失败都不阻塞 SSE 连接。
     await bootstrap()
 
+    // stop() 可能在 bootstrap 期间被调用，此时不应继续建立 SSE
+    if (cancelled || !started) return
+
     // 然后建立 SSE
     connectSse()
   }
 
   function stop() {
+    cancelled = true
     started = false
     setStatus('idle')
     sseConn?.disconnect()
@@ -64,6 +71,7 @@ export function createDashboardClient() {
     }
     // 如果之前进入 demo 模式，把它停掉
     try { store?.stopSimulation?.() } catch (_) { /* noop */ }
+    store = null
   }
 
   // ─── 内部：初始引导 ───
@@ -73,10 +81,14 @@ export function createDashboardClient() {
         fetchSnapshot().catch((e) => { throw e }),
         fetchHistory(config.maxDataPoints || 60).catch(() => null), // history 失败可降级
       ])
+      // stop() 可能在 await 期间被调用
+      if (cancelled || !store) return
       applySnapshot(store, snap)
       if (hist) applyHistory(store, hist)
       setStatus('live') // SSE 还没真的 open，先乐观置 live；SSE error 会改回去
     } catch (e) {
+      // stop() 可能在 await 期间被调用
+      if (cancelled || !store) return
       // bootstrap 失败 → 直接尝试 polling/demo 路径
       handleConnectFailure(e)
     }
@@ -87,6 +99,7 @@ export function createDashboardClient() {
     sseConn?.disconnect()
     sseConn = connectDashboardStream({
       onSnapshot: (data) => {
+        if (cancelled || !store) return
         applySnapshot(store, data)
         appendHistoryFromSnapshot(store, data)
         // 收到 SSE 帧 → 一定是 live；同步关掉降级路径
@@ -97,6 +110,7 @@ export function createDashboardClient() {
         }
       },
       onStatusChange: (sseStatus) => {
+        if (cancelled || !store) return
         if (sseStatus === 'open') {
           stopPolling()
           stopDemo()
@@ -132,8 +146,10 @@ export function createDashboardClient() {
   }
 
   async function pollOnce() {
+    if (cancelled || !store) return
     try {
       const snap = await fetchSnapshot()
+      if (cancelled || !store) return
       applySnapshot(store, snap)
       appendHistoryFromSnapshot(store, snap)
       pollFailCount = 0
@@ -141,6 +157,7 @@ export function createDashboardClient() {
       stopDemo()
       if (store.connectionStatus !== 'live') setStatus('polling')
     } catch (e) {
+      if (cancelled || !store) return
       pollFailCount += 1
       const threshold = config.pollFailFallbackCount || 3
       if (pollFailCount >= threshold) {
