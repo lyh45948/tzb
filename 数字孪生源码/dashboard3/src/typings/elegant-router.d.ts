@@ -21,7 +21,15 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "factory": "/factory";
-    "home": "/home";
+    "factory_agent": "/factory/agent";
+    "factory_agv": "/factory/agv";
+    "factory_alarm": "/factory/alarm";
+    "factory_control": "/factory/control";
+    "factory_environment": "/factory/environment";
+    "factory_gas": "/factory/gas";
+    "factory_goods": "/factory/goods";
+    "factory_lighting": "/factory/lighting";
+    "factory_overview": "/factory/overview";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
   };
@@ -59,7 +67,6 @@ declare module "@elegant-router/types" {
     | "404"
     | "500"
     | "factory"
-    | "home"
     | "iframe-page"
     | "login"
   >;
@@ -83,8 +90,15 @@ declare module "@elegant-router/types" {
     | "500"
     | "iframe-page"
     | "login"
-    | "factory"
-    | "home"
+    | "factory_agent"
+    | "factory_agv"
+    | "factory_alarm"
+    | "factory_control"
+    | "factory_environment"
+    | "factory_gas"
+    | "factory_goods"
+    | "factory_lighting"
+    | "factory_overview"
   >;
 
   /**

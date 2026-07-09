@@ -25,6 +25,7 @@ let labelObjects = [] // { css2d: CSS2DObject, nameEl, dotEl, statusEl }
 let sceneEnv, animController
 let raycaster, pointer
 let resizeObserver = null
+let _initialized = false  // 标记 Three.js 是否已成功初始化
 
 // Pointer tracking for drag-vs-click detection
 let pointerDownPos = null
@@ -35,7 +36,13 @@ function init() {
 
   const w = el.clientWidth
   const h = el.clientHeight
-  if (!w || !h) return
+  if (!w || !h) {
+    // 容器尺寸为 0（Transition 动画中或弹性布局未就绪），等待 ResizeObserver 重试
+    return
+  }
+
+  // 避免重复初始化
+  if (_initialized) return
 
   // Raycaster for click detection
   raycaster = new THREE.Raycaster()
@@ -109,6 +116,7 @@ function init() {
   // Start render loop — Three.js setAnimationLoop 会在标签页隐藏时自动暂停，
   // 避免后台持续渲染消耗 CPU
   renderer.setAnimationLoop(animate)
+  _initialized = true
 }
 
 function _createWaypointLabels() {
@@ -263,10 +271,18 @@ function animate() {
 
 function onResize() {
   const el = container.value
-  if (!el || !renderer || !camera || !labelRenderer) return
+  if (!el) return
   const w = el.clientWidth
   const h = el.clientHeight
   if (!w || !h) return
+
+  // 如果 Three.js 尚未初始化（init() 因容器 0 尺寸提前返回），现在重试
+  if (!_initialized) {
+    init()
+    return
+  }
+
+  if (!renderer || !camera || !labelRenderer) return
   camera.aspect = w / h
   camera.updateProjectionMatrix()
   renderer.setSize(w, h)
@@ -283,25 +299,63 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  _initialized = false
+
   window.removeEventListener('resize', onResize)
   if (resizeObserver) {
-    resizeObserver.disconnect()
+    try { resizeObserver.disconnect() } catch (_) { /* noop */ }
     resizeObserver = null
   }
+
+  // 第一优先：停止动画循环，防止后续帧访问已销毁资源
   if (renderer) {
-    renderer.domElement.removeEventListener('pointerdown', onPointerDown)
-    renderer.domElement.removeEventListener('pointerup', onPointerUp)
+    try { renderer.setAnimationLoop(null) } catch (_) { /* noop */ }
   }
-  if (renderer) renderer.setAnimationLoop(null)
-  carModels.forEach(m => m.dispose())
-  if (controls) controls.dispose()
+
+  // 移除事件监听
+  if (renderer && renderer.domElement) {
+    try {
+      renderer.domElement.removeEventListener('pointerdown', onPointerDown)
+      renderer.domElement.removeEventListener('pointerup', onPointerUp)
+    } catch (_) { /* noop */ }
+  }
+
+  // 销毁车辆模型（从 scene 中移除）
+  if (carModels && carModels.length) {
+    carModels.forEach(m => { try { m.dispose() } catch (_) { /* noop */ } })
+    carModels = []
+  }
+
+  // 销毁 OrbitControls（移除 DOM 事件监听）
+  if (controls) {
+    try { controls.dispose() } catch (_) { /* noop */ }
+    controls = null
+  }
+
+  // 销毁 WebGL 渲染器（释放 GPU 资源）
   if (renderer) {
-    renderer.dispose()
-    container.value?.removeChild(renderer.domElement)
+    try { renderer.dispose() } catch (_) { /* noop */ }
+    // 从 DOM 移除 canvas
+    if (container.value) {
+      try { container.value.removeChild(renderer.domElement) } catch (_) { /* noop */ }
+    }
+    renderer = null
   }
+
+  // 移除 CSS2D 渲染器 DOM 元素
   if (labelRenderer && container.value) {
-    container.value.removeChild(labelRenderer.domElement)
+    try { container.value.removeChild(labelRenderer.domElement) } catch (_) { /* noop */ }
+    labelRenderer = null
   }
+
+  // 清空引用，确保下次 mount 干净启动
+  scene = null
+  camera = null
+  sceneEnv = null
+  animController = null
+  raycaster = null
+  pointer = null
+  labelObjects = []
 })
 </script>
 
